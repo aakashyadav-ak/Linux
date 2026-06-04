@@ -11,6 +11,284 @@
 - Websites
 - Cloud resources
 
+## 1. Servers (Linux/Windows)
+
+### What do we monitor?
+
+#### CPU
+- CPU utilization
+- Load average
+- CPU idle time
+- CPU wait time
+
+**Example:**
+- CPU Usage = 95%
+
+> [!alert]
+> **High CPU Utilization**
+
+#### Memory
+- Total RAM
+- Used RAM
+- Free RAM
+- Swap usage
+
+**Example:**
+- Memory Usage = 92%
+
+#### Disk
+- Disk usage
+- Free space
+- Disk I/O
+- Filesystem status
+
+**Example:**
+- `/` filesystem = 95% full
+
+#### Network
+- Bandwidth
+- Packets sent
+- Packets received
+- Errors
+- Drops
+
+#### System Health
+- Uptime
+- Logged-in users
+- Running processes
+- Temperature
+
+---
+
+## 2. Applications
+
+Applications running on servers.
+
+### Examples
+- Apache
+- Nginx
+- Tomcat
+- Docker
+- Kubernetes
+
+### What do we monitor?
+
+#### Service Status
+- Running?
+- Stopped?
+- Restarted?
+
+**Example:**
+- `httpd` service stopped
+
+#### Performance
+- Requests/sec
+- Response time
+- Active sessions
+- Error rate
+
+**Example:**
+- Website response time > 5 sec
+
+---
+
+## 3. Databases
+
+### Examples
+- MySQL
+- PostgreSQL
+- Oracle
+- MongoDB
+
+### What do we monitor?
+
+#### Availability
+- Database running?
+- Database reachable?
+
+#### Performance
+- Queries/sec
+- Connections
+- Slow queries
+- Transactions
+
+**Example:**
+- Too many database connections
+
+#### Storage
+- Database size
+- Table size
+- Free disk space
+
+---
+
+## 4. Network Devices
+
+### Examples
+- Routers
+- Switches
+- Firewalls
+- Load Balancers
+
+> [!note]
+> Usually monitored using **SNMP**.
+
+### What do we monitor?
+
+#### Interface Status
+- Port up/down
+- Interface speed
+- Bandwidth
+
+**Example:**
+- Switch Port 24 Down
+
+#### Device Health
+- CPU
+- Memory
+- Temperature
+- Power supply
+- Fan status
+
+#### Traffic
+- Incoming traffic
+- Outgoing traffic
+- Packet drops
+- Errors
+
+---
+
+## 5. Websites
+
+### Examples
+- google.com
+- company.com
+- portal.company.com
+
+### What do we monitor?
+
+#### Availability
+- Website UP/DOWN
+- HTTP status code
+
+**Example:**
+- HTTP 500 Error
+
+#### Response Time
+- Page load time
+- DNS lookup time
+- SSL certificate expiry
+
+**Example:**
+- Website takes 10 seconds to load
+
+#### Content Check
+
+**Example:**
+- Login page contains `"Welcome"`
+
+> [!alert]
+> If the expected text disappears, generate an alert.
+
+---
+
+## 6. Cloud Resources
+
+### Examples
+- AWS EC2
+- Azure VM
+- Google Cloud VM
+
+### What do we monitor?
+
+#### Virtual Machines
+- CPU
+- Memory
+- Disk
+- Network
+
+#### Cloud Services
+- RDS databases
+- Load balancers
+- S3 storage
+- Kubernetes clusters
+
+#### Cost Monitoring
+- Storage growth
+- Resource usage
+- Instance count
+
+---
+
+## Summary Table
+
+| Category | What to Monitor | Example Alert |
+|----------|------------------|---------------|
+| Servers | CPU, Memory, Disk, Network, System Health | CPU Usage = 95% |
+| Applications | Service Status, Performance | `httpd` service stopped |
+| Databases | Availability, Performance, Storage | Too many DB connections |
+| Network Devices | Interface Status, Device Health, Traffic | Switch Port 24 Down |
+| Websites | Availability, Response Time, Content Check | HTTP 500 Error |
+| Cloud Resources | VM metrics, Cloud services, Cost | High resource usage / storage growth |
+
+---
+# Zabbix Components
+## 1. Zabbix Server
+
+The brain of Zabbix.
+
+Responsibilities:
+
+- Collects data
+- Processes data
+- Generates alerts
+- Stores data in database
+
+**Example:**
+
+```
+192.168.64.130
+```
+
+----
+
+## 2. Database
+
+**Stores:**
+- Hosts
+- Items
+- Triggers
+- Events
+- Historical data
+
+**Supported databases:**
+
+- MySQL
+- MariaDB
+- PostgreSQL
+
+_____
+
+## 3. Frontend (Web UI)
+
+Used by administrators.
+
+**Access through browser:**
+
+```
+http://<server-ip>/zabbix
+```
+
+**Functions:**
+
+- Add hosts
+- View graphs
+- Create dashboards
+- Configure alerts
+
+________
+
+
 ## 1. First Things: Understanding Organizational Infrastructure
 
 Before diving into tools, the very first thing I learned was about the organization's setup. This is important because monitoring tools like Zabbix need to know where everything is located to work properly.
