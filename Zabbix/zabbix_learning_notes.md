@@ -10,6 +10,7 @@
 - Network devices
 - Websites
 - Cloud resources
+
 ## 1. First Things: Understanding Organizational Infrastructure
 
 Before diving into tools, the very first thing I learned was about the organization's setup. This is important because monitoring tools like Zabbix need to know where everything is located to work properly.
