@@ -74,7 +74,7 @@ Host group Name=	                       Linux Servers/Windows Server/(custom)
 Click **Add**  
 
 >Shown in SS1,02
->![[SS1.png]]
+>![[Cybersecurity-notes/Zabbix/SS1.png]]
 >![[ss02 1.png]]
 
 
@@ -109,7 +109,7 @@ Configuration
 Click **Add**
 
 >Shown in SS2
-![[SS2.png]]
+![[Cybersecurity-notes/Zabbix/SS2.png]]
 
 
 ## Step 3 – Add Trigger
@@ -126,12 +126,12 @@ Configuration
 
 
 >Shown in SS3
->![[SS3.png]]
+>![[Cybersecurity-notes/Zabbix/SS3.png]]
 ---
 
 ### Trigger Tab
 >Shown in SS4
->![[SS4.png]]
+>![[Cybersecurity-notes/Zabbix/SS4.png]]
 
 
 | Field                         | Value                                                                     |
@@ -305,9 +305,9 @@ Administration
 - Required for receiving alerts
 
 > Shown in SS8,9
-> ![[SS8.png]]
+> ![[Cybersecurity-notes/Zabbix/SS8.png]]
 
-![[SS9.png]]
+![[Cybersecurity-notes/Zabbix/SS9.png]]
 
 _________________________________
 
@@ -346,9 +346,9 @@ Administration
 - Linked with Media (Email)
 
 > Shown in SS10,11,12
-> ![[SS10.png]]
-![[SS11.png]]
-![[SS12.png]]
+> ![[Cybersecurity-notes/Zabbix/SS10.png]]
+![[Cybersecurity-notes/Zabbix/SS11.png]]
+![[Cybersecurity-notes/Zabbix/SS12.png]]
 
 
 
@@ -390,7 +390,7 @@ Alerts
 - Defines HOW alerts are sent (Email)
 
 > Shown in SS13,14,S2
-> ![[s2.png]]
+> ![[Cybersecurity-notes/Zabbix/s2.png]]
 > ![[SS13 1.png]]
 
 ![[SS14 1.png]]
@@ -433,7 +433,7 @@ Without this step:
 ❌ Alerts will NOT be sent
 
 > Shown in SS11
-> ![[SS11.png]]
+> ![[Cybersecurity-notes/Zabbix/SS11.png]]
 
 
 
@@ -550,8 +550,8 @@ Notify Team Lead when the problem is acknowledged.
 	Linux Admins
 
 > Shown in SS15,16,17
-> ![[SS15.png]]
+> ![[Cybersecurity-notes/Zabbix/SS15.png]]
 
-![[SS16.png]]
+![[Cybersecurity-notes/Zabbix/SS16.png]]
 
-![[SS17.png]]
+![[Cybersecurity-notes/Zabbix/SS17.png]]
