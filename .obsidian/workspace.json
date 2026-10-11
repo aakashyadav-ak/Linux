@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "RHCSA/RH134-Troubleshooting-Log.md",
+                "file": "Script.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "RH134-Troubleshooting-Log"
+              "title": "Script"
             }
           }
         ]
@@ -41,7 +41,9 @@
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false
+                "autoReveal": false,
+                "showSearch": false,
+                "searchQuery": ""
               },
               "icon": "lucide-folder-closed",
               "title": "Files"
@@ -78,7 +80,7 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 200
   },
   "right": {
     "id": "f28c79588158393b",
@@ -155,13 +157,13 @@
             "state": {
               "type": "outline",
               "state": {
-                "file": "RHCSA/RH134-Troubleshooting-Log.md",
+                "file": "RHCSA/Syllabus.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of RH134-Troubleshooting-Log"
+              "title": "Outline of Syllabus"
             }
           }
         ],
@@ -169,11 +171,11 @@
       }
     ],
     "direction": "horizontal",
-    "width": 300
+    "width": 300,
+    "collapsed": true
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
       "switcher:Open quick switcher": false,
       "graph:Open graph view": false,
       "canvas:Create new canvas": false,
@@ -185,30 +187,32 @@
   },
   "active": "b7ddd12689260174",
   "lastOpenFiles": [
+    "Project/README.md.md",
+    "02,Linux/02 - Accessing the Command Line.md",
+    "02,Linux/03, Managing Files from the Command Line.md",
+    "02,Linux/0.05 - Installation.md",
+    "02,Linux/01 - Linux.md",
+    "02,Linux/03.5 - Navigating the File-system Hierarchy.md",
+    "02,Linux/02,  Accessing the Command Line (Terminals).md",
+    "Script.md",
+    "02,Linux/10, Storage — Partitions, FS, LVM.md",
+    "02,Linux/09,Controlling Services and Daemons.md",
+    "02,Linux/08,Monitoring and Managing Linux Processes.md",
+    "02,Linux/07.2 Local Repo Configuration.md",
+    "02,Linux/07.1 Vim - Software Management - SSH.md",
+    "02,Linux/13,Archiving and Transferring Files.md",
+    "02,Linux/14,Installing and Updating Software Packages.md",
+    "02,Linux/15, Accessing Linux File Systems.md",
+    "02,Linux/11,Analyzing and Storing Logs.md",
+    "02,Linux/07,Controlling Access to Files.md",
+    "02,Linux/06,Managing Local Users and Groups.md",
+    "02,Linux/04.5 User System.md",
+    "02,Linux/04,Creating, Viewing & Editing Text Files.md",
     "RHCSA/Cheat Sheet.md",
-    "RHCSA/RH134-Command-Cheatsheet.md",
-    "RHCSA/RH134-Daily-Study-Log-Template.md",
-    "RHCSA/Dashboard.md",
     "RHCSA/01, Shell Scripting & Text Processing.md",
-    "RHCSA/RH134-Red-Hat-System-Administration-II-Checklist.md",
-    "RHCSA/RH134-Progress-Dashboard.md",
-    "RHCSA/Syllabus.md",
-    "RHCSA/RH134-Troubleshooting-Log.md",
     "RHCSA/RH134-Study-System-README.md",
-    "Chapter 6 - SELinux.md",
-    "RH134/Modules/M12 - 12 - Boot Process.md",
-    "RHCSA",
-    "RH134/Modules/M11 - 11 - LVM.md",
-    "RH134/Modules/M10 - 10 - Basic Storage.md",
-    "RH134/Modules/M09 - 09 - Tuning Performance.md",
-    "RH134/Modules/M08 - 08 - Transferring Files.md",
-    "RH134/Modules/M07 - 07 - Archiving Files.md",
-    "RH134/Modules/M02 - 02 - Regular Expressions.md",
-    "RH134/Modules/M01 - 01 - Shell Scripting and the Command Line.md",
-    "RH134/Modules/M06 - 06 - SELinux.md",
-    "RH134/Modules/M05 - 05 - Analyzing and Storing Logs.md",
-    "RH134/Modules/M04 - 04 - Scheduling System Tasks.md",
-    "RH134/Modules/M03 - 03 - Scheduling User Tasks.md",
-    "Zabbix/Zabbix Email Alert Configuration (Media Type).md"
+    "RHCSA/RH134-Red-Hat-System-Administration-II-Checklist.md",
+    "RHCSA/RH134-Daily-Study-Log-Template.md",
+    "RHCSA"
   ]
 }

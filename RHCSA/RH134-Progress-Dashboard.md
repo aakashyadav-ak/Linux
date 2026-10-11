@@ -66,7 +66,7 @@ LIMIT 7
 
 ## Critical Chapters (Revisit These)
 
-- [[Chapter 6 - SELinux]]
+- [[Script]]
 - [[Chapter 11 - LVM]]
 - [[Chapter 12 - Boot Process]]
 - [[Chapter 19 - Comprehensive Review]]
