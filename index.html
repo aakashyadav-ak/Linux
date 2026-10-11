@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>My RHEL 10 notes</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐧</text></svg>">
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@500;700&family=IBM+Plex+Mono:wght@400;500&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f2f5f7;--grid:#dfe6ea;--card:#fff;--ink:#14263b;--mut:#56657a;--acc:#0f7f86;--soft:#dff1f2;--root:#d6001c;--line:#d3dce2;--code:#eaf0f3}
+:root[data-theme=dark]{--bg:#0d1722;--grid:#14212f;--card:#14212f;--ink:#e6edf3;--mut:#93a4b8;--acc:#4fd1c5;--soft:#12353a;--root:#ff5d6e;--line:#243649;--code:#1b2b3d}
+@media (prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#0d1722;--grid:#14212f;--card:#14212f;--ink:#e6edf3;--mut:#93a4b8;--acc:#4fd1c5;--soft:#12353a;--root:#ff5d6e;--line:#243649;--code:#1b2b3d}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-padding-top:16px}
+body{margin:0;background:var(--bg);background-image:linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px);background-size:28px 28px;color:var(--ink);font:17px/1.6 "Source Sans 3",system-ui,sans-serif}
+h1,h2,h3{font-family:"Bricolage Grotesque",system-ui,sans-serif;line-height:1.15;margin:0}
+code,.m{font-family:"IBM Plex Mono",ui-monospace,monospace;font-size:.88em}
+code{background:var(--code);padding:1px 6px;border-radius:4px}
+.wrap{display:grid;grid-template-columns:230px 1fr;gap:32px;max-width:1100px;margin:0 auto;padding:24px 20px 80px}
+nav{position:sticky;top:20px;align-self:start;max-height:calc(100vh - 40px);overflow:auto}
+nav h1{font-size:1.5rem;margin-bottom:4px}
+nav p{margin:0 0 14px;color:var(--mut);font-size:.9rem}
+nav a{display:block;padding:5px 10px;border-left:3px solid var(--line);color:var(--mut);text-decoration:none;font-size:.95rem}
+nav a.on{border-color:var(--acc);color:var(--ink);font-weight:600}
+nav a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.tools{display:flex;gap:8px;margin:14px 0}
+input[type=search]{flex:1;min-width:0;padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit}
+button{font:inherit;cursor:pointer;color:var(--ink)}
+.tb{padding:7px 10px;border:1px solid var(--line);border-radius:6px;background:var(--card)}
+main section{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:26px;margin-bottom:22px}
+main h2{font-size:1.7rem;margin-bottom:6px}
+.lead{color:var(--mut);margin:0 0 18px}
+.steps{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.steps button{flex:1 1 110px;padding:12px 8px;border:1px solid var(--line);border-radius:8px;background:var(--card);text-align:center;position:relative}
+.steps button[aria-pressed=true]{background:var(--acc);border-color:var(--acc);color:#fff}
+.box{padding:14px 16px;background:var(--soft);border-radius:8px;min-height:3.4em}
+.stack div{padding:12px 16px;border:1px solid var(--line);border-bottom:0;display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.stack div:last-child{border-bottom:1px solid var(--line)}
+.stack div:nth-child(1){margin:0 0 0 0}
+.stack b{font-family:"Bricolage Grotesque",sans-serif}
+.stack .k{background:var(--acc);color:#fff;border-color:var(--acc)}
+.stack span{color:var(--mut)}.stack .k span{color:#e8fbfa}
+.flow{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:10px 0}
+.flow span{padding:8px 14px;border:1px solid var(--line);border-radius:20px;background:var(--card)}
+.flow .hi{background:var(--root);border-color:var(--root);color:#fff;font-weight:600}
+.flow i{color:var(--mut);font-style:normal}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px}
+.cards div{padding:14px;border:1px solid var(--line);border-radius:8px}
+.cards b{display:block;font-family:"Bricolage Grotesque",sans-serif;font-size:1.1rem}
+.cmd{font-size:1.5rem;display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px}
+.cmd button{font-family:"IBM Plex Mono",monospace;padding:6px 12px;border:2px solid var(--line);border-radius:6px;background:var(--card)}
+.cmd button[aria-pressed=true]{border-color:var(--acc);background:var(--soft)}
+.tree{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.tree ul{list-style:none;margin:0;padding-left:18px;border-left:1px dashed var(--line)}
+.tree>div>ul{padding-left:0;border:0}
+.tree li{margin:2px 0}
+.tree button{border:0;background:none;padding:2px 8px;border-radius:5px;font-family:"IBM Plex Mono",monospace;font-size:.9rem}
+.tree button[aria-pressed=true]{background:var(--acc);color:#fff}
+.tree .lnk{color:var(--mut);font-size:.8rem}
+.info{position:sticky;top:20px;align-self:start;padding:16px;border:1px solid var(--line);border-radius:8px;background:var(--soft)}
+.info p{margin:6px 0}
+.info .m{word-break:break-all}
+.pr{color:var(--mut)}.pr b{color:var(--root)}
+details{border-top:1px solid var(--line);padding:8px 0}
+summary{cursor:pointer;font-weight:600;font-family:"Bricolage Grotesque",sans-serif}
+table{border-collapse:collapse;width:100%;margin-top:8px}
+td{padding:5px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+td:first-child{white-space:nowrap}
+.chs{columns:2;gap:24px;margin:10px 0 0;padding:0;list-style:none}
+.chs li{break-inside:avoid;padding:3px 0}
+.chs label{cursor:pointer}
+.bar{height:10px;background:var(--code);border-radius:6px;overflow:hidden;margin:6px 0}
+.bar i{display:block;height:100%;width:0;background:var(--acc);transition:width .3s}
+.hide{display:none}
+@media (max-width:820px){.wrap{grid-template-columns:1fr}nav{position:static;max-height:none}nav .links{display:flex;overflow-x:auto;gap:4px}nav a{white-space:nowrap;border-left:0;border-bottom:3px solid var(--line)}nav a.on{border-bottom-color:var(--acc)}.tree{grid-template-columns:1fr}.info{position:static}.chs{columns:1}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<nav aria-label="Sections">
+  <h1>RHEL 10 notes</h1>
+  <p>RH124, from my own study</p>
+  <div class="tools"><input type="search" id="q" placeholder="Search notes" aria-label="Search notes"><button class="tb" id="th" aria-label="Switch light or dark theme">◐</button></div>
+  <div class="links" id="links"></div>
+  <p style="margin-top:14px">Done: <span id="pct">0</span>%</p>
+</nav>
+
+<main>
+<section id="boot"><h2>How a machine starts</h2><p class="lead">Click each stage to see what it does.</p>
+  <div class="steps" id="bs"></div><div class="box" id="bb"></div></section>
+
+<section id="layers"><h2>Layers of Linux</h2><p class="lead">A command travels down the stack to the hardware and the answer comes back up.</p>
+  <div class="stack">
+    <div><b>Applications</b><span>Firefox, VS Code, Docker</span></div>
+    <div><b>Shell</b><span>bash reads what I type</span></div>
+    <div><b>Libraries</b><span>glibc, OpenSSL</span></div>
+    <div class="k"><b>Kernel</b><span>processes, memory, drivers, files, network</span></div>
+    <div><b>Hardware</b><span>CPU, RAM, disk, network card</span></div>
+  </div></section>
+
+<section id="distro"><h2>Where RHEL comes from</h2><p class="lead">Fedora tries new features, CentOS Stream previews the next release, RHEL is the supported one.</p>
+  <div class="flow"><span>Fedora</span><i>→</i><span>CentOS Stream</span><i>→</i><span class="hi">RHEL</span><i>→</i><span>Rocky, AlmaLinux</span></div>
+  <div class="flow"><span>Debian</span><i>→</i><span>Ubuntu</span><span>Kali (from Debian)</span></div>
+  <p>RHEL packages are <code>.rpm</code> files installed with <code>dnf</code>. Debian and Ubuntu use <code>.deb</code> files with <code>apt</code>.</p></section>
+
+<section id="terms"><h2>Terminal, shell, console</h2><p class="lead">Three words that sound the same.</p>
+  <div class="cards">
+    <div><b>Terminal</b>The window where I type and read text.</div>
+    <div><b>Shell</b>The program inside that reads my commands. Bash is the default.</div>
+    <div><b>Console</b>The direct connection to the machine. <code>Ctrl+Alt+F3</code> opens a text one.</div>
+    <div><b>TTY and PTS</b><code>/dev/tty1</code> is a text console. <code>/dev/pts/0</code> is a GUI terminal or SSH session.</div>
+  </div>
+  <p class="pr" style="margin-top:14px"><code>[user@host ~]$</code> regular user &nbsp; <code>[root@host ~]<b>#</b></code> root, full power</p></section>
+
+<section id="cmd"><h2>Anatomy of a command</h2><p class="lead">Click a part.</p>
+  <div class="cmd" id="cm"></div><div class="box" id="cb"></div></section>
+
+<section id="tree"><h2>The file tree</h2><p class="lead">Everything hangs from <code>/</code>. Click a folder. The panel gives its job, its absolute path and the relative path from my current folder <code>/home/alice</code>.</p>
+  <div class="tree"><div id="tr"></div>
+    <div class="info" aria-live="polite"><h3 id="in">/</h3><p id="id"></p>
+      <p>Absolute: <span class="m" id="ia"></span></p>
+      <p>Relative from <span class="m">/home/alice</span>: <span class="m" id="ir"></span></p></div></div>
+  <p class="lead" style="margin-top:14px">Absolute paths start with <code>/</code>. Relative paths do not. <code>..</code> is one level up. <code>/bin</code>, <code>/sbin</code> and <code>/lib</code> are links into <code>/usr</code>.</p></section>
+
+<section id="keys"><h2>Shortcuts and commands</h2>
+  <details open><summary>Editing the command line</summary><table>
+    <tr><td><code>Ctrl+A</code></td><td>Start of line</td></tr><tr><td><code>Ctrl+E</code></td><td>End of line</td></tr>
+    <tr><td><code>Ctrl+U</code></td><td>Delete to start</td></tr><tr><td><code>Ctrl+K</code></td><td>Delete to end</td></tr>
+    <tr><td><code>Ctrl+R</code></td><td>Search history</td></tr><tr><td><code>Esc .</code></td><td>Paste last argument</td></tr></table></details>
+  <details><summary>History and chaining</summary><table>
+    <tr><td><code>!!</code></td><td>Run the last command</td></tr><tr><td><code>!12</code></td><td>Run history number 12</td></tr>
+    <tr><td><code>a ; b</code></td><td>Run both, always</td></tr><tr><td><code>a &amp;&amp; b</code></td><td>Run b only if a worked</td></tr>
+    <tr><td><code>a || b</code></td><td>Run b only if a failed</td></tr><tr><td><code>a | b</code></td><td>Send a's output into b</td></tr></table></details>
+  <details><summary>Moving around</summary><table>
+    <tr><td><code>pwd</code></td><td>Where am I</td></tr><tr><td><code>cd</code></td><td>Go home</td></tr><tr><td><code>cd -</code></td><td>Previous folder</td></tr>
+    <tr><td><code>cd ../..</code></td><td>Up two levels</td></tr><tr><td><code>ls -al</code></td><td>Long list with hidden files</td></tr>
+    <tr><td><code>man -k word</code></td><td>Search manual pages</td></tr></table></details>
+  <details><summary>GUI and SSH</summary><table>
+    <tr><td><code>systemctl get-default</code></td><td>Boot target</td></tr><tr><td><code>systemctl isolate multi-user.target</code></td><td>Switch to text mode now</td></tr>
+    <tr><td><code>ssh user@host</code></td><td>Remote login</td></tr><tr><td><code>chmod 600 key.pem</code></td><td>Protect a private key</td></tr></table></details></section>
+
+<section id="prog"><h2>Book progress</h2><p class="lead">Tick a chapter when my notes are done. Saved in this browser.</p>
+  <div class="bar"><i id="bf"></i></div><ul class="chs" id="ch"></ul></section>
+</main>
+</div>
+
+<script>
+var $=function(s){return document.querySelector(s)};
+var B=[["Firmware","BIOS or UEFI checks the hardware (POST) and finds a disk to boot from."],["GRUB","The boot menu. It loads the kernel and the initramfs. Press e to edit an entry."],["Kernel","Starts, finds the real disk using the initramfs, and takes control of the hardware."],["systemd","Starts services and brings the system to the default target."],["Login","Text login on multi-user.target, or the graphical screen on graphical.target."]];
+var C=[["usermod","command","The program to run."],["-L","option","Changes how the command behaves. Starts with - or --."],["user01","argument","The thing the command works on."]];
+var T={"boot":"Kernel, initramfs, GRUB files","dev":"Device files that give access to hardware","etc":"System configuration. Persistent.","home":"Home folders of regular users","alice":"A user's home, shown as ~ in the prompt","bob":"Another user's home","root":"Home of the root user. Not /home/root.","run":"Runtime data. Re-created on reboot.","tmp":"Temporary files. Cleaned after 10 days.","usr":"Installed software and libraries","bin":"User commands like ls and ssh","sbin":"Admin commands like fdisk and useradd","local":"Software I install myself","var":"Variable data: logs, caches, databases","log":"Log files, for example /var/log/messages"};
+var N={"":["boot","dev","etc",["home","alice","bob"],"root","run","tmp",["usr","bin","sbin","local"],["var","log"]]};
+var D=["Introduction to RHEL","Accessing the command line","Local documentation","Registering for support","RHEL Lightspeed","File-system hierarchy","Managing files","Editing text files","Redirecting input and output","Users and groups","File permissions","Software with RPM","Flatpak","Removable media","Processes","Services and daemons","Networking basics","Network configuration","Configuring SSH","Comprehensive review"];
+var saved={};try{saved=JSON.parse(localStorage.getItem("done")||"{}")}catch(e){}
+var sel="/";
+function rel(t){var a="/home/alice".split("/").slice(1),b=t.split("/").filter(Boolean),i=0;while(i<a.length&&i<b.length&&a[i]==b[i])i++;var r=a.slice(i).map(function(){return".."}).concat(b.slice(i)).join("/");return r||"."}
+function show(p){sel=p;var n=p.split("/").pop();$("#in").textContent=p;$("#id").textContent=p=="/"?"The top of the tree. Everything starts here.":(T[n]||"");$("#ia").textContent=p;$("#ir").textContent=rel(p);document.querySelectorAll("#tr button").forEach(function(b){b.setAttribute("aria-pressed",b.dataset.p==p)})}
+function build(n,base){var ul=document.createElement("ul");n.forEach(function(x){var name=Array.isArray(x)?x[0]:x,p=(base=="/"?"":base)+"/"+name,li=document.createElement("li"),b=document.createElement("button");b.textContent=name;b.dataset.p=p;b.onclick=function(){show(p)};li.appendChild(b);if(!base.includes("/")||base=="/"){}if(Array.isArray(x)&&x.length>1)li.appendChild(build(x.slice(1),p));ul.appendChild(li)});return ul}
+var root=document.createElement("ul"),rl=document.createElement("li"),rb=document.createElement("button");rb.textContent="/";rb.dataset.p="/";rb.onclick=function(){show("/")};rl.appendChild(rb);rl.appendChild(build(N[""],"/"));root.appendChild(rl);$("#tr").appendChild(root);show("/");
+B.forEach(function(s,i){var b=document.createElement("button");b.textContent=s[0];b.setAttribute("aria-pressed",i==0);b.onclick=function(){$("#bb").textContent=s[1];document.querySelectorAll("#bs button").forEach(function(x){x.setAttribute("aria-pressed",x==b)})};$("#bs").appendChild(b);if(i==0)$("#bb").textContent=s[1]});
+C.forEach(function(s,i){var b=document.createElement("button");b.textContent=s[0];b.setAttribute("aria-pressed",i==0);b.onclick=function(){$("#cb").innerHTML="<b>"+s[1]+"</b>: "+s[2];document.querySelectorAll("#cm button").forEach(function(x){x.setAttribute("aria-pressed",x==b)})};$("#cm").appendChild(b);if(i==0)$("#cb").innerHTML="<b>"+s[1]+"</b>: "+s[2]});
+function prog(){var n=Object.keys(saved).filter(function(k){return saved[k]}).length,p=Math.round(n*5);$("#pct").textContent=p;$("#bf").style.width=p+"%"}
+D.forEach(function(t,i){var li=document.createElement("li"),l=document.createElement("label"),c=document.createElement("input");c.type="checkbox";c.checked=!!saved[i];c.onchange=function(){saved[i]=c.checked;try{localStorage.setItem("done",JSON.stringify(saved))}catch(e){}prog()};l.appendChild(c);l.appendChild(document.createTextNode(" "+(i+1)+". "+t));li.appendChild(l);$("#ch").appendChild(li)});prog();
+var secs=document.querySelectorAll("main section");
+secs.forEach(function(s){var a=document.createElement("a");a.href="#"+s.id;a.textContent=s.querySelector("h2").textContent;$("#links").appendChild(a)});
+var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting)document.querySelectorAll("#links a").forEach(function(a){a.classList.toggle("on",a.hash=="#"+e.target.id)})})},{rootMargin:"-30% 0px -60% 0px"});secs.forEach(function(s){io.observe(s)});
+$("#q").oninput=function(){var v=this.value.toLowerCase();secs.forEach(function(s){s.classList.toggle("hide",v&&s.textContent.toLowerCase().indexOf(v)<0)})};
+$("#th").onclick=function(){var d=document.documentElement,dark=getComputedStyle(d).getPropertyValue("--bg").trim()=="#0d1722";d.setAttribute("data-theme",dark?"light":"dark")};
+</script>
+</body>
+</html>
