@@ -1,3 +1,14 @@
 {
+  "pdfExportSettings": {
+    "includeName": true,
+    "pageSize": "Letter",
+    "landscape": false,
+    "margin": "0",
+    "downscalePercent": 100
+  },
+  "alwaysUpdateLinks": true,
+  "autoConvertHtml": false,
+  "readableLineLength": false,
+  "attachmentFolderPath": "CCNA/Images",
   "promptDelete": false
 }

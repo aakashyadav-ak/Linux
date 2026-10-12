@@ -1,1 +1,13 @@
-{}
+{
+  "theme": "obsidian",
+  "cssTheme": "",
+  "baseFontSizeAction": true,
+  "nativeMenus": true,
+  "enabledCssSnippets": [
+    "my-background",
+    "background"
+  ],
+  "baseFontSize": 19,
+  "interfaceFontFamily": "Franklin Gothic,Arial",
+  "textFontFamily": "Arial"
+}

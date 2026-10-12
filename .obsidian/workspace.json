@@ -1,24 +1,24 @@
 {
   "main": {
-    "id": "eb022bd2ec9a5358",
+    "id": "ffbf7643550a5e5a",
     "type": "split",
     "children": [
       {
-        "id": "09c093951e8a63ea",
+        "id": "10c29a4c3c1b1e6c",
         "type": "tabs",
         "children": [
           {
-            "id": "b7ddd12689260174",
+            "id": "3095b4e93693bc42",
             "type": "leaf",
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux/index.html.md",
+                "file": "Linux/RHEL/03.5 - Navigating the File-system Hierarchy.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "index.html"
+              "title": "03.5 - Navigating the File-system Hierarchy"
             }
           }
         ]
@@ -27,21 +27,21 @@
     "direction": "vertical"
   },
   "left": {
-    "id": "61aa8f0cd6c27035",
+    "id": "293d87c0fe896c16",
     "type": "split",
     "children": [
       {
-        "id": "23f099a391b86f7e",
+        "id": "f12d6773ad6c6638",
         "type": "tabs",
         "children": [
           {
-            "id": "cb25d4311d851978",
+            "id": "1af192dc9a109b98",
             "type": "leaf",
             "state": {
               "type": "file-explorer",
               "state": {
                 "sortOrder": "alphabetical",
-                "autoReveal": false,
+                "autoReveal": true,
                 "showSearch": false,
                 "searchQuery": ""
               },
@@ -50,16 +50,16 @@
             }
           },
           {
-            "id": "cf62a0ec4cdba989",
+            "id": "636aae5be1198421",
             "type": "leaf",
             "state": {
               "type": "search",
               "state": {
                 "query": "",
                 "matchingCase": false,
-                "explainSearch": false,
-                "collapseAll": false,
-                "extraContext": false,
+                "explainSearch": true,
+                "collapseAll": true,
+                "extraContext": true,
                 "sortOrder": "alphabetical"
               },
               "icon": "lucide-search",
@@ -67,7 +67,7 @@
             }
           },
           {
-            "id": "0f963ae38464dfe5",
+            "id": "8ef17c1ef5a3b8ce",
             "type": "leaf",
             "state": {
               "type": "bookmarks",
@@ -83,22 +83,22 @@
     "width": 200
   },
   "right": {
-    "id": "f28c79588158393b",
+    "id": "49bcacfdaf1344ae",
     "type": "split",
     "children": [
       {
-        "id": "a75f92eb7414b9f9",
+        "id": "daa973af09d02e3c",
         "type": "tabs",
         "children": [
           {
-            "id": "834c2a312184c573",
+            "id": "9022f2b7d724921d",
             "type": "leaf",
             "state": {
               "type": "backlink",
               "state": {
-                "file": "RHCSA/RH134-Troubleshooting-Log.md",
+                "file": "Cybersecurity-notes/03,Python/01. Programming Fundamentals.md",
                 "collapseAll": false,
-                "extraContext": false,
+                "extraContext": true,
                 "sortOrder": "alphabetical",
                 "showSearch": false,
                 "searchQuery": "",
@@ -106,24 +106,11 @@
                 "unlinkedCollapsed": true
               },
               "icon": "links-coming-in",
-              "title": "Backlinks for RH134-Troubleshooting-Log"
+              "title": "Backlinks for 01. Programming Fundamentals"
             }
           },
           {
-            "id": "82b27698526d5ec3",
-            "type": "leaf",
-            "state": {
-              "type": "outgoing-link",
-              "state": {
-                "linksCollapsed": false,
-                "unlinkedCollapsed": true
-              },
-              "icon": "links-going-out",
-              "title": "Outgoing links"
-            }
-          },
-          {
-            "id": "ad1d31941f72dfa0",
+            "id": "fe84d48cb573ecbf",
             "type": "leaf",
             "state": {
               "type": "tag",
@@ -138,7 +125,27 @@
             }
           },
           {
-            "id": "200634c9cb81d898",
+            "id": "b0b70ac21a60aad0",
+            "type": "leaf",
+            "state": {
+              "type": "empty",
+              "state": {},
+              "icon": "lucide-file",
+              "title": "New tab"
+            }
+          },
+          {
+            "id": "55495662ce0d1f56",
+            "type": "leaf",
+            "state": {
+              "type": "graph",
+              "state": {},
+              "icon": "lucide-git-fork",
+              "title": "Graph view"
+            }
+          },
+          {
+            "id": "5863762544e2e41b",
             "type": "leaf",
             "state": {
               "type": "all-properties",
@@ -152,71 +159,122 @@
             }
           },
           {
-            "id": "dbaa476560ecd178",
+            "id": "cfba4d5771fc2184",
             "type": "leaf",
             "state": {
               "type": "outline",
               "state": {
-                "file": "RHCSA/Syllabus.md",
+                "file": "Cybersecurity-notes/03,Python/01. Programming Fundamentals.md",
                 "followCursor": false,
                 "showSearch": false,
                 "searchQuery": ""
               },
               "icon": "lucide-list",
-              "title": "Outline of Syllabus"
+              "title": "Outline of 01. Programming Fundamentals"
+            }
+          },
+          {
+            "id": "5c6c5d7af3082d8f",
+            "type": "leaf",
+            "state": {
+              "type": "outgoing-link",
+              "state": {
+                "file": "Java Script Private/01.Js Basic.md",
+                "linksCollapsed": false,
+                "unlinkedCollapsed": true
+              },
+              "icon": "links-going-out",
+              "title": "Outgoing links from 01.Js Basic"
+            }
+          },
+          {
+            "id": "65ea17c9d5625e57",
+            "type": "leaf",
+            "state": {
+              "type": "git-view",
+              "state": {},
+              "icon": "git-pull-request",
+              "title": "Source Control"
+            }
+          },
+          {
+            "id": "2979ab77e3ebdd8f",
+            "type": "leaf",
+            "state": {
+              "type": "file-properties",
+              "state": {
+                "file": "Notes/Linux/0.05 - Installation.md"
+              },
+              "icon": "lucide-info",
+              "title": "File properties"
             }
           }
         ],
-        "currentTab": 4
+        "currentTab": 7
       }
     ],
     "direction": "horizontal",
-    "width": 300,
-    "collapsed": true
+    "width": 200
   },
   "left-ribbon": {
     "hiddenItems": {
-      "obsidian-git:Open Git source control": false,
       "switcher:Open quick switcher": false,
-      "graph:Open graph view": false,
       "canvas:Create new canvas": false,
+      "graph:Open graph view": false,
       "daily-notes:Open today's daily note": false,
       "templates:Insert template": false,
       "command-palette:Open command palette": false,
-      "bases:Create new base": false
+      "bases:Create new base": false,
+      "obsidian-git:Open Git source control": false
     }
   },
-  "active": "b7ddd12689260174",
+  "active": "3095b4e93693bc42",
   "lastOpenFiles": [
-    "Linux/03, Managing Files from the Command Line.md",
-    "Linux/index.html.md",
-    "Linux/02 - Accessing the Command Line.md",
-    "Linux/01 - Linux.md",
-    "Linux/0.05 - Installation.md",
-    "Syllabus.md",
-    "Summary.md",
-    "README.md",
-    "Getting Help.md",
-    "Commands.md",
-    "15, Accessing Linux File Systems.md",
-    "14,Installing and Updating Software Packages.md",
-    "13,Archiving and Transferring Files.md",
-    "Linux/Summary.md",
-    "Linux/RHEL.md",
-    "Linux/Getting Help.md",
-    "Linux/Commands.md",
-    "Script.md",
-    "07,Controlling Access to Files.md",
-    "04.5 User System.md",
-    "04,Creating, Viewing & Editing Text Files.md",
-    "03, Managing Files from the Command Line.md",
-    "01,Linux.md",
-    "02,  Accessing the Command Line (Terminals).md",
-    "index.html",
-    "git-config.txt",
-    "RHEL.md",
-    "Linux",
-    "12,Managing Networking.md",
-    "RHCSA"
+    "Cybersecurity-notes/RH134/Modules/M01 - 01 - Shell Scripting and the Command Line.md",
+    "Cybersecurity-notes/RH134/Modules/RH134_Study_Dashboard(1).html",
+    "Cybersecurity-notes/RH134/templates/daily_template.md",
+    "Cybersecurity-notes/RH134/Exam/Cheat Sheet.md",
+    "Zabbix Email Alert Configuration (Media Type).pdf",
+    "Cybersecurity-notes/RH134/RH134_Study_Dashboard(1).html",
+    "Cybersecurity-notes/RH134/Modules/M19 - 19 - Comprehensive Review.md",
+    "Cybersecurity-notes/RH134/Modules/M18 - 18 - Image-based RHEL.md",
+    "Cybersecurity-notes/RH134/Modules/M17 - 17 - Containers Podman.md",
+    "Cybersecurity-notes/RH134/Modules/M15 - 15 - NFS and Autofs.md",
+    "Cybersecurity-notes/RH134/Modules/M16 - 16 - Installing RHEL.md",
+    "Cybersecurity-notes/RH134/Modules/M14 - 14 - Network Security.md",
+    "Cybersecurity-notes/RH134/Modules/M13 - 13 - Root Recovery.md",
+    "Cybersecurity-notes/RH134/Modules/M12 - 12 - Boot Process.md",
+    "Cybersecurity-notes/RH134/Modules/M11 - 11 - LVM.md",
+    "Cybersecurity-notes/RH134/Modules/M10 - 10 - Basic Storage.md",
+    "Cybersecurity-notes/RH134/Modules/M09 - 09 - Tuning Performance.md",
+    "Cybersecurity-notes/RH134/Modules/M08 - 08 - Transferring Files.md",
+    "Cybersecurity-notes/RH134/Modules/M07 - 07 - Archiving Files.md",
+    "Cybersecurity-notes/RH134/Modules/M06 - 06 - SELinux.md",
+    "Cybersecurity-notes/RH134/Modules/M05 - 05 - Analyzing and Storing Logs.md",
+    "Cybersecurity-notes/RH134/Modules/M04 - 04 - Scheduling System Tasks.md",
+    "Cybersecurity-notes/RH134/Modules/M03 - 03 - Scheduling User Tasks.md",
+    "Cybersecurity-notes/RH134/Modules/M02 - 02 - Regular Expressions.md",
+    "Cybersecurity-notes/RH134/templates",
+    "Cybersecurity-notes/RH134/Modules",
+    "Cybersecurity-notes/RH134/Exam",
+    "Cybersecurity-notes/RH134",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/templates/daily_template.md",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/Modules/M19 - 19 - Comprehensive Review.md",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/Modules/M18 - 18 - Image-based RHEL.md",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/Modules/M17 - 17 - Containers Podman.md",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/templates",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/Modules",
+    "Cybersecurity-notes/Obsidian-Vault-RH134/Exam",
+    "Cybersecurity-notes/Zabbix/images/Images/SS2.png",
+    "Cybersecurity-notes/Zabbix/images/Images/SS1.png",
+    "Cybersecurity-notes/Zabbix/images/Images/s2.png",
+    "Cybersecurity-notes/Zabbix/SS17.png",
+    "Cybersecurity-notes/Zabbix/SS16.png",
+    "Cybersecurity-notes/Zabbix/SS15.png",
+    "Cybersecurity-notes/Zabbix/SS14.png",
+    "Cybersecurity-notes/Zabbix/SS13.png",
+    "Cybersecurity-notes/Zabbix/SS12.png",
+    "Cybersecurity-notes/Zabbix/SS11.png",
+    "Untitled.canvas"
   ]
 }
