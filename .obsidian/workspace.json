@@ -13,12 +13,12 @@
             "state": {
               "type": "markdown",
               "state": {
-                "file": "Linux/0.05 - Installation.md",
+                "file": "Linux/index.html.md",
                 "mode": "source",
                 "source": false
               },
               "icon": "lucide-file",
-              "title": "0.05 - Installation"
+              "title": "index.html"
             }
           }
         ]
@@ -188,6 +188,11 @@
   },
   "active": "b7ddd12689260174",
   "lastOpenFiles": [
+    "Linux/03, Managing Files from the Command Line.md",
+    "Linux/index.html.md",
+    "Linux/02 - Accessing the Command Line.md",
+    "Linux/01 - Linux.md",
+    "Linux/0.05 - Installation.md",
     "Syllabus.md",
     "Summary.md",
     "README.md",
@@ -207,16 +212,11 @@
     "03, Managing Files from the Command Line.md",
     "01,Linux.md",
     "02,  Accessing the Command Line (Terminals).md",
-    "Linux/0.05 - Installation.md",
     "index.html",
     "git-config.txt",
     "RHEL.md",
     "Linux",
     "12,Managing Networking.md",
-    "11,Analyzing and Storing Logs.md",
-    "10, Storage — Partitions, FS, LVM.md",
-    "09,Controlling Services and Daemons.md",
-    "08,Monitoring and Managing Linux Processes.md",
     "RHCSA"
   ]
 }

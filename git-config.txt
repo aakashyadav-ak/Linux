@@ -1,0 +1,7 @@
+filter.lfs.clean=git-lfs clean -- %f
+filter.lfs.smudge=git-lfs smudge -- %f
+filter.lfs.process=git-lfs filter-process
+filter.lfs.required=true
+user.email=akrao9927@gmail.com
+user.name=Aakash Yadav
+core.autocrlf=true
