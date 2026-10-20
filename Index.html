@@ -1,0 +1,1983 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RHEL 9 & 10 - RH124 Study Dashboard</title>
+    <style>
+        /* ══════════════════════════════════════════════
+           CSS CUSTOM PROPERTIES
+           ══════════════════════════════════════════════ */
+        :root {
+            --bg-primary: #0a0e17;
+            --bg-secondary: #111827;
+            --bg-card: #1a2234;
+            --bg-card-hover: #1f2b42;
+            --bg-tooltip: #2a3a54;
+            --text-primary: #e2e8f0;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --accent-red: #ee0000;
+            --accent-red-dark: #cc0000;
+            --accent-red-glow: rgba(238, 0, 0, 0.3);
+            --accent-green: #22c55e;
+            --accent-green-dark: #16a34a;
+            --accent-yellow: #eab308;
+            --accent-blue: #3b82f6;
+            --accent-purple: #a855f7;
+            --accent-cyan: #06b6d4;
+            --accent-orange: #f97316;
+            --border-color: #1e293b;
+            --border-light: #334155;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.3);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+            --shadow-lg: 0 10px 30px rgba(0,0,0,0.5);
+            --shadow-glow: 0 0 20px var(--accent-red-glow);
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 20px;
+            --transition-fast: 0.2s ease;
+            --transition-normal: 0.3s ease;
+            --transition-slow: 0.5s ease;
+        }
+
+        /* ══════════════════════════════════════════════
+           RESET & BASE
+           ══════════════════════════════════════════════ */
+        *, *::before, *::after {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-red) var(--bg-secondary);
+        }
+
+        html::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        html::-webkit-scrollbar-track {
+            background: var(--bg-secondary);
+        }
+
+        html::-webkit-scrollbar-thumb {
+            background: var(--accent-red);
+            border-radius: 4px;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+        }
+
+        /* ══════════════════════════════════════════════
+           ANIMATED BACKGROUND
+           ══════════════════════════════════════════════ */
+        .bg-pattern {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.03;
+            background-image:
+                radial-gradient(circle at 20% 50%, var(--accent-red) 1px, transparent 1px),
+                radial-gradient(circle at 80% 20%, var(--accent-blue) 1px, transparent 1px),
+                radial-gradient(circle at 50% 80%, var(--accent-purple) 1px, transparent 1px);
+            background-size: 100px 100px, 150px 150px, 120px 120px;
+            animation: bgFloat 30s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translate(0, 0); }
+            33% { transform: translate(-10px, -10px); }
+            66% { transform: translate(10px, -5px); }
+        }
+
+        /* ══════════════════════════════════════════════
+           HEADER
+           ══════════════════════════════════════════════ */
+        .header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            background: rgba(10, 14, 23, 0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0;
+        }
+
+        .header-inner {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .logo-section {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            background: linear-gradient(135deg, var(--accent-red), var(--accent-red-dark));
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: var(--shadow-glow);
+            animation: logoPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { box-shadow: 0 0 10px var(--accent-red-glow); }
+            50% { box-shadow: 0 0 25px var(--accent-red-glow); }
+        }
+
+        .logo-text h1 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #fff, var(--text-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.5px;
+        }
+
+        .logo-text span {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .theme-badge {
+            padding: 6px 14px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .theme-badge .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--accent-green);
+            border-radius: 50%;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        .btn-reset {
+            padding: 8px 16px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-secondary);
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-reset:hover {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            background: rgba(238, 0, 0, 0.05);
+        }
+
+        /* ══════════════════════════════════════════════
+           MAIN CONTENT
+           ══════════════════════════════════════════════ */
+        .main-content {
+            position: relative;
+            z-index: 1;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px 24px 60px;
+        }
+
+        /* ══════════════════════════════════════════════
+           STATS GRID
+           ══════════════════════════════════════════════ */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            padding: 20px;
+            transition: all var(--transition-normal);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            border-radius: 3px 3px 0 0;
+        }
+
+        .stat-card:nth-child(1)::before { background: linear-gradient(90deg, var(--accent-blue), var(--accent-cyan)); }
+        .stat-card:nth-child(2)::before { background: linear-gradient(90deg, var(--accent-green), #4ade80); }
+        .stat-card:nth-child(3)::before { background: linear-gradient(90deg, var(--accent-yellow), var(--accent-orange)); }
+        .stat-card:nth-child(4)::before { background: linear-gradient(90deg, var(--accent-purple), #c084fc); }
+        .stat-card:nth-child(5)::before { background: linear-gradient(90deg, var(--accent-red), #f87171); }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--border-light);
+        }
+
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 800;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .stat-card:nth-child(1) .stat-value { color: var(--accent-blue); }
+        .stat-card:nth-child(2) .stat-value { color: var(--accent-green); }
+        .stat-card:nth-child(3) .stat-value { color: var(--accent-yellow); }
+        .stat-card:nth-child(4) .stat-value { color: var(--accent-purple); }
+        .stat-card:nth-child(5) .stat-value { color: var(--accent-red); }
+
+        .stat-sub {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* ══════════════════════════════════════════════
+           MASTER PROGRESS BAR
+           ══════════════════════════════════════════════ */
+        .master-progress {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            margin-bottom: 30px;
+        }
+
+        .master-progress-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .master-progress-title {
+            font-size: 1rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .master-progress-percent {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent-red);
+        }
+
+        .progress-bar-track {
+            width: 100%;
+            height: 12px;
+            background: var(--bg-primary);
+            border-radius: 6px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-red-dark), var(--accent-red), #ff4444);
+            border-radius: 6px;
+            transition: width 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            min-width: 0%;
+        }
+
+        .progress-bar-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(255,255,255,0.1) 50%,
+                transparent 100%
+            );
+            animation: shimmer 2s infinite;
+        }
+
+        @keyframes shimmer {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .progress-milestones {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 8px;
+            padding: 0 2px;
+        }
+
+        .milestone {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+            position: relative;
+        }
+
+        .milestone::before {
+            content: '';
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 1px;
+            height: 6px;
+            background: var(--border-light);
+        }
+
+        .milestone.reached {
+            color: var(--accent-green);
+        }
+
+        /* ══════════════════════════════════════════════
+           FILTER / SEARCH BAR
+           ══════════════════════════════════════════════ */
+        .controls-bar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+
+        .search-box {
+            flex: 1;
+            min-width: 250px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 16px 12px 44px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-primary);
+            font-size: 0.9rem;
+            transition: all var(--transition-fast);
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: var(--accent-red);
+            box-shadow: 0 0 0 3px rgba(238, 0, 0, 0.1);
+        }
+
+        .search-box input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-box .search-icon {
+            position: absolute;
+            left: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            font-size: 1rem;
+        }
+
+        .filter-btn {
+            padding: 10px 18px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            white-space: nowrap;
+        }
+
+        .filter-btn:hover, .filter-btn.active {
+            border-color: var(--accent-red);
+            color: var(--accent-red);
+            background: rgba(238, 0, 0, 0.05);
+        }
+
+        .filter-btn.active {
+            background: rgba(238, 0, 0, 0.1);
+        }
+
+        /* ══════════════════════════════════════════════
+           CHAPTER GRID
+           ══════════════════════════════════════════════ */
+        .chapters-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 20px;
+        }
+
+        /* ══════════════════════════════════════════════
+           CHAPTER CARD
+           ══════════════════════════════════════════════ */
+        .chapter-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            transition: all var(--transition-normal);
+            position: relative;
+        }
+
+        .chapter-card:hover {
+            border-color: var(--border-light);
+            box-shadow: var(--shadow-lg);
+            transform: translateY(-3px);
+        }
+
+        .chapter-card.completed {
+            border-color: var(--accent-green-dark);
+        }
+
+        .chapter-card.completed::after {
+            content: '✓ COMPLETE';
+            position: absolute;
+            top: 16px;
+            right: 16px;
+            background: var(--accent-green);
+            color: #000;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            z-index: 2;
+        }
+
+        .chapter-header {
+            padding: 20px 20px 16px;
+            position: relative;
+        }
+
+        .chapter-number {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .chapter-number .badge {
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .badge-rhel9 {
+            background: rgba(59, 130, 246, 0.15);
+            color: var(--accent-blue);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .badge-rhel10 {
+            background: rgba(168, 85, 247, 0.15);
+            color: var(--accent-purple);
+            border: 1px solid rgba(168, 85, 247, 0.3);
+        }
+
+        .badge-both {
+            background: rgba(238, 0, 0, 0.1);
+            color: var(--accent-red);
+            border: 1px solid rgba(238, 0, 0, 0.2);
+        }
+
+        .chapter-title {
+            font-size: 1.05rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            line-height: 1.4;
+            margin-bottom: 12px;
+            padding-right: 80px;
+        }
+
+        .chapter-meta {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        .chapter-meta span {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Chapter Progress */
+        .chapter-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: var(--bg-primary);
+        }
+
+        .chapter-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-red), var(--accent-orange));
+            transition: width 0.5s ease;
+        }
+
+        .chapter-card.completed .chapter-progress-fill {
+            background: linear-gradient(90deg, var(--accent-green-dark), var(--accent-green));
+        }
+
+        /* Topics List */
+        .chapter-topics {
+            padding: 0 20px 6px;
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.4s ease;
+        }
+
+        .chapter-card.expanded .chapter-topics {
+            max-height: 1000px;
+            padding: 8px 20px 6px;
+        }
+
+        .topic-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .topic-item:last-child {
+            border-bottom: none;
+        }
+
+        .topic-checkbox {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            min-width: 20px;
+            border: 2px solid var(--border-light);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            position: relative;
+            margin-top: 1px;
+        }
+
+        .topic-checkbox:hover {
+            border-color: var(--accent-red);
+            background: rgba(238, 0, 0, 0.05);
+        }
+
+        .topic-checkbox:checked {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+        }
+
+        .topic-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            color: #000;
+            font-size: 12px;
+            font-weight: 900;
+        }
+
+        .topic-content {
+            flex: 1;
+        }
+
+        .topic-section {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: 4px;
+        }
+
+        .topic-subtopics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 4px;
+            margin-top: 6px;
+        }
+
+        .subtopic-tag {
+            font-size: 0.7rem;
+            padding: 2px 10px;
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            color: var(--text-muted);
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .subtopic-tag:hover {
+            border-color: var(--accent-red);
+            color: var(--text-secondary);
+        }
+
+        .subtopic-tag.done {
+            background: rgba(34, 197, 94, 0.1);
+            border-color: rgba(34, 197, 94, 0.3);
+            color: var(--accent-green);
+            text-decoration: line-through;
+        }
+
+        .topic-item.checked .topic-section {
+            color: var(--text-muted);
+            text-decoration: line-through;
+        }
+
+        /* Chapter Footer */
+        .chapter-footer {
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-top: 1px solid rgba(255,255,255,0.03);
+        }
+
+        .btn-expand {
+            padding: 6px 14px;
+            background: transparent;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-expand:hover {
+            border-color: var(--text-secondary);
+            color: var(--text-secondary);
+        }
+
+        .btn-expand .arrow {
+            transition: transform var(--transition-fast);
+            font-size: 0.7rem;
+        }
+
+        .chapter-card.expanded .btn-expand .arrow {
+            transform: rotate(180deg);
+        }
+
+        .btn-open-chapter {
+            padding: 8px 20px;
+            background: linear-gradient(135deg, var(--accent-red-dark), var(--accent-red));
+            border: none;
+            border-radius: var(--radius-sm);
+            color: #fff;
+            font-size: 0.82rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-open-chapter:hover {
+            transform: scale(1.03);
+            box-shadow: 0 4px 15px var(--accent-red-glow);
+        }
+
+        .btn-open-chapter.disabled {
+            background: var(--bg-tooltip);
+            color: var(--text-muted);
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+
+        /* ══════════════════════════════════════════════
+           FOOTER
+           ══════════════════════════════════════════════ */
+        .page-footer {
+            text-align: center;
+            padding: 40px 24px;
+            color: var(--text-muted);
+            font-size: 0.8rem;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .page-footer a {
+            color: var(--accent-red);
+            text-decoration: none;
+        }
+
+        /* ══════════════════════════════════════════════
+           SCROLL TO TOP
+           ══════════════════════════════════════════════ */
+        .scroll-top {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 44px;
+            height: 44px;
+            background: var(--accent-red);
+            border: none;
+            border-radius: 50%;
+            color: #fff;
+            font-size: 1.2rem;
+            cursor: pointer;
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-md);
+            transition: all var(--transition-fast);
+        }
+
+        .scroll-top:hover {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .scroll-top.visible {
+            display: flex;
+        }
+
+        /* ══════════════════════════════════════════════
+           TOAST NOTIFICATION
+           ══════════════════════════════════════════════ */
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--bg-card);
+            border: 1px solid var(--accent-green);
+            border-radius: var(--radius-md);
+            padding: 14px 24px;
+            color: var(--accent-green);
+            font-size: 0.9rem;
+            font-weight: 600;
+            z-index: 200;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-lg);
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ══════════════════════════════════════════════
+           RESPONSIVE
+           ══════════════════════════════════════════════ */
+        @media (max-width: 768px) {
+            .header-inner {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 12px;
+            }
+
+            .header-actions {
+                width: 100%;
+                justify-content: flex-end;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .chapters-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chapter-title {
+                padding-right: 0;
+                font-size: 0.95rem;
+            }
+
+            .controls-bar {
+                flex-direction: column;
+            }
+
+            .search-box {
+                width: 100%;
+            }
+
+            .filter-group {
+                display: flex;
+                width: 100%;
+                overflow-x: auto;
+                gap: 8px;
+                padding-bottom: 4px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .main-content {
+                padding: 16px 12px 40px;
+            }
+        }
+
+        /* ══════════════════════════════════════════════
+           ANIMATIONS
+           ══════════════════════════════════════════════ */
+        .chapter-card {
+            animation: fadeInUp 0.5s ease forwards;
+            opacity: 0;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .chapter-card:nth-child(1) { animation-delay: 0.02s; }
+        .chapter-card:nth-child(2) { animation-delay: 0.04s; }
+        .chapter-card:nth-child(3) { animation-delay: 0.06s; }
+        .chapter-card:nth-child(4) { animation-delay: 0.08s; }
+        .chapter-card:nth-child(5) { animation-delay: 0.1s; }
+        .chapter-card:nth-child(6) { animation-delay: 0.12s; }
+        .chapter-card:nth-child(7) { animation-delay: 0.14s; }
+        .chapter-card:nth-child(8) { animation-delay: 0.16s; }
+        .chapter-card:nth-child(9) { animation-delay: 0.18s; }
+        .chapter-card:nth-child(10) { animation-delay: 0.2s; }
+        .chapter-card:nth-child(n+11) { animation-delay: 0.22s; }
+
+        .hidden {
+            display: none !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="bg-pattern"></div>
+
+<!-- ═══════════════ HEADER ═══════════════ -->
+<header class="header">
+    <div class="header-inner">
+        <div class="logo-section">
+            <div class="logo-icon">🎩</div>
+            <div class="logo-text">
+                <h1>RH124 Study Dashboard</h1>
+                <span>Red Hat System Administration I</span>
+            </div>
+        </div>
+        <div class="header-actions">
+            <div class="theme-badge">
+                <span class="dot"></span>
+                RHEL 9 & 10
+            </div>
+            <button class="btn-reset" onclick="resetAllProgress()" title="Reset all progress">
+                ↺ Reset
+            </button>
+        </div>
+    </div>
+</header>
+
+<!-- ═══════════════ MAIN ═══════════════ -->
+<main class="main-content">
+
+    <!-- Stats Grid -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">Total Chapters</div>
+            <div class="stat-value" id="totalChapters">0</div>
+            <div class="stat-sub">across RHEL 9 & 10</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Completed</div>
+            <div class="stat-value" id="completedChapters">0</div>
+            <div class="stat-sub">chapters finished</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">In Progress</div>
+            <div class="stat-value" id="inProgressChapters">0</div>
+            <div class="stat-sub">currently studying</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Topics Done</div>
+            <div class="stat-value" id="topicsDone">0</div>
+            <div class="stat-sub" id="topicsTotal">of 0 topics</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-label">Remaining</div>
+            <div class="stat-value" id="remainingChapters">0</div>
+            <div class="stat-sub">chapters to go</div>
+        </div>
+    </div>
+
+    <!-- Master Progress -->
+    <div class="master-progress">
+        <div class="master-progress-header">
+            <div class="master-progress-title">
+                📊 Overall Progress
+            </div>
+            <div class="master-progress-percent" id="masterPercent">0%</div>
+        </div>
+        <div class="progress-bar-track">
+            <div class="progress-bar-fill" id="masterProgressBar" style="width: 0%"></div>
+        </div>
+        <div class="progress-milestones">
+            <span class="milestone" id="m0">0%</span>
+            <span class="milestone" id="m25">25%</span>
+            <span class="milestone" id="m50">50%</span>
+            <span class="milestone" id="m75">75%</span>
+            <span class="milestone" id="m100">100%</span>
+        </div>
+    </div>
+
+    <!-- Controls -->
+    <div class="controls-bar">
+        <div class="search-box">
+            <span class="search-icon">🔍</span>
+            <input type="text" id="searchInput" placeholder="Search chapters and topics..." oninput="filterChapters()">
+        </div>
+        <div class="filter-group">
+            <button class="filter-btn active" data-filter="all" onclick="setFilter('all', this)">All</button>
+            <button class="filter-btn" data-filter="both" onclick="setFilter('both', this)">Both</button>
+            <button class="filter-btn" data-filter="rhel9" onclick="setFilter('rhel9', this)">RHEL 9</button>
+            <button class="filter-btn" data-filter="rhel10" onclick="setFilter('rhel10', this)">RHEL 10</button>
+            <button class="filter-btn" data-filter="incomplete" onclick="setFilter('incomplete', this)">⬜ Todo</button>
+            <button class="filter-btn" data-filter="done" onclick="setFilter('done', this)">✅ Done</button>
+        </div>
+    </div>
+
+    <!-- Chapters Grid -->
+    <div class="chapters-grid" id="chaptersGrid">
+        <!-- Chapters will be injected by JS -->
+    </div>
+</main>
+
+<!-- Footer -->
+<footer class="page-footer">
+    <p>📘 RH124 Study Dashboard — RHEL 9 & RHEL 10 Combined | Built for focused learning</p>
+    <p style="margin-top:6px;">Progress is saved locally in your browser (localStorage)</p>
+</footer>
+
+<!-- Scroll to top -->
+<button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════════════════════
+   CHAPTER DATA — This is your single source of truth.
+   To add a new chapter, just add an object to this array.
+   To mark a chapter's HTML file as ready, set hasPage: true
+   ══════════════════════════════════════════════════════════ */
+const chaptersData = [
+    {
+        id: 1,
+        number: "01",
+        title: "Introduction to Red Hat Enterprise Linux",
+        version: "both",       // "both" | "rhel9" | "rhel10"
+        hasPage: true,         // Set true when chapter-01.html exists
+        topics: [
+            {
+                id: "1.1",
+                section: "Getting Started with Red Hat Enterprise Linux",
+                subtopics: ["What is Linux?", "Red Hat Enterprise Linux Overview", "RHEL Basics"]
+            }
+        ]
+    },
+    {
+        id: 2,
+        number: "02",
+        title: "Accessing the Command Line",
+        version: "both",
+        hasPage: true,
+        topics: [
+            {
+                id: "2.1",
+                section: "Accessing the Command Line in a Text Interface",
+                subtopics: ["Virtual Consoles", "Text Mode Navigation"]
+            },
+            {
+                id: "2.3",
+                section: "Accessing the Command Line with the Desktop Environment",
+                subtopics: ["Desktop Terminal Access", "Terminal Emulator Usage"]
+            },
+            {
+                id: "2.5",
+                section: "Executing Commands with the Bash Shell",
+                subtopics: ["Bash Shell Basics", "Command Syntax", "Command Execution", "Basic Commands"]
+            }
+        ]
+    },
+    {
+        id: 3,
+        number: "03",
+        title: "Managing Files from the Command Line",
+        version: "both",
+        hasPage: true,
+        topics: [
+            {
+                id: "3.1",
+                section: "Describe Linux File System Hierarchy Concepts",
+                subtopics: ["Root Directory Structure", "Essential Directories", "Directory Organization"]
+            },
+            {
+                id: "3.3",
+                section: "Specify Files by Name",
+                subtopics: ["Absolute Paths", "Relative Paths", "Path Navigation"]
+            },
+            {
+                id: "3.5",
+                section: "Manage Files with Command-line Tools",
+                subtopics: ["File Operations", "Directory Operations", "File Management Commands"]
+            },
+            {
+                id: "3.7",
+                section: "Make Links Between Files",
+                subtopics: ["Hard Links", "Symbolic Links", "Link Management"]
+            },
+            {
+                id: "3.9",
+                section: "Match File Names with Shell Expansions",
+                subtopics: ["Glob Patterns", "Wildcard Expansion", "Shell Expansion Types"]
+            }
+        ]
+    },
+    {
+        id: 4,
+        number: "04",
+        title: "Getting Help in Red Hat Enterprise Linux",
+        version: "both",
+        hasPage: true,
+        topics: [
+            {
+                id: "4.1",
+                section: "Read Manual Pages / Getting Help from Manual Pages",
+                subtopics: ["Manual Page System", "Using man Command", "Manual Page Sections", "Navigating Manual Pages"]
+            }
+        ]
+    },
+    {
+        id: 5,
+        number: "05",
+        title: "Create, View, and Edit Text Files",
+        version: "rhel9",
+        hasPage: true,
+        topics: [
+            {
+                id: "5.1",
+                section: "Redirect Output to a File or Program",
+                subtopics: ["Output Redirection", "Input Redirection", "Piping", "File Descriptors"]
+            },
+            {
+                id: "5.3",
+                section: "Edit Text Files from the Shell Prompt",
+                subtopics: ["Text Editor Selection", "Nano Editor", "Vi/Vim Editor"]
+            },
+            {
+                id: "5.5",
+                section: "Change the Shell Environment",
+                subtopics: ["Environment Variables", "Shell Configuration Files", "Alias Creation", "Environmental Persistence"]
+            }
+        ]
+    },
+    {
+        id: 6,
+        number: "06",
+        title: "Registering Systems for Red Hat Support",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "6.1",
+                section: "Registering Systems for Red Hat Support",
+                subtopics: ["Red Hat Subscription Management", "System Registration Process", "Support Entitlements"]
+            }
+        ]
+    },
+    {
+        id: 7,
+        number: "07",
+        title: "Getting AI-Assisted Help with Red Hat Enterprise Linux Lightspeed",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "7.1",
+                section: "Asking Questions and Evaluating Answers from the Command-line Assistant",
+                subtopics: ["Red Hat Lightspeed Overview", "Using AI-Powered Assistant"]
+            }
+        ]
+    },
+    {
+        id: 8,
+        number: "08",
+        title: "Navigating the File-system Hierarchy",
+        version: "rhel10",
+        hasPage: true,
+        topics: [
+            {
+                id: "8.1",
+                section: "The Linux File-system Hierarchy",
+                subtopics: ["Root Directory Structure", "Essential Directories", "Directory Organization"]
+            }
+        ]
+    },
+    {
+        id: 9,
+        number: "09",
+        title: "Managing Local Users and Groups",
+        version: "both",
+        hasPage: true,
+        topics: [
+            {
+                id: "9.1",
+                section: "Describe User and Group Concepts",
+                subtopics: ["User Concepts", "Group Concepts", "User Types", "User Information Files"]
+            },
+            {
+                id: "9.3",
+                section: "Gain Superuser Access",
+                subtopics: ["su Command", "sudo Command", "Privilege Escalation"]
+            },
+            {
+                id: "9.5",
+                section: "Manage Local User Accounts",
+                subtopics: ["Creating User Accounts", "Modifying User Accounts", "Deleting User Accounts"]
+            },
+            {
+                id: "9.7",
+                section: "Manage Local Group Accounts",
+                subtopics: ["Creating Groups", "Modifying Groups", "Group Membership"]
+            },
+            {
+                id: "9.9",
+                section: "Manage User Passwords",
+                subtopics: ["Password Management", "Password Policy", "Password Aging"]
+            }
+        ]
+    },
+    {
+        id: 10,
+        number: "10",
+        title: "Controlling Access to Files",
+        version: "both",
+        hasPage: false,
+        topics: [
+            {
+                id: "10.1",
+                section: "Interpret Linux File System Permissions",
+                subtopics: ["File Permission Basics", "Permission Categories", "Permission Representation", "Special Permissions"]
+            },
+            {
+                id: "10.3",
+                section: "Manage File System Permissions from the Command Line",
+                subtopics: ["chmod Command", "chown Command", "chgrp Command"]
+            },
+            {
+                id: "10.5",
+                section: "Manage Default Permissions and File Access",
+                subtopics: ["umask", "SUID (Set-User-ID)", "SGID (Set-Group-ID)", "Sticky Bit"]
+            }
+        ]
+    },
+    {
+        id: 11,
+        number: "11",
+        title: "Monitor and Manage Linux Processes",
+        version: "both",
+        hasPage: false,
+        topics: [
+            {
+                id: "11.1",
+                section: "Process States and Lifecycle",
+                subtopics: ["Process Concepts", "Process States", "Process Lifecycle", "Background vs Foreground Processes"]
+            },
+            {
+                id: "11.3",
+                section: "Control Jobs / Managing Processes with Job Control",
+                subtopics: ["Job Control Overview", "Running Background Processes", "Job Suspension and Resumption"]
+            },
+            {
+                id: "11.5",
+                section: "Kill Processes / Sending Signals to Processes",
+                subtopics: ["Signal Concepts", "Common Signals", "kill Command", "Terminating Processes"]
+            },
+            {
+                id: "11.7",
+                section: "Monitor Process Activity",
+                subtopics: ["Process Monitoring Tools", "top Command", "System Load", "Memory Usage"]
+            }
+        ]
+    },
+    {
+        id: 12,
+        number: "12",
+        title: "Control Services and Daemons",
+        version: "both",
+        hasPage: false,
+        topics: [
+            {
+                id: "12.1",
+                section: "Identify Automatically Started System Processes",
+                subtopics: ["systemd Overview", "Service Concepts", "Autostart Configuration", "Service Files"]
+            },
+            {
+                id: "12.3",
+                section: "Control System Services",
+                subtopics: ["Service Lifecycle", "systemctl Command", "Enabling/Disabling Services"]
+            }
+        ]
+    },
+    {
+        id: 13,
+        number: "13",
+        title: "Configure and Secure SSH",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "13.1",
+                section: "Access the Remote Command Line with SSH",
+                subtopics: ["SSH Overview", "Remote Connection Basics"]
+            },
+            {
+                id: "13.3",
+                section: "Configure SSH Key-based Authentication",
+                subtopics: ["SSH Key Pair Generation", "Public Key Installation", "Passphrase Protection", "SSH Agent"]
+            },
+            {
+                id: "13.5",
+                section: "Customize OpenSSH Service Configuration",
+                subtopics: ["sshd Configuration", "SSH Security Options", "Access Restriction"]
+            }
+        ]
+    },
+    {
+        id: 14,
+        number: "14",
+        title: "Analyze and Store Logs",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "14.1",
+                section: "Describe System Log Architecture",
+                subtopics: ["Linux Logging Overview", "Syslog Protocol", "Logging Daemons"]
+            },
+            {
+                id: "14.3",
+                section: "Review Syslog Files",
+                subtopics: ["Standard Log Files", "Log File Formats", "rsyslog Configuration", "Viewing Log Files"]
+            },
+            {
+                id: "14.5",
+                section: "Review System Journal Entries",
+                subtopics: ["journald Overview", "Journal Storage", "journalctl Command", "Journal Fields"]
+            },
+            {
+                id: "14.7",
+                section: "Preserve the System Journal",
+                subtopics: ["Journal Persistence", "Enabling Persistent Storage", "Journal Rotation", "Disk Space Management"]
+            },
+            {
+                id: "14.9",
+                section: "Maintain Accurate Time",
+                subtopics: ["System Time Importance", "Time Zones", "NTP Configuration", "Chrony Setup"]
+            }
+        ]
+    },
+    {
+        id: 15,
+        number: "15",
+        title: "Manage Networking",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "15.1",
+                section: "Describe Networking Concepts",
+                subtopics: ["Network Basics", "Network Models", "Protocols", "Addressing", "Routing"]
+            },
+            {
+                id: "15.3",
+                section: "Validate Network Configuration",
+                subtopics: ["Network Interface Overview", "ip Command", "Testing Connectivity", "DNS Resolution"]
+            },
+            {
+                id: "15.5",
+                section: "Configure Networking from the Command Line",
+                subtopics: ["NetworkManager Overview", "nmcli Command", "Adding Connections", "Configuring IP Settings"]
+            },
+            {
+                id: "15.7",
+                section: "Edit Network Configuration Files",
+                subtopics: ["Configuration File Locations", "Connection Files", "Manual Configuration"]
+            },
+            {
+                id: "15.9",
+                section: "Configure Hostnames and Name Resolution",
+                subtopics: ["Hostname Configuration", "DNS Configuration", "/etc/hosts File", "Name Resolution Testing"]
+            }
+        ]
+    },
+    {
+        id: 16,
+        number: "16",
+        title: "Archive and Transfer Files",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "16.1",
+                section: "Manage Compressed tar Archives",
+                subtopics: ["tar Overview", "Compression Methods", "Creating Archives", "Listing Archive Contents", "Extracting Archives", "Advanced tar Options"]
+            },
+            {
+                id: "16.3",
+                section: "Transfer Files Between Systems Securely",
+                subtopics: ["scp Command", "SFTP Protocol", "Security Considerations"]
+            },
+            {
+                id: "16.5",
+                section: "Synchronize Files Between Systems Securely",
+                subtopics: ["rsync Overview", "rsync Options", "rsync over SSH", "Dry Run Testing", "Backup Strategies"]
+            }
+        ]
+    },
+    {
+        id: 17,
+        number: "17",
+        title: "Install and Update Software Packages",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "17.1",
+                section: "Register Systems for Red Hat Support",
+                subtopics: ["Red Hat Subscription Management", "System Registration Process", "Support Entitlements"]
+            },
+            {
+                id: "17.3",
+                section: "Explain and Investigate RPM Software Packages",
+                subtopics: ["RPM Overview", "Package Naming", "Querying Packages", "Package Information"]
+            },
+            {
+                id: "17.5",
+                section: "Install and Update Software Packages with DNF",
+                subtopics: ["DNF Overview", "Package Installation", "Package Removal", "Package Updates"]
+            },
+            {
+                id: "17.7",
+                section: "Enable DNF Software Repositories",
+                subtopics: ["Repository Configuration", "Adding Repositories", "Repository Management"]
+            }
+        ]
+    },
+    {
+        id: 18,
+        number: "18",
+        title: "Access Linux File Systems",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "18.1",
+                section: "Identify File Systems and Devices",
+                subtopics: ["Block Devices", "File Systems", "Device Files", "Listing Devices"]
+            },
+            {
+                id: "18.3",
+                section: "Mount and Unmount File Systems",
+                subtopics: ["Mount Points", "Manual Mounting", "Unmounting", "Persistent Mounting"]
+            },
+            {
+                id: "18.5",
+                section: "Locate Files on the System",
+                subtopics: ["find Command", "locate Command", "File Search Methods"]
+            }
+        ]
+    },
+    {
+        id: 19,
+        number: "19",
+        title: "Analyze Servers and Get Support",
+        version: "rhel9",
+        hasPage: false,
+        topics: [
+            {
+                id: "19.1",
+                section: "Analyze and Manage Remote Servers",
+                subtopics: ["Remote Server Access", "SSH for Administration", "Remote Server Monitoring", "File Transfer for Troubleshooting", "Log Analysis", "System Information Gathering"]
+            },
+            {
+                id: "19.3",
+                section: "Get Help From Red Hat Customer Portal",
+                subtopics: ["Red Hat Support Portal Access", "Knowledge Base", "Case Management", "Support Entitlements"]
+            },
+            {
+                id: "19.5",
+                section: "Detect and Resolve Issues with Red Hat Insights",
+                subtopics: ["Red Hat Insights Overview", "Automated Issue Detection", "Insights Registration", "Dashboard Features", "Issue Categories", "Remediation"]
+            }
+        ]
+    },
+    {
+        id: 20,
+        number: "20",
+        title: "Introduction to Networking",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "20.1",
+                section: "Networking Concepts",
+                subtopics: ["Network Basics", "Network Models", "Protocols", "Addressing", "Routing"]
+            },
+            {
+                id: "20.3",
+                section: "Validating Network Configuration",
+                subtopics: ["Network Interface Overview", "ip Command", "Testing Connectivity", "DNS Resolution"]
+            }
+        ]
+    },
+    {
+        id: 21,
+        number: "21",
+        title: "Managing Network Configuration",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "21.1",
+                section: "Configuring Networking from the Command Line",
+                subtopics: ["NetworkManager Overview", "nmcli Command", "Adding Connections", "Configuring IP Settings"]
+            },
+            {
+                id: "21.3",
+                section: "Editing Network Configuration Files",
+                subtopics: ["Configuration File Locations", "Connection Files", "Manual Configuration"]
+            },
+            {
+                id: "21.5",
+                section: "Configuring Hostnames and Name Resolution",
+                subtopics: ["Hostname Configuration", "DNS Configuration", "/etc/hosts File", "Name Resolution Testing"]
+            }
+        ]
+    },
+    {
+        id: 22,
+        number: "22",
+        title: "Configuring and Securing SSH",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "22.1",
+                section: "Managing SSH Host Keys",
+                subtopics: ["SSH Overview", "Host Keys", "Host Key Fingerprints", "Known Hosts File"]
+            },
+            {
+                id: "22.3",
+                section: "Configuring SSH Key-based Authentication",
+                subtopics: ["SSH Key Pair Generation", "Public Key Installation", "Passphrase Protection", "SSH Agent"]
+            }
+        ]
+    },
+    {
+        id: 23,
+        number: "23",
+        title: "Installing and Updating Software with RPM",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "23.1",
+                section: "Investigating RPM Software Packages",
+                subtopics: ["RPM Overview", "Package Naming", "Querying Packages", "Package Information"]
+            },
+            {
+                id: "23.3",
+                section: "Installing and Updating Packages with DNF",
+                subtopics: ["DNF Overview", "Package Installation", "Package Removal", "Package Updates"]
+            },
+            {
+                id: "23.5",
+                section: "Enabling DNF Software Repositories",
+                subtopics: ["Repository Configuration", "Adding Repositories", "Repository Management"]
+            }
+        ]
+    },
+    {
+        id: 24,
+        number: "24",
+        title: "Installing and Updating Applications by Using Flatpak",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "24.1",
+                section: "Configuring Flatpak for Application Installation",
+                subtopics: ["Flatpak Overview", "Flatpak Installation", "Repository Configuration"]
+            },
+            {
+                id: "24.3",
+                section: "Managing Applications from Flatpak",
+                subtopics: ["Searching Applications", "Installing Applications", "Updating Applications", "Uninstalling Applications"]
+            }
+        ]
+    },
+    {
+        id: 25,
+        number: "25",
+        title: "Accessing Removable Media",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "25.1",
+                section: "Identifying File Systems and Block Devices",
+                subtopics: ["Block Devices", "File Systems", "Device Files", "Listing Devices"]
+            },
+            {
+                id: "25.3",
+                section: "Mounting and Unmounting File Systems",
+                subtopics: ["Mount Points", "Manual Mounting", "Unmounting", "Persistent Mounting"]
+            },
+            {
+                id: "25.5",
+                section: "Locating Files on a File System",
+                subtopics: ["find Command", "locate Command", "File Search Methods"]
+            }
+        ]
+    },
+    {
+        id: 26,
+        number: "26",
+        title: "Monitoring and Managing Linux Processes",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "26.1",
+                section: "Processes and the Process Lifecycle",
+                subtopics: ["Process Concepts", "Process States", "Process Lifecycle"]
+            },
+            {
+                id: "26.3",
+                section: "Managing Processes with Job Control",
+                subtopics: ["Job Control Overview", "Running Background Processes", "Job Suspension and Resumption"]
+            },
+            {
+                id: "26.5",
+                section: "Sending Signals to Processes",
+                subtopics: ["Signal Concepts", "Common Signals", "kill Command", "Terminating Processes"]
+            },
+            {
+                id: "26.7",
+                section: "Monitoring Process Activity",
+                subtopics: ["Process Monitoring Tools", "top Command", "System Load", "Memory Usage"]
+            }
+        ]
+    },
+    {
+        id: 27,
+        number: "27",
+        title: "Controlling Services and Daemons",
+        version: "rhel10",
+        hasPage: false,
+        topics: [
+            {
+                id: "27.1",
+                section: "Identifying System Processes that Start Automatically",
+                subtopics: ["systemd Overview", "Service Concepts", "Autostart Configuration", "Service Files"]
+            },
+            {
+                id: "27.3",
+                section: "Controlling System Services",
+                subtopics: ["Service Lifecycle", "systemctl Command", "Enabling/Disabling Services"]
+            }
+        ]
+    }
+];
+
+/* ══════════════════════════════════════════════════════════
+   STATE MANAGEMENT (localStorage)
+   ══════════════════════════════════════════════════════════ */
+const STORAGE_KEY = 'rhel_study_progress';
+let currentFilter = 'all';
+
+function loadProgress() {
+    try {
+        return JSON.parse(localStorage.getItem(STORAGE_KEY)) || {};
+    } catch {
+        return {};
+    }
+}
+
+function saveProgress(progress) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(progress));
+}
+
+function getTopicKey(chapterId, topicId) {
+    return `ch${chapterId}_t${topicId}`;
+}
+
+function getSubtopicKey(chapterId, topicId, subtopicIdx) {
+    return `ch${chapterId}_t${topicId}_s${subtopicIdx}`;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RENDER CHAPTERS
+   ══════════════════════════════════════════════════════════ */
+function renderChapters() {
+    const grid = document.getElementById('chaptersGrid');
+    const progress = loadProgress();
+    let html = '';
+
+    chaptersData.forEach(ch => {
+        const totalTopics = ch.topics.length;
+        let checkedTopics = 0;
+        ch.topics.forEach(t => {
+            if (progress[getTopicKey(ch.id, t.id)]) checkedTopics++;
+        });
+        const pct = totalTopics > 0 ? Math.round((checkedTopics / totalTopics) * 100) : 0;
+        const isComplete = pct === 100;
+
+        let versionBadge = '';
+        if (ch.version === 'rhel9') versionBadge = '<span class="badge badge-rhel9">RHEL 9</span>';
+        else if (ch.version === 'rhel10') versionBadge = '<span class="badge badge-rhel10">RHEL 10</span>';
+        else versionBadge = '<span class="badge badge-both">RHEL 9 & 10</span>';
+
+        let topicsHtml = '';
+        ch.topics.forEach(t => {
+            const tKey = getTopicKey(ch.id, t.id);
+            const isChecked = !!progress[tKey];
+
+            let subHtml = '';
+            t.subtopics.forEach((st, si) => {
+                const sKey = getSubtopicKey(ch.id, t.id, si);
+                const sDone = !!progress[sKey];
+                subHtml += `<span class="subtopic-tag ${sDone ? 'done' : ''}"
+                    onclick="toggleSubtopic(event, ${ch.id}, '${t.id}', ${si})">${st}</span>`;
+            });
+
+            topicsHtml += `
+                <div class="topic-item ${isChecked ? 'checked' : ''}">
+                    <input type="checkbox" class="topic-checkbox"
+                        ${isChecked ? 'checked' : ''}
+                        onchange="toggleTopic(${ch.id}, '${t.id}', this.checked)">
+                    <div class="topic-content">
+                        <div class="topic-section">${t.id} ${t.section}</div>
+                        <div class="topic-subtopics">${subHtml}</div>
+                    </div>
+                </div>`;
+        });
+
+        const chapterFile = `chapters/chapter-${ch.number}.html`;
+        const openBtnClass = ch.hasPage ? 'btn-open-chapter' : 'btn-open-chapter disabled';
+        const openBtnText = ch.hasPage ? '📖 Open Notes' : '🔒 Not Created';
+
+        html += `
+            <div class="chapter-card ${isComplete ? 'completed' : ''}"
+                data-chapter="${ch.id}"
+                data-version="${ch.version}"
+                data-complete="${isComplete}"
+                data-searchtext="${(ch.title + ' ' + ch.topics.map(t=>t.section + ' ' + t.subtopics.join(' ')).join(' ')).toLowerCase()}">
+
+                <div class="chapter-header">
+                    <div class="chapter-number">
+                        Chapter ${ch.number} ${versionBadge}
+                    </div>
+                    <div class="chapter-title">${ch.title}</div>
+                    <div class="chapter-meta">
+                        <span>📋 ${totalTopics} topics</span>
+                        <span>✅ ${checkedTopics}/${totalTopics}</span>
+                        <span>📊 ${pct}%</span>
+                    </div>
+                </div>
+
+                <div class="chapter-progress-bar">
+                    <div class="chapter-progress-fill" style="width: ${pct}%"></div>
+                </div>
+
+                <div class="chapter-topics">${topicsHtml}</div>
+
+                <div class="chapter-footer">
+                    <button class="btn-expand" onclick="toggleExpand(this)">
+                        <span class="arrow">▼</span> Topics
+                    </button>
+                    <a href="${chapterFile}" class="${openBtnClass}"
+                       ${ch.hasPage ? '' : 'onclick="event.preventDefault()"'}>
+                        ${openBtnText} →
+                    </a>
+                </div>
+            </div>`;
+    });
+
+    grid.innerHTML = html;
+    updateStats();
+}
+
+/* ══════════════════════════════════════════════════════════
+   INTERACTIONS
+   ══════════════════════════════════════════════════════════ */
+function toggleExpand(btn) {
+    const card = btn.closest('.chapter-card');
+    card.classList.toggle('expanded');
+}
+
+function toggleTopic(chapterId, topicId, checked) {
+    const progress = loadProgress();
+    const key = getTopicKey(chapterId, topicId);
+    progress[key] = checked;
+
+    // If checking a topic, also check all its subtopics
+    const chapter = chaptersData.find(c => c.id === chapterId);
+    const topic = chapter.topics.find(t => t.id === topicId);
+    if (topic) {
+        topic.subtopics.forEach((_, si) => {
+            const sKey = getSubtopicKey(chapterId, topicId, si);
+            if (checked) {
+                progress[sKey] = true;
+            } else {
+                delete progress[sKey];
+            }
+        });
+    }
+
+    if (!checked) delete progress[key];
+    saveProgress(progress);
+    renderChapters();
+
+    // Check if chapter just completed
+    const ch = chaptersData.find(c => c.id === chapterId);
+    const allChecked = ch.topics.every(t => progress[getTopicKey(chapterId, t.id)]);
+    if (allChecked && checked) {
+        showToast(`🎉 Chapter ${ch.number} completed!`);
+    }
+}
+
+function toggleSubtopic(event, chapterId, topicId, subtopicIdx) {
+    event.stopPropagation();
+    const progress = loadProgress();
+    const sKey = getSubtopicKey(chapterId, topicId, subtopicIdx);
+    if (progress[sKey]) {
+        delete progress[sKey];
+    } else {
+        progress[sKey] = true;
+    }
+
+    // Check if all subtopics done → auto-check topic
+    const chapter = chaptersData.find(c => c.id === chapterId);
+    const topic = chapter.topics.find(t => t.id === topicId);
+    if (topic) {
+        const allSubDone = topic.subtopics.every((_, si) =>
+            progress[getSubtopicKey(chapterId, topicId, si)]
+        );
+        const tKey = getTopicKey(chapterId, topicId);
+        if (allSubDone) {
+            progress[tKey] = true;
+        } else {
+            delete progress[tKey];
+        }
+    }
+
+    saveProgress(progress);
+    renderChapters();
+}
+
+/* ══════════════════════════════════════════════════════════
+   STATS UPDATE
+   ══════════════════════════════════════════════════════════ */
+function updateStats() {
+    const progress = loadProgress();
+    const total = chaptersData.length;
+    let completed = 0;
+    let inProgress = 0;
+    let totalTopics = 0;
+    let doneTopics = 0;
+
+    chaptersData.forEach(ch => {
+        let chDone = 0;
+        ch.topics.forEach(t => {
+            totalTopics++;
+            if (progress[getTopicKey(ch.id, t.id)]) {
+                doneTopics++;
+                chDone++;
+            }
+        });
+        if (chDone === ch.topics.length && ch.topics.length > 0) completed++;
+        else if (chDone > 0) inProgress++;
+    });
+
+    document.getElementById('totalChapters').textContent = total;
+    document.getElementById('completedChapters').textContent = completed;
+    document.getElementById('inProgressChapters').textContent = inProgress;
+    document.getElementById('topicsDone').textContent = doneTopics;
+    document.getElementById('topicsTotal').textContent = `of ${totalTopics} topics`;
+    document.getElementById('remainingChapters').textContent = total - completed;
+
+    const pct = totalTopics > 0 ? Math.round((doneTopics / totalTopics) * 100) : 0;
+    document.getElementById('masterPercent').textContent = pct + '%';
+    document.getElementById('masterProgressBar').style.width = pct + '%';
+
+    // Milestones
+    ['m0','m25','m50','m75','m100'].forEach(id => {
+        const el = document.getElementById(id);
+        const val = parseInt(id.replace('m',''));
+        if (pct >= val) el.classList.add('reached');
+        else el.classList.remove('reached');
+    });
+}
+
+/* ══════════════════════════════════════════════════════════
+   FILTER & SEARCH
+   ══════════════════════════════════════════════════════════ */
+function setFilter(filter, btn) {
+    currentFilter = filter;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    filterChapters();
+}
+
+function filterChapters() {
+    const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.chapter-card');
+
+    cards.forEach(card => {
+        const version = card.dataset.version;
+        const isComplete = card.dataset.complete === 'true';
+        const searchText = card.dataset.searchtext;
+
+        let show = true;
+
+        // Version filter
+        if (currentFilter === 'rhel9' && version !== 'rhel9' && version !== 'both') show = false;
+        if (currentFilter === 'rhel10' && version !== 'rhel10' && version !== 'both') show = false;
+        if (currentFilter === 'both' && version !== 'both') show = false;
+        if (currentFilter === 'done' && !isComplete) show = false;
+        if (currentFilter === 'incomplete' && isComplete) show = false;
+
+        // Search filter
+        if (searchTerm && !searchText.includes(searchTerm)) show = false;
+
+        card.classList.toggle('hidden', !show);
+    });
+}
+
+/* ══════════════════════════════════════════════════════════
+   UTILITIES
+   ══════════════════════════════════════════════════════════ */
+function resetAllProgress() {
+    if (confirm('⚠️ Are you sure you want to reset ALL progress? This cannot be undone.')) {
+        localStorage.removeItem(STORAGE_KEY);
+        renderChapters();
+        showToast('🔄 All progress has been reset');
+    }
+}
+
+function showToast(message) {
+    const toast = document.getElementById('toast');
+    toast.innerHTML = message;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
+}
+
+// Scroll to top button
+window.addEventListener('scroll', () => {
+    const btn = document.getElementById('scrollTopBtn');
+    btn.classList.toggle('visible', window.scrollY > 400);
+});
+
+/* ══════════════════════════════════════════════════════════
+   INIT
+   ══════════════════════════════════════════════════════════ */
+document.addEventListener('DOMContentLoaded', () => {
+    renderChapters();
+});
+</script>
+
+</body>
+</html>
