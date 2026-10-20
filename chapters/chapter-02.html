@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 02 - Accessing the Command Line</title>
+<style>
+:root{--bg-primary:#0a0e17;--bg-secondary:#111827;--bg-card:#1a2234;--text-primary:#e2e8f0;--text-secondary:#94a3b8;--text-muted:#64748b;--accent-red:#ee0000;--accent-red-dark:#cc0000;--accent-red-glow:rgba(238,0,0,.3);--accent-green:#22c55e;--accent-yellow:#eab308;--accent-blue:#3b82f6;--accent-purple:#a855f7;--accent-cyan:#06b6d4;--accent-orange:#f97316;--border-color:#1e293b;--border-light:#334155;--shadow-md:0 4px 12px rgba(0,0,0,.4);--shadow-glow:0 0 20px var(--accent-red-glow);--radius-sm:8px;--radius-md:12px;--radius-lg:16px}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scrollbar-width:thin;scrollbar-color:var(--accent-red) var(--bg-secondary)}
+body{font-family:'Segoe UI','Inter',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg-primary);color:var(--text-primary);line-height:1.7;min-height:100vh}
+.chapter-nav{position:sticky;top:0;z-index:100;background:rgba(10,14,23,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border-color);padding:14px 24px;display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap}
+.nav-left{display:flex;align-items:center;gap:16px;flex-wrap:wrap}
+.btn-back,.nav-arrows a{display:inline-flex;align-items:center;gap:8px;padding:8px 16px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-sm);color:var(--text-secondary);text-decoration:none;font-size:.85rem;transition:all .2s}
+.btn-back:hover,.nav-arrows a:hover{border-color:var(--accent-red);color:var(--accent-red)}
+.nav-title{font-size:.9rem;color:var(--text-muted)}.nav-title strong{color:var(--text-primary)}
+.nav-arrows{display:flex;gap:8px}.nav-arrows a.disabled{opacity:.3;pointer-events:none}
+.toc-toggle{position:fixed;top:80px;left:16px;z-index:90;width:40px;height:40px;background:var(--bg-card);border:1px solid var(--border-color);border-radius:50%;color:var(--text-secondary);font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.toc-toggle:hover{border-color:var(--accent-red);color:var(--accent-red)}
+.toc-sidebar{position:fixed;top:65px;left:0;width:320px;height:calc(100vh - 65px);background:rgba(17,24,39,.98);border-right:1px solid var(--border-color);z-index:85;transform:translateX(-100%);transition:transform .3s;overflow-y:auto;padding:20px 16px 40px}
+.toc-sidebar.open{transform:translateX(0)}
+.toc-sidebar h3{font-size:.75rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:2px;margin-bottom:16px;padding-left:8px}
+.toc-sidebar a{display:block;padding:8px 12px;color:var(--text-secondary);text-decoration:none;font-size:.82rem;border-radius:6px;border-left:2px solid transparent;margin-bottom:2px}
+.toc-sidebar a:hover{background:rgba(238,0,0,.05);color:var(--text-primary);border-left-color:var(--accent-red)}
+.toc-sidebar a.toc-part{font-weight:700;color:var(--text-primary);font-size:.85rem;margin-top:16px;border-left:none}
+.toc-sidebar a.toc-sub{padding-left:24px;font-size:.78rem;color:var(--text-muted)}
+.toc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:80;display:none}.toc-overlay.open{display:block}
+.chapter-content{max-width:920px;margin:0 auto;padding:40px 24px 100px}
+.chapter-hero{text-align:center;margin-bottom:50px;padding:50px 0 40px;position:relative}
+.chapter-hero::after{content:'';position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:120px;height:3px;background:linear-gradient(90deg,transparent,var(--accent-red),transparent)}
+.chapter-badge{display:inline-block;padding:6px 20px;border-radius:20px;font-size:.75rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;background:rgba(238,0,0,.1);color:var(--accent-red);border:1px solid rgba(238,0,0,.2)}
+.chapter-hero h1{font-size:2.2rem;font-weight:800;margin-bottom:14px;background:linear-gradient(135deg,#fff,var(--text-secondary));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;line-height:1.3}
+.chapter-hero .subtitle{color:var(--text-muted);font-size:1rem;max-width:650px;margin:0 auto}
+.part-divider{margin:50px 0 30px;padding:24px 0;text-align:center;position:relative}
+.part-divider::before{content:'';position:absolute;top:50%;left:0;right:0;height:1px;background:var(--border-color)}
+.part-divider h2{position:relative;display:inline-block;background:var(--bg-primary);padding:8px 28px;font-size:1.1rem;font-weight:800;text-transform:uppercase;letter-spacing:3px;color:var(--accent-red)}
+.part-divider .part-desc{display:block;font-size:.8rem;color:var(--text-muted);font-weight:400;letter-spacing:0;text-transform:none;margin-top:4px}
+.section{background:var(--bg-card);border:1px solid var(--border-color);border-radius:var(--radius-lg);padding:32px;margin-bottom:24px;animation:fadeIn .5s ease forwards;opacity:0}
+@keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:none}}
+.section-header{display:flex;align-items:center;gap:14px;margin-bottom:22px;padding-bottom:18px;border-bottom:1px solid var(--border-color)}
+.section-icon{width:42px;height:42px;background:linear-gradient(135deg,var(--accent-red-dark),var(--accent-red));border-radius:var(--radius-md);display:flex;align-items:center;justify-content:center;font-size:1.1rem;flex-shrink:0;box-shadow:0 4px 12px rgba(238,0,0,.2)}
+.section-header-text h2{font-size:1.25rem;font-weight:700;line-height:1.3}
+.section-id{font-size:.72rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:1.5px}
+.section h3{font-size:1.1rem;font-weight:700;color:var(--accent-cyan);margin:28px 0 12px;padding-left:14px;border-left:3px solid var(--accent-cyan)}
+.section h4{font-size:.95rem;font-weight:600;color:var(--accent-yellow);margin:22px 0 10px}
+.section p{color:var(--text-secondary);margin-bottom:14px;font-size:.92rem}
+.section strong{color:var(--text-primary)}.section em{color:var(--accent-yellow)}
+.section ul,.section ol{color:var(--text-secondary);padding-left:24px;margin-bottom:14px}
+.section li{margin-bottom:8px;font-size:.92rem}.section li::marker{color:var(--accent-red)}
+code{font-family:'JetBrains Mono','Fira Code','Cascadia Code',Consolas,monospace;background:rgba(238,0,0,.08);padding:2px 8px;border-radius:5px;font-size:.83em;color:var(--accent-red);border:1px solid rgba(238,0,0,.1)}
+.code-block{background:#0d1117;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:18px 22px;margin:16px 0;overflow-x:auto;position:relative}
+.code-block code{background:none;border:none;padding:0;color:#e6edf3;font-size:.84rem;line-height:1.7;display:block;white-space:pre}
+.code-label{position:absolute;top:8px;right:12px;font-size:.63rem;color:var(--text-muted);background:rgba(255,255,255,.06);padding:2px 10px;border-radius:4px;text-transform:uppercase;letter-spacing:1.5px}
+.prompt{color:var(--accent-green)}.command{color:#79c0ff}.output{color:#8b949e}.comment{color:#6a737d;font-style:italic}.string{color:#a5d6ff}.flag{color:var(--accent-orange)}.path{color:var(--accent-yellow)}
+.info-box{border-radius:var(--radius-md);padding:18px 22px;margin:18px 0;display:flex;align-items:flex-start;gap:14px}
+.info-box .icon{font-size:1.3rem;flex-shrink:0;margin-top:2px}.info-box .content{flex:1}
+.info-box .content>strong{display:block;margin-bottom:6px;font-size:.88rem}
+.info-box .content p{margin-bottom:6px;font-size:.88rem}.info-box .content p:last-child{margin-bottom:0}
+.info-box.note{background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.2)}.info-box.note .content>strong{color:var(--accent-blue)}
+.info-box.tip{background:rgba(34,197,94,.07);border:1px solid rgba(34,197,94,.2)}.info-box.tip .content>strong{color:var(--accent-green)}
+.info-box.warning{background:rgba(234,179,8,.07);border:1px solid rgba(234,179,8,.2)}.info-box.warning .content>strong{color:var(--accent-yellow)}
+.info-box.important{background:rgba(238,0,0,.06);border:1px solid rgba(238,0,0,.2)}.info-box.important .content>strong{color:var(--accent-red)}
+.info-box.fix{background:rgba(249,115,22,.07);border:1px solid rgba(249,115,22,.2)}.info-box.fix .content>strong{color:var(--accent-orange)}
+.info-box.quote{background:rgba(168,85,247,.06);border:1px solid rgba(168,85,247,.2)}.info-box.quote .content>strong{color:var(--accent-purple)}
+.table-wrapper{overflow-x:auto;margin:18px 0;border-radius:var(--radius-md);border:1px solid var(--border-color)}
+table{width:100%;border-collapse:collapse}
+th{background:rgba(238,0,0,.08);color:var(--text-primary);padding:12px 16px;text-align:left;font-size:.82rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+td{padding:10px 16px;border-top:1px solid var(--border-color);color:var(--text-secondary);font-size:.88rem;vertical-align:top}
+tr:hover td{background:rgba(255,255,255,.02)}
+.key-term{display:inline-block;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.2);color:var(--accent-purple);padding:2px 10px;border-radius:6px;font-size:.84rem;font-weight:600}
+.flow-diagram{background:rgba(6,182,212,.04);border:1px solid rgba(6,182,212,.15);border-radius:var(--radius-md);padding:20px 24px;margin:18px 0;text-align:center}
+.flow-chain{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:6px}
+.flow-step{background:var(--bg-card);border:1px solid var(--border-light);padding:8px 16px;border-radius:var(--radius-sm);color:var(--text-primary);font-weight:600;font-size:.84rem}
+.flow-arrow{color:var(--accent-red);font-weight:700;font-size:1.1rem}
+.tree-container{background:#0d1117;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:20px 24px;margin:18px 0;overflow-x:auto}
+.tree-columns{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px}
+.tree-column h5{font-size:.75rem;text-transform:uppercase;letter-spacing:1.5px;margin-bottom:12px;padding-bottom:6px;border-bottom:1px solid var(--border-color)}
+.tree-column:nth-child(1) h5{color:var(--accent-red)}.tree-column:nth-child(2) h5{color:var(--accent-blue)}.tree-column:nth-child(3) h5{color:var(--accent-purple)}
+.tree-node{padding:6px 12px;margin-bottom:4px;border-radius:6px;font-size:.82rem;color:var(--text-secondary)}
+.tree-node.primary{background:rgba(238,0,0,.08);border:1px solid rgba(238,0,0,.15);color:var(--text-primary);font-weight:600}
+.tree-arrow{text-align:center;color:var(--text-muted);font-size:.8rem}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin:18px 0}
+.card{background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:16px;display:flex;flex-direction:column;gap:4px;transition:border-color .2s,transform .2s}
+.card:hover{border-color:var(--accent-red);transform:translateY(-2px)}
+.card-icon{font-size:1.8rem}.card strong{font-size:.9rem}.card span{font-size:.8rem;color:var(--text-secondary);line-height:1.5}
+.svg-wrap{background:#0d1117;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:14px;margin:18px 0;overflow-x:auto}
+.svg-wrap svg{width:100%;height:auto;min-width:560px;display:block}
+.svg-cap{text-align:center;font-size:.78rem;color:var(--text-muted);margin-top:8px}
+.timeline{position:relative;margin:22px 0 22px 10px;padding-left:26px;border-left:2px solid var(--border-light)}
+.tl-item{position:relative;margin-bottom:18px}
+.tl-item::before{content:'';position:absolute;left:-34px;top:6px;width:14px;height:14px;border-radius:50%;background:var(--accent-red);box-shadow:0 0 0 4px rgba(238,0,0,.15)}
+.tl-year{font-weight:800;color:var(--accent-red);font-size:.9rem}.tl-item span{display:block;color:var(--text-secondary);font-size:.88rem}
+.pbar{display:flex;height:64px;border-radius:var(--radius-md);overflow:hidden;border:1px solid var(--border-light);margin:18px 0 6px;font-size:.72rem;font-weight:700;text-align:center}
+.pbar div{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2px 4px;color:#fff;border-right:1px solid rgba(0,0,0,.35);line-height:1.25}
+.pbar small{font-weight:400;opacity:.85;font-size:.66rem}
+.mock{background:#f3f4f6;color:#1f2937;border-radius:var(--radius-md);overflow:hidden;margin:18px 0;border:1px solid var(--border-light);font-size:.8rem}
+.mock-top{background:#ee0000;color:#fff;padding:10px 16px;font-weight:800;letter-spacing:1px;display:flex;justify-content:space-between}
+.mock-body{padding:16px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}
+.mock-group h6{font-size:.7rem;letter-spacing:1.5px;color:#4b5563;margin-bottom:6px;text-transform:uppercase}
+.tile{background:#fff;border:1px solid #d1d5db;border-radius:6px;padding:8px 10px;margin-bottom:6px;display:flex;align-items:center;gap:8px}
+.tile b{display:block;font-size:.78rem;color:#111827}.tile i{display:block;font-style:normal;font-size:.68rem;color:#6b7280}
+.tile.warn{border-color:#f59e0b;background:#fffbeb}.tile.warn i{color:#b45309}
+.mock-foot{background:#e5e7eb;padding:10px 16px;display:flex;justify-content:flex-end;gap:10px}
+.mock-btn{padding:6px 16px;border-radius:4px;font-weight:700;font-size:.75rem;background:#fff;border:1px solid #9ca3af;color:#374151}.mock-btn.go{background:#2563eb;border-color:#2563eb;color:#fff}
+.chapter-footer{text-align:center;padding:40px 24px;color:var(--text-muted);font-size:.78rem;border-top:1px solid var(--border-color);margin-top:40px}
+.next-chapter{display:inline-flex;align-items:center;gap:10px;padding:14px 32px;background:linear-gradient(135deg,var(--accent-red-dark),var(--accent-red));border-radius:var(--radius-md);color:#fff;text-decoration:none;font-size:.95rem;font-weight:700;margin-bottom:20px}
+.next-chapter:hover{transform:scale(1.03);box-shadow:var(--shadow-glow)}
+.reading-progress{position:fixed;top:57px;left:0;width:0;height:3px;background:linear-gradient(90deg,var(--accent-red-dark),var(--accent-red),var(--accent-orange));z-index:99}
+.scroll-top{position:fixed;bottom:30px;right:30px;width:44px;height:44px;background:var(--accent-red);border:none;border-radius:50%;color:#fff;font-size:1.2rem;cursor:pointer;z-index:50;display:none;align-items:center;justify-content:center;box-shadow:var(--shadow-md)}
+.scroll-top.visible{display:flex}
+@media(max-width:768px){.chapter-hero h1{font-size:1.6rem}.section{padding:20px 16px}.tree-columns{grid-template-columns:1fr}.toc-sidebar{width:280px}.chapter-nav{flex-direction:column;align-items:flex-start}}
+
+.vs-container{display:grid;grid-template-columns:1fr auto 1fr;gap:0;margin:18px 0;align-items:stretch}
+.vs-card{background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:20px}
+.vs-card h4{margin:0 0 12px;font-size:.9rem}.vs-card.left h4{color:var(--accent-blue)}.vs-card.right h4{color:var(--accent-orange)}.vs-card ul{margin-bottom:0}
+.vs-divider{display:flex;align-items:center;justify-content:center;font-size:1.5rem;font-weight:800;color:var(--text-muted);padding:0 12px}
+.prompt-breakdown{background:#0d1117;border:1px solid var(--border-color);border-radius:var(--radius-md);padding:24px;margin:18px 0;text-align:center}
+.prompt-display{font-family:'JetBrains Mono','Fira Code',monospace;font-size:1.4rem;margin-bottom:18px;letter-spacing:1px}
+.p-user{color:var(--accent-green)}.p-at{color:var(--text-muted)}.p-host{color:var(--accent-cyan)}.p-dir{color:var(--accent-yellow)}.p-sign{color:var(--accent-red);font-weight:700}
+.prompt-labels{display:flex;justify-content:center;gap:16px;flex-wrap:wrap}
+.prompt-label{display:flex;align-items:center;gap:6px;font-size:.78rem;color:var(--text-muted)}.prompt-label .dot{width:10px;height:10px;border-radius:50%}
+.shortcut-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:8px;margin:16px 0}
+.shortcut-item{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-sm);font-size:.85rem}
+.shortcut-item kbd{font-family:'JetBrains Mono',monospace;background:rgba(238,0,0,.08);border:1px solid rgba(238,0,0,.15);color:var(--accent-red);padding:3px 10px;border-radius:5px;font-size:.78rem;font-weight:600;white-space:nowrap}
+.shortcut-item span{color:var(--text-secondary)}
+.quiz-bar{position:sticky;top:60px;z-index:20;background:var(--bg-secondary);border:1px solid var(--border-light);border-radius:var(--radius-md);padding:10px 16px;margin-bottom:16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;font-size:.88rem}
+.quiz-bar b{color:var(--accent-green)}
+.quiz-btn{background:var(--accent-red);color:#fff;border:none;border-radius:var(--radius-sm);padding:7px 16px;cursor:pointer;font-weight:700;font-size:.82rem}
+.qz{background:var(--bg-primary);border:1px solid var(--border-color);border-radius:var(--radius-md);padding:18px 20px;margin-bottom:14px}
+.qz h4{margin:0 0 10px!important;color:var(--text-primary)!important;font-size:.95rem!important}
+.qtag{font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--accent-purple);border:1px solid rgba(168,85,247,.3);border-radius:10px;padding:1px 8px;margin-left:8px}
+.qo{display:block;width:100%;text-align:left;background:var(--bg-card);border:1px solid var(--border-light);color:var(--text-secondary);padding:9px 14px;border-radius:var(--radius-sm);margin-bottom:6px;cursor:pointer;font-size:.88rem;font-family:inherit}
+.qo:hover:not(:disabled){border-color:var(--accent-cyan);color:var(--text-primary)}
+.qo.ok{background:rgba(34,197,94,.15);border-color:var(--accent-green);color:#86efac}
+.qo.bad{background:rgba(238,0,0,.12);border-color:var(--accent-red);color:#fca5a5}
+.qe{display:none;margin-top:8px;font-size:.84rem;color:var(--text-secondary);padding:8px 12px;border-left:3px solid var(--accent-cyan);background:rgba(6,182,212,.05)}
+.qe.show{display:block}
+</style>
+</head>
+<body>
+<div class="reading-progress" id="readingProgress"></div>
+<nav class="chapter-nav">
+<div class="nav-left"><a href="../index.html" class="btn-back">← Dashboard</a><span class="nav-title">Chapter <strong>02</strong> of 27 — Accessing the Command Line</span></div>
+<div class="nav-arrows"><a href="chapter-01.html">← Previous</a><a href="chapter-03.html">Next →</a></div>
+</nav>
+<button class="toc-toggle" onclick="toggleTOC()">☰</button>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleTOC()"></div>
+<aside class="toc-sidebar" id="tocSidebar">
+<h3>Table of Contents</h3>
+<a href="#s1" class="toc-part">📖 2.1 Terminology</a>
+<a href="#s2" class="toc-part">🖥️ 2.2 Consoles & Terminals</a>
+<a href="#s3" class="toc-part">🔎 2.3 Which Console Am I On?</a>
+<a href="#s4" class="toc-part">📟 2.4 Shell Prompt</a>
+<a href="#s5" class="toc-part">👤 2.5 Regular vs Root User</a>
+<a href="#s6" class="toc-part">🐚 2.6 What Is a Shell?</a>
+<a href="#s7" class="toc-part">⌨️ 2.7 Parts of a Command</a>
+<a href="#s8" class="toc-part">⏻ 2.8 Power Off & Reboot</a>
+<a href="#s9" class="toc-part">🎯 2.9 GUI vs CLI Mode</a>
+<a href="#s10" class="toc-part">🔐 2.10 SSH Remote Login</a>
+<a href="#s11" class="toc-part">🖥️ 2.11 GNOME Desktop</a>
+<a href="#s12" class="toc-part">⚡ 2.12 Executing Commands</a>
+<a href="#s13" class="toc-part">🧪 2.13 Practice</a>
+<a href="#s14" class="toc-part">🎯 2.14 Quiz</a>
+<a href="#s15" class="toc-part">🗝️ 2.15 Answer Key</a>
+</aside>
+<div class="chapter-content">
+<div class="chapter-hero"><div class="chapter-badge">RHEL 9 &amp; 10</div><h1>Chapter 02: Accessing the Command Line</h1>
+<p class="subtitle">Log in to a Linux system and run commands with the shell: consoles, terminals, the prompt, Bash, SSH, the GNOME desktop and the shortcuts that save time.</p></div>
+<div class="section" id="s1">
+<div class="section-header"><div class="section-icon">📖</div><div class="section-header-text"><div class="section-id">Section 2.1</div><h2>Terminology</h2></div></div>
+<div class="table-wrapper"><table><thead><tr><th>Term</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Command line</strong></td><td>A text interface where you type instructions</td></tr><tr><td><strong>Shell</strong></td><td>The program that <strong>reads and runs</strong> the commands you type (Bash)</td></tr><tr><td><strong>Terminal</strong></td><td>The window (or screen) that gives a shell its keyboard and display</td></tr><tr><td><strong>Console</strong></td><td>The <strong>direct</strong> connection to the machine: its own keyboard and screen</td></tr><tr><td><strong>Physical console</strong></td><td>The real keyboard and monitor plugged into the machine</td></tr><tr><td><strong>Virtual console</strong></td><td>A software-made text screen. One physical screen can hold several, each with its own login</td></tr><tr><td><strong>Prompt</strong></td><td>The text shown when the shell is waiting for your command</td></tr></tbody></table></div>
+<div class="cards"><div class="card"><div class="card-icon">🪟</div><strong>Terminal</strong><span>The WINDOW you type in.</span></div><div class="card"><div class="card-icon">🧠</div><strong>Shell</strong><span>The BRAIN inside the window that understands your commands.</span></div><div class="card"><div class="card-icon">🔌</div><strong>Console</strong><span>The DIRECT line to the machine, even when the network is down.</span></div></div>
+<div class="info-box tip"><span class="icon">💡</span><div class="content"><strong>Easy way to remember</strong><p><strong>Terminal</strong> = window. <strong>Shell</strong> = brain. <strong>Console</strong> = the machine's own screen and keyboard.</p></div></div>
+</div>
+
+<div class="section" id="s2">
+<div class="section-header"><div class="section-icon">🖥️</div><div class="section-header-text"><div class="section-id">Section 2.2</div><h2>Consoles and Terminals</h2></div></div>
+<h3>What is a console?</h3>
+<p>A <strong>console</strong> is the main way to talk to a computer <strong>directly</strong>, using the keyboard and screen attached to it. It is also where the system prints boot and kernel messages. Because it does not need the network, it is how admins fix a server that cannot be reached by SSH.</p>
+<div class="vs-container"><div class="vs-card left"><h4>🖥️ Physical console</h4><ul><li>The real keyboard + monitor connected to the machine</li><li>On a VM, the <strong>VM window</strong> acts as the physical console</li><li>Shows boot messages and kernel messages</li></ul>
+</div><div class="vs-divider">vs</div><div class="vs-card right"><h4>🪟 Virtual console</h4><ul><li>A text screen created by software (the kernel)</li><li>Up to 6 can share ONE physical screen: <code>tty1</code> to <code>tty6</code></li><li><strong>Each one has its own independent login</strong></li></ul>
+</div></div>
+<div class="svg-wrap"><svg viewBox="0 0 780 292" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Segoe UI,Inter,sans-serif"><rect x="14" y="20" width="170" height="86" rx="10" fill="#1f2937" stroke="#64748b" stroke-width="1.5"/><text x="99.0" y="59.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">⌨️🖥️ Physical console</text><text x="99.0" y="77.0" text-anchor="middle" fill="#94a3b8" font-size="11">real keyboard + monitor</text><text x="99" y="126" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="400">(in VMware: the VM window)</text><line x1="184" y1="63" x2="250" y2="63" stroke="#64748b" stroke-width="2.5"/><rect x="250" y="20" width="130" height="86" rx="10" fill="#7f1d1d" stroke="#ee0000" stroke-width="1.5"/><text x="315.0" y="59.0" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Linux kernel</text><text x="315.0" y="77.0" text-anchor="middle" fill="#94a3b8" font-size="11">shares the screen</text><line x1="380" y1="63" x2="430" y2="63" stroke="#64748b" stroke-width="2.5"/><text x="590" y="14" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="700">VIRTUAL CONSOLES (switch with Ctrl+Alt+F1…F6)</text><rect x="430" y="24" width="98" height="40" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/><text x="479.0" y="49.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty1</text><rect x="538" y="24" width="98" height="40" rx="10" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/><text x="587.0" y="49.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty2</text><rect x="646" y="24" width="98" height="40" rx="10" fill="#1f2937" stroke="#475569" stroke-width="1.5"/><text x="695.0" y="49.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty3</text><rect x="430" y="72" width="98" height="40" rx="10" fill="#1f2937" stroke="#475569" stroke-width="1.5"/><text x="479.0" y="97.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty4</text><rect x="538" y="72" width="98" height="40" rx="10" fill="#1f2937" stroke="#475569" stroke-width="1.5"/><text x="587.0" y="97.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty5</text><rect x="646" y="72" width="98" height="40" rx="10" fill="#1f2937" stroke="#475569" stroke-width="1.5"/><text x="695.0" y="97.0" text-anchor="middle" fill="#e2e8f0" font-size="13" font-weight="700">tty6</text><text x="590" y="128" text-anchor="middle" fill="#86efac" font-size="10" font-weight="400">GUI systems: tty1 = login screen, tty2 = desktop session</text><text x="590" y="142" text-anchor="middle" fill="#86efac" font-size="10" font-weight="400">Server without GUI: tty1 = first text login</text><rect x="14" y="176" width="230" height="70" rx="10" fill="#4c1d95" stroke="#a855f7" stroke-width="1.5"/><text x="129.0" y="207.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Terminal window (GUI)</text><text x="129.0" y="225.0" text-anchor="middle" fill="#94a3b8" font-size="11">Ptyxis → /dev/pts/0</text><rect x="274" y="176" width="230" height="70" rx="10" fill="#164e63" stroke="#06b6d4" stroke-width="1.5"/><text x="389.0" y="207.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">SSH from another PC</text><text x="389.0" y="225.0" text-anchor="middle" fill="#94a3b8" font-size="11">sshd → /dev/pts/1</text><rect x="534" y="176" width="232" height="70" rx="10" fill="#78350f" stroke="#f59e0b" stroke-width="1.5"/><text x="650.0" y="207.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">Serial console</text><text x="650.0" y="225.0" text-anchor="middle" fill="#94a3b8" font-size="11">/dev/ttyS0 (headless servers)</text><text x="380" y="172" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="700">OTHER KINDS OF TERMINALS (not on the physical screen)</text><text x="380" y="276" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="700">Run the command  tty  to see which one you are using.</text></svg><div class="svg-cap">One keyboard and screen can show several separate text logins (virtual consoles). Windows and remote logins use pseudo-terminals (pts).</div></div>
+<div class="table-wrapper"><table><thead><tr><th>Type</th><th>Notes</th></tr></thead><tbody><tr><td><strong>Virtual console (TTY)</strong></td><td>Text login. Switch with <code>Ctrl+Alt+F1</code> to <code>F6</code>. Names: <code>/dev/tty1</code> to <code>/dev/tty6</code>.</td></tr><tr><td><strong>Terminal emulator (GUI)</strong></td><td>A window inside the desktop. RHEL 10 uses <strong>Ptyxis</strong>.</td></tr><tr><td><strong>Pseudo-terminal (PTY / PTS)</strong></td><td>Used by GUI terminal windows, SSH and tmux. Names: <code>/dev/pts/0</code>, <code>/dev/pts/1</code>.</td></tr><tr><td><strong>Serial console</strong></td><td>Over a serial port (<code>ttyS0</code>). For servers without a screen, routers, embedded devices.</td></tr><tr><td><strong>Physical / system console</strong></td><td>Direct keyboard and monitor.</td></tr></tbody></table></div>
+<ul><li><strong>TTY</strong> originally meant <span class="key-term">Teletypewriter</span>, an old machine with a keyboard and printer.</li><li><strong>GUI mode:</strong> unlimited terminal windows. <strong>Text mode:</strong> 6 text consoles.</li><li><strong>Headless server:</strong> no permanent keyboard or screen. Admins use SSH or a serial console. Many servers run without a GUI to save resources.</li></ul>
+<div class="info-box note"><span class="icon">🖥️</span><div class="content"><strong>Which console does the GUI use?</strong><p>On a system with a desktop, the <strong>graphical login screen runs on tty1</strong> and your desktop session usually starts on <strong>tty2</strong>. (Older guides say tty7, which is outdated.) After you log out of the desktop, you return to the login screen on tty1.</p></div></div>
+<h3>How to switch consoles</h3>
+<ul><li>Press <code>Ctrl+Alt+F3</code> to jump to text console 3. Log in there. Press <code>Ctrl+Alt+F1</code> or <code>F2</code> to return to the desktop.</li><li>In a VM, click inside the VM window first so the keys reach the guest and not your host PC.</li></ul>
+</div>
+
+<div class="section" id="s3">
+<div class="section-header"><div class="section-icon">🔎</div><div class="section-header-text"><div class="section-id">Section 2.3</div><h2>Which Console Am I Using?</h2></div></div>
+<p>The <code>tty</code> command prints the name of the terminal you are using.</p>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">tty</span>
+<span class="output">/dev/tty1             # text console number 1 (local screen)</span>
+<span class="output">/dev/pts/0            # terminal window in GUI, or an SSH session</span></code></div>
+<div class="info-box important"><span class="icon">🔴</span><div class="content"><strong>You see /dev/tty1 on a RHEL 10 server. What does it mean?</strong><p>You are logged in on <strong>virtual console 1</strong> of the machine itself, meaning the <strong>VM window / local screen</strong>, <strong>not</strong> over SSH. On a server without a desktop, <strong>tty1 is the first text login screen</strong>, so seeing <code>/dev/tty1</code> is completely normal. If you connected with SSH, you would see <code>/dev/pts/0</code> instead.</p></div></div>
+<div class="table-wrapper"><table><thead><tr><th><code>tty</code> shows</th><th>Meaning</th></tr></thead><tbody><tr><td><code>/dev/tty1</code> … <code>tty6</code></td><td>Local text console (virtual console)</td></tr><tr><td><code>/dev/pts/N</code></td><td>GUI terminal window or SSH session</td></tr><tr><td><code>/dev/ttyS0</code></td><td>Serial console</td></tr></tbody></table></div>
+<h4>More ways to check how you are logged in</h4>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">who</span>               <span class="comment"># who is logged in and from where</span>
+<span class="output">student  tty1   2026-10-20 09:12</span>
+<span class="output">student  pts/0  2026-10-20 09:30 (192.168.100.9)</span>
+<span class="prompt">$ </span><span class="command">w</span>                 <span class="comment"># same, plus what each user is running</span>
+<span class="prompt">$ </span><span class="command">echo</span> $0           <span class="comment"># the shell name: -bash means a login shell</span>
+<span class="prompt">$ </span><span class="command">loginctl</span> list-sessions   <span class="comment"># sessions managed by systemd</span></code></div>
+</div>
+
+<div class="section" id="s4">
+<div class="section-header"><div class="section-icon">📟</div><div class="section-header-text"><div class="section-id">Section 2.4</div><h2>Shell Prompt</h2></div></div>
+<div class="prompt-breakdown"><div class="prompt-display">[<span class="p-user">student</span><span class="p-at">@</span><span class="p-host">workstation</span> <span class="p-dir">~</span>]<span class="p-sign">$</span></div><div class="prompt-labels"><div class="prompt-label"><div class="dot" style="background:var(--accent-green)"></div> Username</div><div class="prompt-label"><div class="dot" style="background:var(--text-muted)"></div> Separator</div><div class="prompt-label"><div class="dot" style="background:var(--accent-cyan)"></div> Hostname</div><div class="prompt-label"><div class="dot" style="background:var(--accent-yellow)"></div> Current directory (~ = home)</div><div class="prompt-label"><div class="dot" style="background:var(--accent-red)"></div> $ regular user / # root</div></div></div>
+<div class="table-wrapper"><table><thead><tr><th>Part</th><th>Meaning</th></tr></thead><tbody><tr><td><code>student</code></td><td>Current username</td></tr><tr><td><code>@</code></td><td>Separator</td></tr><tr><td><code>workstation</code></td><td>System (host) name</td></tr><tr><td><code>~</code></td><td>Current directory. <code>~</code> means your home directory</td></tr><tr><td><code>$</code></td><td><strong>Regular user</strong></td></tr><tr><td><code>#</code></td><td><strong>Root user</strong> (superuser)</td></tr></tbody></table></div>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>Watch the #</strong><p>A <code>#</code> prompt means every command runs with full power and can damage the whole system.</p></div></div>
+</div>
+
+<div class="section" id="s5">
+<div class="section-header"><div class="section-icon">👤</div><div class="section-header-text"><div class="section-id">Section 2.5</div><h2>Regular User vs Root User</h2></div></div>
+<div class="vs-container"><div class="vs-card left"><h4>👤 Regular user</h4><ul><li>Prompt: <code>$</code></li><li>Power: <strong>limited</strong></li><li>Home: <code>/home/username</code></li><li>Created with <code>useradd</code></li></ul>
+</div><div class="vs-divider">vs</div><div class="vs-card right"><h4>🔴 Root user</h4><ul><li>Prompt: <code>#</code></li><li>Power: <strong>full control</strong></li><li>Home: <code>/root</code></li><li>Exists on every system</li></ul>
+</div></div>
+<ul><li>A regular user can borrow admin power with <code>sudo</code> after joining the <strong>wheel</strong> group:</li></ul>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt"># </span><span class="command">usermod</span> <span class="flag">-aG</span> wheel username</code></div>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>Do not forget -a</strong><p><code>-aG</code> means <strong>append</strong> to the group. Using only <code>-G</code> <strong>replaces</strong> all of the user's other groups.</p></div></div>
+<ul><li>Sudo rules live in <code>/etc/sudoers</code>. Edit them only with <code>visudo</code>, which checks for mistakes.</li><li>Ticking "Make this user administrator" during install puts the user in <code>wheel</code>.</li><li>If the root account is locked during install, you cannot log in as root. Use your admin user with <code>sudo</code>.</li></ul>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code>sudo command</code></th><th><code>su -</code></th></tr></thead><tbody><tr><td>What it does</td><td>Runs <strong>one</strong> command as root</td><td>Opens a full root shell</td></tr><tr><td>Password asked</td><td><strong>Your own</strong> password</td><td><strong>Root's</strong> password</td></tr><tr><td>Logging</td><td>Every command is recorded</td><td>Only the <code>su</code> itself</td></tr><tr><td>Best for</td><td>Single admin tasks (safer)</td><td>Longer admin sessions</td></tr></tbody></table></div>
+</div>
+
+<div class="section" id="s6">
+<div class="section-header"><div class="section-icon">🐚</div><div class="section-header-text"><div class="section-id">Section 2.6</div><h2>What Is a Shell?</h2></div></div>
+<p>A <strong>shell</strong> is a program that reads what you type and passes the request to the kernel.</p>
+<div class="flow-diagram"><div class="flow-chain"><span class="flow-step">👤 You</span><span class="flow-arrow">→</span><span class="flow-step">Command</span><span class="flow-arrow">→</span><span class="flow-step">🐚 Shell</span><span class="flow-arrow">→</span><span class="flow-step">System call</span><span class="flow-arrow">→</span><span class="flow-step">🧠 Kernel</span><span class="flow-arrow">→</span><span class="flow-step">⚙️ Hardware</span></div></div>
+<h3>Interpreter vs compiler</h3>
+<div class="vs-container"><div class="vs-card left"><h4>📜 Interpreter</h4><ul><li>Reads and runs <strong>line by line</strong>, live</li><li>No separate output file</li><li>Example: <strong>Bash</strong></li></ul>
+</div><div class="vs-divider">vs</div><div class="vs-card right"><h4>⚙️ Compiler</h4><ul><li>Converts the <strong>whole program</strong> to machine code first</li><li>Creates an executable file</li><li>Example: <code>gcc</code> (C compiler)</li></ul>
+</div></div>
+<h3>Types of shell</h3>
+<div class="table-wrapper"><table><thead><tr><th>Shell</th><th>Platform</th><th>Note</th></tr></thead><tbody><tr><td><code>cmd.exe</code></td><td>Windows</td><td>Old command interpreter</td></tr><tr><td>PowerShell</td><td>Windows</td><td>Powerful scripting</td></tr><tr><td><code>sh</code></td><td>UNIX</td><td>Original Bourne shell</td></tr><tr><td><strong><code>bash</code></strong></td><td><strong>Linux, RHEL default</strong></td><td><strong>B</strong>ourne <strong>A</strong>gain <strong>SH</strong>ell: improved <code>sh</code>, great for scripting</td></tr><tr><td><code>zsh</code></td><td>macOS default</td><td>Can be installed on RHEL</td></tr></tbody></table></div>
+<div class="info-box note"><span class="icon">📘</span><div class="content"><strong>IOS is not Linux</strong><p><strong>IOS</strong> = Internetwork Operating System, <strong>Cisco's</strong> OS for routers and switches. It is not part of RHEL.</p></div></div>
+<h3>Interactive vs non-interactive</h3>
+<ul><li><strong>Interactive:</strong> you type commands and read the output.</li><li><strong>Non-interactive:</strong> runs on its own, like a <strong>script</strong> or a cron job.</li></ul>
+<h3>Login shell vs non-login shell</h3>
+<p>A <strong>login shell</strong> is a shell started as part of <strong>logging in</strong> (a fresh start as that user). A <strong>non-login shell</strong> is a shell started <strong>from inside</strong> a session, which reuses what you already have.</p>
+<div class="svg-wrap"><svg viewBox="0 0 780 284" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Segoe UI,Inter,sans-serif"><text x="190" y="20" text-anchor="middle" fill="#22c55e" font-size="12" font-weight="700">LOGIN SHELL  (su - · ssh · console login)</text><rect x="60" y="34" width="260" height="46" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/><text x="190.0" y="53.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">/etc/profile</text><text x="190.0" y="71.0" text-anchor="middle" fill="#94a3b8" font-size="11">system-wide settings</text><line x1="190" y1="80" x2="190" y2="96" stroke="#22c55e" stroke-width="2.5"/><rect x="60" y="96" width="260" height="46" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/><text x="190.0" y="115.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">~/.bash_profile</text><text x="190.0" y="133.0" text-anchor="middle" fill="#94a3b8" font-size="11">your login settings</text><line x1="190" y1="142" x2="190" y2="158" stroke="#22c55e" stroke-width="2.5"/><rect x="60" y="158" width="260" height="46" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/><text x="190.0" y="177.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">~/.bashrc</text><text x="190.0" y="195.0" text-anchor="middle" fill="#94a3b8" font-size="11">your aliases & prompt</text><text x="570" y="20" text-anchor="middle" fill="#f97316" font-size="12" font-weight="700">NON-LOGIN SHELL  (su · opening a terminal window)</text><rect x="440" y="34" width="260" height="46" rx="10" fill="#7c2d12" stroke="#f97316" stroke-width="1.5"/><text x="570.0" y="53.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">~/.bashrc</text><text x="570.0" y="71.0" text-anchor="middle" fill="#94a3b8" font-size="11">only this file is read</text><text x="570" y="110" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">keeps most of your current</text><text x="570" y="126" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">environment (PATH, directory)</text><text x="190" y="232" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">fresh, complete environment of the target user</text><text x="390" y="266" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="700">Check yourself:  echo $0   →   -bash = login shell,   bash = non-login</text></svg><div class="svg-cap">Which start-up files Bash reads depends on how the shell was started.</div></div>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code>su root</code> (non-login)</th><th><code>su - root</code> (login)</th></tr></thead><tbody><tr><td>Same as</td><td><code>su</code></td><td><code>su -</code> (also <code>su -l</code>, <code>su --login</code>)</td></tr><tr><td>Shell type</td><td><strong>Non-login</strong></td><td><strong>Login</strong></td></tr><tr><td>Environment</td><td>Keeps <strong>your old</strong> one (PATH, variables)</td><td>Builds a <strong>fresh</strong> one for root</td></tr><tr><td>Start-up files read</td><td>Only <code>~/.bashrc</code></td><td><code>/etc/profile</code> → <code>~/.bash_profile</code> → <code>~/.bashrc</code></td></tr><tr><td>Working directory</td><td><strong>Stays</strong> where you were</td><td>Goes to root's home <code>/root</code></td></tr><tr><td><code>echo $0</code> shows</td><td><code>bash</code></td><td><code>-bash</code></td></tr><tr><td>Password asked</td><td>Root's</td><td>Root's</td></tr></tbody></table></div>
+<div class="code-block"><span class="code-label">Try it</span><code><span class="prompt">$ </span><span class="command">pwd</span>
+<span class="output">/home/student</span>
+<span class="prompt">$ </span><span class="command">su</span> root                     <span class="comment"># non-login</span>
+<span class="command">Password:</span>
+<span class="prompt"># </span><span class="command">pwd</span>
+<span class="output">/home/student               # did not move</span>
+<span class="prompt"># </span><span class="command">exit</span>
+<span class="prompt">$ </span><span class="command">su</span> - root                   <span class="comment"># login</span>
+<span class="command">Password:</span>
+<span class="prompt"># </span><span class="command">pwd</span>
+<span class="output">/root                       # moved to root's home</span>
+<span class="prompt"># </span><span class="command">echo</span> $0
+<span class="output">-bash                       # the leading dash = login shell</span></code></div>
+<div class="info-box tip"><span class="icon">💡</span><div class="content"><strong>Rule of thumb</strong><p>Almost always use <strong><code>su -</code></strong> (with the dash). It gives you a clean, correct environment and avoids odd behaviour. Plain <code>su</code> is a common beginner mistake.</p></div></div>
+<div class="info-box note"><span class="icon">📘</span><div class="content"><strong>Why does this matter?</strong><p>Settings in <code>/etc/profile</code> and <code>~/.bash_profile</code> (like PATH changes) are only applied in <strong>login shells</strong>. A non-login shell may be missing them, so commands can behave differently. When <strong>root</strong> runs <code>su user</code>, no password is needed.</p></div></div>
+<h4>Check and change your shell</h4>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">echo</span> $SHELL           <span class="comment"># your login shell</span>
+<span class="prompt">$ </span><span class="command">cat</span> <span class="path">/etc/shells</span>       <span class="comment"># shells you are allowed to use</span>
+<span class="prompt">$ </span><span class="command">chsh</span> <span class="flag">-s</span> <span class="path">/bin/zsh</span>      <span class="comment"># change your login shell</span>
+<span class="prompt">$ </span><span class="command">shopt</span> <span class="flag">-q</span> login_shell &amp;&amp; echo login || echo non-login</code></div>
+<p>A shell change takes effect after you <strong>log out and log in again</strong>. No reboot is needed.</p>
+<h3>Where commands live</h3>
+<ul><li>Normal commands: <code>/usr/bin</code>. Admin commands: <code>/usr/sbin</code>. On modern RHEL, <code>/bin</code> and <code>/sbin</code> are links to them.</li><li>The shell finds them using the <strong>PATH</strong> variable: <code>echo $PATH</code>.</li><li>Find a command: <code>which ls</code> or <code>whereis passwd</code>.</li></ul>
+</div>
+
+<div class="section" id="s7">
+<div class="section-header"><div class="section-icon">⌨️</div><div class="section-header-text"><div class="section-id">Section 2.7</div><h2>Parts of a Command</h2></div></div>
+<div class="prompt-breakdown"><div class="prompt-display"><span class="p-host">command</span> <span class="p-at">[</span><span class="p-user">options</span><span class="p-at">]</span> <span class="p-at">[</span><span class="p-dir">arguments</span><span class="p-at">]</span></div><div class="prompt-labels"><div class="prompt-label"><div class="dot" style="background:var(--accent-cyan)"></div> Program to run</div><div class="prompt-label"><div class="dot" style="background:var(--accent-green)"></div> Changes behaviour (- or --)</div><div class="prompt-label"><div class="dot" style="background:var(--accent-yellow)"></div> What to work on</div></div></div>
+<div class="table-wrapper"><table><thead><tr><th>Part</th><th>Meaning</th><th>Example</th></tr></thead><tbody><tr><td><strong>Command</strong></td><td>Program to run</td><td><code>usermod</code></td></tr><tr><td><strong>Option</strong></td><td>Changes behaviour. Starts with <code>-</code> or <code>--</code></td><td><code>-L</code></td></tr><tr><td><strong>Argument</strong></td><td>The target the command works on</td><td><code>user01</code></td></tr></tbody></table></div>
+<div class="code-block"><span class="code-label">Examples</span><code><span class="prompt">$ </span><span class="command">ls</span>                     <span class="comment"># command only</span>
+<span class="prompt">$ </span><span class="command">ls</span> <span class="flag">-l</span>                  <span class="comment"># command + option</span>
+<span class="prompt">$ </span><span class="command">ls</span> <span class="path">/etc</span>                <span class="comment"># command + argument</span>
+<span class="prompt">$ </span><span class="command">ls</span> <span class="flag">-la</span> <span class="path">/etc</span>            <span class="comment"># command + options + argument</span>
+<span class="prompt">$ </span><span class="command">usermod</span> <span class="flag">-L</span> user01      <span class="comment"># locks user01's password</span></code></div>
+<p>Words are separated by <strong>spaces</strong>. Press <strong>Enter</strong> to run the command.</p>
+<h3>mkdir examples</h3>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">mkdir</span> d1
+<span class="prompt">$ </span><span class="command">mkdir</span> <span class="flag">--help</span>
+<span class="prompt">$ </span><span class="command">mkdir</span> <span class="flag">-p</span> d1/d2/d3      <span class="comment"># -p creates parent directories as needed</span>
+<span class="prompt">$ </span><span class="command">mkdir</span> <span class="flag">-pv</span> d1/d2/d3     <span class="comment"># -v shows what is created</span></code></div>
+<h3>First commands to know</h3>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it shows</th></tr></thead><tbody><tr><td><code>pwd</code></td><td>Where am I? (current directory)</td></tr><tr><td><code>whoami</code></td><td>Which user am I?</td></tr><tr><td><code>hostname</code></td><td>Name of this machine</td></tr><tr><td><code>id</code></td><td>My user ID and groups</td></tr><tr><td><code>date</code></td><td>Date and time</td></tr><tr><td><code>uptime</code></td><td>How long the system has been on</td></tr><tr><td><code>uname -r</code></td><td>Kernel version</td></tr><tr><td><code>clear</code> or <code>Ctrl+L</code></td><td>Clear the screen</td></tr><tr><td><code>Ctrl+C</code></td><td><strong>Stop</strong> a running command</td></tr></tbody></table></div>
+</div>
+
+<div class="section" id="s8">
+<div class="section-header"><div class="section-icon">⏻</div><div class="section-header-text"><div class="section-id">Section 2.8</div><h2>Power Off and Reboot</h2></div></div>
+<div class="table-wrapper"><table><thead><tr><th>Action</th><th>Commands</th></tr></thead><tbody><tr><td><strong>Shut down</strong></td><td><code>poweroff</code>  /  <code>systemctl poweroff</code>  /  <code>init 0</code></td></tr><tr><td><strong>Reboot</strong></td><td><code>reboot</code>  /  <code>systemctl reboot</code>  /  <code>init 6</code></td></tr></tbody></table></div>
+<p>From the desktop: system menu → Power icon → Power Off or Restart. If you do not choose, it acts after <strong>60 seconds</strong>.</p>
+</div>
+
+<div class="section" id="s9">
+<div class="section-header"><div class="section-icon">🎯</div><div class="section-header-text"><div class="section-id">Section 2.9</div><h2>GUI vs CLI Mode (systemd Targets)</h2></div></div>
+<p>Linux decides what to start at boot using <strong>targets</strong>. Two matter most:</p>
+<div class="vs-container"><div class="vs-card left"><h4>🖥️ GUI mode</h4><ul><li>Target: <code>graphical.target</code></li><li>Full desktop</li><li>Uses more resources</li></ul>
+</div><div class="vs-divider">vs</div><div class="vs-card right"><h4>⬛ CLI mode</h4><ul><li>Target: <code>multi-user.target</code></li><li>Text only, no desktop</li><li>Lighter and faster</li></ul>
+</div></div>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt"># </span><span class="command">systemctl</span> get-default
+<span class="output">graphical.target</span>
+<span class="comment"># Switch NOW (temporary, gone after reboot)</span>
+<span class="prompt"># </span><span class="command">systemctl</span> isolate multi-user.target      <span class="comment"># to CLI</span>
+<span class="prompt"># </span><span class="command">systemctl</span> isolate graphical.target       <span class="comment"># to GUI</span>
+<span class="comment"># Make it permanent (survives reboot)</span>
+<span class="prompt"># </span><span class="command">systemctl</span> set-default multi-user.target  <span class="comment"># boot to CLI</span>
+<span class="prompt"># </span><span class="command">systemctl</span> set-default graphical.target   <span class="comment"># boot to GUI</span>
+<span class="comment"># Bigger font on the text console</span>
+<span class="prompt"># </span><span class="command">setfont</span> sun12x22</code></div>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code>isolate</code></th><th><code>set-default</code></th></tr></thead><tbody><tr><td>Effect</td><td>Switches <strong>now</strong></td><td>Changes the <strong>next boots</strong></td></tr><tr><td>Survives reboot?</td><td>❌ No</td><td>✅ Yes</td></tr></tbody></table></div>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>Save your work first</strong><p><code>isolate multi-user.target</code> closes the desktop session and everything open in it.</p></div></div>
+</div>
+
+<div class="section" id="s10">
+<div class="section-header"><div class="section-icon">🔐</div><div class="section-header-text"><div class="section-id">Section 2.10</div><h2>Logging In to a Remote System with SSH</h2></div></div>
+<ul><li><strong>SSH</strong> = Secure Shell. It gives you a shell on another machine over an <strong>encrypted</strong> connection.</li><li>Client program: <code>ssh</code>. Server service: <code>sshd</code>. Default port: <strong>22</strong>.</li></ul>
+<div class="svg-wrap"><svg viewBox="0 0 780 224" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Segoe UI,Inter,sans-serif"><rect x="14" y="40" width="200" height="100" rx="10" fill="#1e3a8a" stroke="#3b82f6" stroke-width="1.5"/><text x="114.0" y="86.0" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">Your PC</text><text x="114.0" y="104.0" text-anchor="middle" fill="#94a3b8" font-size="11">ssh client</text><rect x="566" y="40" width="200" height="100" rx="10" fill="#14532d" stroke="#22c55e" stroke-width="1.5"/><text x="666.0" y="86.0" text-anchor="middle" fill="#fff" font-size="15" font-weight="700">Server</text><text x="666.0" y="104.0" text-anchor="middle" fill="#94a3b8" font-size="11">sshd listens on port 22</text><rect x="250" y="76" width="280" height="28" rx="14" fill="#312e81" stroke="#818cf8" stroke-width="1.5"/><text x="390" y="95" text-anchor="middle" fill="#e0e7ff" font-size="13" font-weight="700">🔒 encrypted tunnel</text><line x1="214" y1="90" x2="250" y2="90" stroke="#64748b" stroke-width="2.5"/><line x1="530" y1="90" x2="566" y2="90" stroke="#64748b" stroke-width="2.5"/><text x="114" y="160" text-anchor="middle" fill="#93c5fd" font-size="11" font-weight="700">🔑 private key (secret)</text><text x="114" y="176" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="400">~/.ssh/id_ed25519 or mylab.pem</text><text x="666" y="160" text-anchor="middle" fill="#86efac" font-size="11" font-weight="700">🔓 public key (not secret)</text><text x="666" y="176" text-anchor="middle" fill="#94a3b8" font-size="10" font-weight="400">~/.ssh/authorized_keys</text><text x="390" y="206" text-anchor="middle" fill="#e2e8f0" font-size="12" font-weight="400">The server checks that your private key matches the public key it stores.</text></svg><div class="svg-cap">Key-based login: the secret half never leaves your PC.</div></div>
+<h3>3 checks before connecting</h3>
+<div class="table-wrapper"><table><thead><tr><th>#</th><th>Check</th><th>How</th></tr></thead><tbody><tr><td><strong>1</strong></td><td><strong>Connectivity:</strong> can you reach the server?</td><td><code>ip a</code> to find its IP, then <code>ping</code></td></tr><tr><td><strong>2</strong></td><td><strong>Service:</strong> is sshd running?</td><td><code>systemctl status sshd</code></td></tr><tr><td><strong>3</strong></td><td><strong>Credentials:</strong> a password or a key</td><td>Ask the admin, or create keys</td></tr></tbody></table></div>
+<div class="code-block"><span class="code-label">SSH commands</span><code><span class="prompt">$ </span><span class="command">ssh</span> remoteuser@remotehost                    <span class="comment"># password login</span>
+<span class="prompt">$ </span><span class="command">ssh</span> <span class="flag">-i</span> mylab.pem remoteuser@remotehost       <span class="comment"># key login</span>
+<span class="prompt">$ </span><span class="command">exit</span>                                         <span class="comment"># log out (or Ctrl+D)</span></code></div>
+<h3>Key-based login</h3>
+<ul><li><strong>Private key</strong> = secret, stays with you (like a password).</li><li><strong>Public key</strong> = placed in the user's account on the server. It does not need to be secret.</li><li>Copy a <code>.pem</code> file to your machine with the GUI, <code>scp</code>, or <strong>WinSCP</strong> (a Windows tool that copies files over SSH).</li><li>The private key file must not be readable by others:</li></ul>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">chmod</span> 600 mylab.pem        <span class="comment"># 400 also works</span></code></div>
+<p>If the permissions are wrong, OpenSSH <strong>refuses</strong> to use the key.</p>
+<h3>The first-login warning</h3>
+<div class="code-block"><span class="code-label">First connection</span><code><span class="output">The authenticity of host 'remotehost (192.0.2.42)' can't be established.</span>
+<span class="output">ED25519 key fingerprint is SHA256:AbCdEf123...</span>
+<span class="output">Are you sure you want to continue connecting (yes/no)?</span></code></div>
+<ul><li><code>yes</code> saves the server's <strong>host key</strong> so you are not asked again.</li><li><code>no</code> closes the connection.</li><li>If a saved host key later <strong>changes</strong>, SSH blocks you. It can mean someone is pretending to be that server (a <span class="key-term">man-in-the-middle attack</span>).</li><li>Saved host keys live in <code>~/.ssh/known_hosts</code>.</li></ul>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>Root over SSH</strong><p>The default is <code>PermitRootLogin prohibit-password</code>: root <strong>cannot use a password</strong> over SSH (key login can still be set up). Normal practice: log in as a regular user, then use <code>sudo</code> or <code>su -</code>.</p></div></div>
+<h3>Useful commands</h3>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">ip</span> a                       <span class="comment"># IP addresses ("inet" = IPv4, "inet6" = IPv6)</span>
+<span class="prompt">$ </span><span class="command">nmcli</span> con show             <span class="comment"># list network connections</span>
+<span class="prompt">$ </span><span class="command">nmcli</span> con down ens160      <span class="comment"># bring a connection down</span>
+<span class="prompt">$ </span><span class="command">nmcli</span> con up ens160        <span class="comment"># bring it up</span>
+<span class="prompt">$ </span><span class="command">who</span> <span class="flag">-a</span>                     <span class="comment"># logged-in users, detailed</span>
+<span class="prompt">$ </span><span class="command">w</span>                          <span class="comment"># logged-in users and what they run</span>
+<span class="prompt">$ </span><span class="command">last</span>                       <span class="comment"># login history</span>
+<span class="prompt">$ </span><span class="command">su</span> - root                  <span class="comment"># become root with a login shell</span></code></div>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>Never run nmcli con down over SSH</strong><p>You will cut off your own connection. Do it from the VM console.</p></div></div>
+</div>
+
+<div class="section" id="s11">
+<div class="section-header"><div class="section-icon">🖥️</div><div class="section-header-text"><div class="section-id">Section 2.11</div><h2>GNOME Desktop in RHEL 10</h2></div></div>
+<ul><li>Default desktop: <strong>GNOME 47</strong> on <strong>Wayland</strong> (the older display system is <strong>X11</strong>).</li><li>The first login as a new user may start the <strong>Tour</strong> program. You can close it.</li><li>On the login screen you can pick <strong>GNOME Classic</strong> from the gear icon (after choosing the user, before the password).</li></ul>
+<div class="svg-wrap"><svg viewBox="0 0 780 280" xmlns="http://www.w3.org/2000/svg" role="img" font-family="Segoe UI,Inter,sans-serif"><rect x="10" y="10" width="760" height="260" rx="14" fill="#0f172a" stroke="#334155" stroke-width="1.5"/><rect x="10" y="10" width="760" height="30" rx="14" fill="#111827" stroke="#334155"/><text x="70" y="30" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Activities</text><text x="390" y="30" text-anchor="middle" fill="#fff" font-size="12" font-weight="700">Tue 20 Oct  10:42</text><text x="715" y="30" text-anchor="middle" fill="#fff" font-size="12" font-weight="400">📶 🔊 🔋 ⏻</text><rect x="230" y="70" width="320" height="120" rx="10" fill="#1e293b" stroke="#475569" stroke-width="1.5"/><text x="390.0" y="126.0" text-anchor="middle" fill="#fff" font-size="14" font-weight="700">Terminal window</text><text x="390.0" y="144.0" text-anchor="middle" fill="#94a3b8" font-size="11">$ </text><rect x="250" y="230" width="280" height="32" rx="10" fill="#111827" stroke="#475569" stroke-width="1.5"/><text x="390.0" y="251.0" text-anchor="middle" fill="#fff" font-size="13" font-weight="700">🗂 📁 🌐 ⌨️ ⚙️</text><text x="70" y="60" text-anchor="middle" fill="#facc15" font-size="11" font-weight="700">① Top bar</text><text x="390" y="60" text-anchor="middle" fill="#facc15" font-size="11" font-weight="700">② Clock → message tray</text><text x="715" y="60" text-anchor="middle" fill="#facc15" font-size="11" font-weight="700">③ System menu</text><text x="390" y="216" text-anchor="middle" fill="#facc15" font-size="11" font-weight="700">④ Your windows</text><text x="640" y="246" text-anchor="middle" fill="#facc15" font-size="11" font-weight="700">⑤ Dash: favourite apps</text><text x="100" y="146" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">Press the Super</text><text x="100" y="162" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">(Windows) key to</text><text x="100" y="178" text-anchor="middle" fill="#94a3b8" font-size="11" font-weight="400">open Activities</text></svg><div class="svg-cap">A sketch of the GNOME desktop in RHEL 10.</div></div>
+<div class="table-wrapper"><table><thead><tr><th>Part</th><th>What it does</th></tr></thead><tbody><tr><td><strong>Top bar</strong></td><td>Always visible: Activities, clock, system menu</td></tr><tr><td><strong>Activities Overview</strong></td><td>Start apps and organise windows. Open it with the <strong>Super key</strong></td></tr><tr><td><strong>Dash</strong></td><td>Favourite and running apps, plus the Show Applications icon</td></tr><tr><td><strong>Windows overview</strong></td><td>Thumbnails of open windows</td></tr><tr><td><strong>Workspace selector</strong></td><td>Switch between workspaces</td></tr><tr><td><strong>Message tray</strong></td><td>Notifications and calendar. Click the clock</td></tr><tr><td><strong>System menu</strong></td><td>Top right: network, settings, lock, log out, power</td></tr></tbody></table></div>
+<div class="info-box important"><span class="icon">🔴</span><div class="content"><strong>What is the Super key?</strong><p><strong>Super = the Windows key (⊞)</strong> on a PC keyboard. On a Mac keyboard it is the <strong>Command (⌘)</strong> key. It is the key between <code>Ctrl</code> and <code>Alt</code>. <strong>Super+L means: hold the Windows key and press L.</strong></p><p>If your host Windows grabs the key (for example Windows+L locks your <em>host</em> PC), click inside the VM window or use full-screen mode so the key is sent to the VM. You can always click <strong>Activities</strong> in the top-left instead.</p></div></div>
+<h4>Start a terminal</h4>
+<ul><li>Press the <strong>Super (Windows) key</strong>, type <code>terminal</code>, press Enter.</li><li>Or press <code>Alt+F2</code>, type <code>ptyxis</code>, press Enter.</li></ul>
+<div class="shortcut-grid"><div class="shortcut-item"><kbd>Super</kbd> <span>Open Activities Overview</span></div><div class="shortcut-item"><kbd>Super+V</kbd> <span>Notification list / calendar (older GNOME: <code>Super+M</code>)</span></div><div class="shortcut-item"><kbd>Super+L</kbd> <span>Lock the screen</span></div><div class="shortcut-item"><kbd>Ctrl+Alt+←/→</kbd> <span>Switch workspace</span></div><div class="shortcut-item"><kbd>Ctrl+Alt+Del</kbd> <span>Power-off dialog</span></div><div class="shortcut-item"><kbd>Ctrl+Shift+N</kbd> <span>New terminal window</span></div><div class="shortcut-item"><kbd>Ctrl+Shift+T</kbd> <span>New terminal tab</span></div><div class="shortcut-item"><kbd>Ctrl + / Ctrl -</kbd> <span>Zoom the terminal in / out</span></div></div>
+<h4>Workspaces</h4>
+<ul><li>Separate desktops to group windows by task.</li><li><strong>Dynamic</strong> (default): empty ones are removed. <strong>Fixed</strong>: a set number always shows.</li><li>Change under System menu → Settings → Multitasking.</li></ul>
+<h4>Lock, log out, power</h4>
+<ul><li><strong>Lock:</strong> the system menu lock icon, or <code>Super+L</code>. Unlock with Enter or Space, then your password.</li><li><strong>Log out:</strong> system menu → Power icon → Log Out.</li><li><strong>Power off / restart:</strong> the Power icon, or <code>Ctrl+Alt+Del</code>.</li><li>On shutdown you may see "Install pending software updates". You can untick it.</li></ul>
+</div>
+
+<div class="section" id="s12">
+<div class="section-header"><div class="section-icon">⚡</div><div class="section-header-text"><div class="section-id">Section 2.12</div><h2>Executing Commands with Bash</h2></div></div>
+<h3>Running more than one command</h3>
+<div class="table-wrapper"><table><thead><tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr></thead><tbody><tr><td><code>;</code></td><td>Run one after another, <strong>always</strong></td><td><code>cd /tmp; ls; pwd</code></td></tr><tr><td><code>&amp;&amp;</code></td><td>Run the next <strong>only if the previous succeeded</strong></td><td><code>cd /etc &amp;&amp; cat passwd</code></td></tr><tr><td><code>||</code></td><td>Run the next <strong>only if the previous failed</strong></td><td><code>cd /nodir || echo "Not found"</code></td></tr><tr><td><code>|</code> (pipe)</td><td>Send the output of one command into the next</td><td><code>cat /etc/passwd | grep root</code></td></tr></tbody></table></div>
+<div class="flow-diagram"><div class="flow-chain"><span class="flow-step">command 1</span><span class="flow-arrow">→</span><span class="flow-step"><b style="color:#22c55e">&&</b> success? →</span><span class="flow-arrow">→</span><span class="flow-step">command 2</span></div></div>
+<div class="flow-diagram"><div class="flow-chain"><span class="flow-step">command 1</span><span class="flow-arrow">→</span><span class="flow-step"><b style="color:#ef4444">||</b> failed? →</span><span class="flow-arrow">→</span><span class="flow-step">command 2</span></div></div>
+<div class="info-box note"><span class="icon">📘</span><div class="content"><strong>Success and failure</strong><p>Every command leaves an <strong>exit status</strong>. <code>0</code> means success; anything else means failure. See it with <code>echo $?</code> right after a command. <code>&amp;&amp;</code> and <code>||</code> read this number.</p></div></div>
+<div class="code-block"><span class="code-label">Pipe examples</span><code><span class="prompt">$ </span><span class="command">ls</span> <span class="output">|</span> <span class="command">head</span> <span class="flag">-5</span>                <span class="comment"># first 5 items</span>
+<span class="prompt">$ </span><span class="command">history</span> <span class="output">|</span> <span class="command">grep</span> ssh          <span class="comment"># find ssh commands</span>
+<span class="prompt">$ </span><span class="command">cat</span> <span class="path">/etc/passwd</span> <span class="output">|</span> <span class="command">wc</span> <span class="flag">-l</span>     <span class="comment"># count lines</span></code></div>
+<h3>Simple commands</h3>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="prompt">$ </span><span class="command">whoami</span>
+<span class="prompt">$ </span><span class="command">mkdir</span> l1; cd l1; touch testing     <span class="comment"># three commands on one line</span>
+<span class="prompt">$ </span><span class="command">date</span>                                <span class="comment"># date and time</span>
+<span class="prompt">$ </span><span class="command">date</span> +%R                            <span class="comment"># 24-hour time, e.g. 17:58</span>
+<span class="prompt">$ </span><span class="command">date</span> +%r                            <span class="comment"># 12-hour with AM/PM</span>
+<span class="prompt">$ </span><span class="command">date</span> +%x                            <span class="comment"># date, e.g. 04/29/25</span>
+<span class="prompt">$ </span><span class="command">passwd</span>                              <span class="comment"># change your password</span></code></div>
+<ul><li>A normal user changes only their own password and must enter the old one first.</li><li>Root can run <code>passwd username</code> to set anyone's password.</li><li>Use strong passwords (mixed characters, not a dictionary word).</li><li>Linux does not need file extensions. Use <code>file</code> to see the real type.</li></ul>
+<h3>Viewing files</h3>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>Purpose</th></tr></thead><tbody><tr><td><code>file /etc/passwd</code></td><td>Show the file type</td></tr><tr><td><code>cat /etc/passwd</code></td><td>Show the whole file</td></tr><tr><td><code>cat file1 file2</code></td><td>Show several files together</td></tr><tr><td><code>cat &gt; file1</code></td><td>Create a file: type text, then <code>Ctrl+D</code> to save. <strong>Overwrites</strong> old content</td></tr><tr><td><code>cat &gt;&gt; file1</code></td><td><strong>Appends</strong> to the end of a file</td></tr><tr><td><code>less file</code></td><td>One page at a time. Arrows scroll, <code>Q</code> quits</td></tr><tr><td><code>head file</code></td><td>First 10 lines. <code>head -n 3 file</code> = first 3</td></tr><tr><td><code>tail file</code></td><td>Last 10 lines. <code>tail -n 3 file</code> = last 3</td></tr><tr><td><code>wc file</code></td><td>Lines, words, bytes</td></tr><tr><td><code>wc -l</code> / <code>-w</code> / <code>-c</code></td><td>Only lines / words / characters</td></tr></tbody></table></div>
+<h3>Tab completion</h3>
+<ul><li><code>Tab</code> once completes a unique name. <code>Tab</code> twice lists all matches.</li><li>Works on commands, file names and options. Try <code>useradd --</code> then <code>Tab Tab</code>.</li></ul>
+<h3>A long command over several lines</h3>
+<p>End the line with <code>\</code>. The shell shows a <code>&gt;</code> continuation prompt. <strong>Do not type the <code>&gt;</code> yourself</strong>, because it would act as redirection.</p>
+<div class="code-block"><span class="code-label">Terminal</span><code><span class="command">head</span> <span class="flag">-n</span> 3 \
+    <span class="command">/usr/share/dict/words</span> \
+    <span class="command">/usr/share/dict/linux.words</span></code></div>
+<h3>Command history</h3>
+<div class="table-wrapper"><table><thead><tr><th>Action</th><th>How</th></tr></thead><tbody><tr><td>Show history</td><td><code>history</code></td></tr><tr><td>Repeat the last command</td><td><code>!!</code></td></tr><tr><td>Run command number 12</td><td><code>!12</code></td></tr><tr><td>Run the last command starting with <code>ls</code></td><td><code>!ls</code></td></tr><tr><td>Search history</td><td><code>Ctrl+R</code>, then type</td></tr><tr><td>Reuse the last argument</td><td><code>Esc</code> then <code>.</code>, or <code>Alt+.</code> (repeat to go further back)</td></tr><tr><td>Clear this session's history</td><td><code>history -c</code></td></tr></tbody></table></div>
+<p>Up and Down arrows move through old commands. Left and Right arrows edit them.</p>
+<div class="info-box warning"><span class="icon">⚠️</span><div class="content"><strong>History is a security risk</strong><p><code>~/.bash_history</code> can contain passwords typed in commands. <code>history -c</code> clears only the <strong>current session's memory</strong>; the saved file is updated when the shell exits.</p></div></div>
+<h3>Command-line editing shortcuts</h3>
+<div class="shortcut-grid"><div class="shortcut-item"><kbd>Ctrl+A</kbd> <span>Jump to start of line</span></div><div class="shortcut-item"><kbd>Ctrl+E</kbd> <span>Jump to end of line</span></div><div class="shortcut-item"><kbd>Ctrl+U</kbd> <span>Delete from cursor to start</span></div><div class="shortcut-item"><kbd>Ctrl+K</kbd> <span>Delete from cursor to end</span></div><div class="shortcut-item"><kbd>Ctrl+←/→</kbd> <span>Move one word left / right</span></div><div class="shortcut-item"><kbd>Ctrl+R</kbd> <span>Search history</span></div><div class="shortcut-item"><kbd>Ctrl+C</kbd> <span>Stop the running command</span></div><div class="shortcut-item"><kbd>Ctrl+L</kbd> <span>Clear the screen</span></div><div class="shortcut-item"><kbd>Ctrl+D</kbd> <span>On an empty prompt: log out</span></div></div>
+</div>
+
+<div class="section" id="s13">
+<div class="section-header"><div class="section-icon">🧪</div><div class="section-header-text"><div class="section-id">Section 2.13</div><h2>Practice Commands</h2></div></div>
+<div class="code-block"><span class="code-label">Practice</span><code><span class="prompt">$ </span><span class="command">date</span>
+<span class="prompt">$ </span><span class="command">date</span> +%R
+<span class="prompt">$ </span><span class="command">file</span> zcat
+<span class="prompt">$ </span><span class="command">wc</span> zcat                <span class="comment"># then use Esc + . to reuse the file name</span>
+<span class="prompt">$ </span><span class="command">head</span> zcat
+<span class="prompt">$ </span><span class="command">tail</span> zcat
+<span class="prompt">$ </span><span class="command">!!</span>                     <span class="comment"># repeat the last command</span>
+<span class="prompt">$ </span><span class="command">tail</span> <span class="flag">-n</span> 20 zcat        <span class="comment"># Up arrow, Ctrl+A, Ctrl+Right, then add -n 20</span>
+<span class="prompt">$ </span><span class="command">history</span>                <span class="comment"># find the number of a command</span>
+<span class="prompt">$ </span><span class="command">!2</span>                     <span class="comment"># run that command again</span></code></div>
+</div>
+
+<div class="section" id="s14">
+<div class="section-header"><div class="section-icon">🎯</div><div class="section-header-text"><div class="section-id">Section 2.14</div><h2>Test Yourself: Quiz</h2></div></div>
+<p>Click an answer. You will see <strong>right</strong> or <strong>wrong</strong> straight away, with the reason. Questions tagged <strong>Interview</strong> are commonly asked in Linux interviews. Your score updates as you go.</p>
+<div class="quiz-bar"><span>Answered: <b id="qa">0</b> / <b id="qn"></b> &nbsp;·&nbsp; Correct: <b id="qc">0</b> &nbsp;·&nbsp; Score: <b id="qp">0%</b></span><button class="quiz-btn" onclick="resetQuiz()">↻ Restart quiz</button></div><div id="quiz"></div><div id="qresult"></div>
+</div>
+
+<div class="section" id="s15">
+<div class="section-header"><div class="section-icon">🗝️</div><div class="section-header-text"><div class="section-id">Section 2.15</div><h2>Answer Key</h2></div></div>
+<p>Every question with its correct answer and a short reason. Read it again before an interview.</p>
+<div id="answerkey"></div>
+</div>
+
+</div>
+<footer class="chapter-footer"><a href="chapter-03.html" class="next-chapter">Next: Chapter 03 — Managing Files from the Command Line →</a><p>📘 RH124 Study Notes — Chapter 02</p></footer>
+<button class="scroll-top" id="scrollTopBtn" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
+<script>function toggleTOC(){document.getElementById('tocSidebar').classList.toggle('open');document.getElementById('tocOverlay').classList.toggle('open')}
+document.querySelectorAll('.toc-sidebar a').forEach(function(l){l.addEventListener('click',function(){document.getElementById('tocSidebar').classList.remove('open');document.getElementById('tocOverlay').classList.remove('open')})});
+window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;document.getElementById('readingProgress').style.width=(h>0?window.scrollY/h*100:0)+'%';document.getElementById('scrollTopBtn').classList.toggle('visible',window.scrollY>400)});
+var Q=[{"t": "Basics", "q": "What is the difference between a terminal and a shell?", "o": ["They are the same thing", "The terminal is the window; the shell is the program inside it that runs your commands", "The shell is the window; the terminal is the program", "The terminal is the kernel"], "a": 1, "e": "The terminal gives you a screen and keyboard. The shell (Bash) reads and runs what you type."}, {"t": "Basics", "q": "What is a console?", "o": ["A type of shell", "A web page for admins", "The direct keyboard-and-screen connection to the machine itself", "A text editor"], "a": 2, "e": "A console is the machine's own direct interface. It works even when the network is down."}, {"t": "Basics", "q": "Which statement about virtual consoles is TRUE?", "o": ["They need a network connection", "Several can share one physical screen, each with its own independent login", "Only root can use them", "There is only one"], "a": 1, "e": "Virtual consoles (tty1 to tty6) share one screen and each has a separate login."}, {"t": "Console", "q": "You run tty on a RHEL 10 server and get /dev/tty1. What does it mean?", "o": ["You are connected through SSH", "You are on virtual console 1 of the local machine (VM window)", "You are on a serial port", "The server is broken"], "a": 1, "e": "tty1 is the first local text console. SSH sessions show /dev/pts/N."}, {"t": "Console", "q": "Which key combination switches to text console 3?", "o": ["Ctrl+Alt+F3", "Ctrl+C+3", "Super+3", "Alt+Tab"], "a": 0, "e": "Ctrl+Alt+F1 to F6 switch between virtual consoles."}, {"t": "Console", "q": "What does tty print inside an SSH session?", "o": ["/dev/tty1", "/dev/pts/0 (a pseudo-terminal)", "/dev/ttyS0", "/dev/null"], "a": 1, "e": "SSH and GUI terminal windows use pseudo-terminals: /dev/pts/N."}, {"t": "Prompt", "q": "A prompt ending with # means:", "o": ["A normal user", "The root user (full power)", "A comment", "A remote login"], "a": 1, "e": "# = root. $ = regular user."}, {"t": "Users", "q": "Which command adds a user to the wheel group WITHOUT removing other groups?", "o": ["usermod -G wheel user", "usermod -aG wheel user", "useradd wheel user", "groupadd wheel"], "a": 1, "e": "-a means append. Without it, -G replaces all other groups."}, {"t": "Interview", "q": "Whose password does sudo ask for?", "o": ["Root's password", "Your own password", "No password ever", "The server owner's"], "a": 1, "e": "sudo asks for YOUR password. su - asks for the target user's (root's) password."}, {"t": "Interview", "q": "What is the difference between su root and su - root?", "o": ["No difference", "su - starts a login shell with a fresh environment and goes to /root; su keeps your old environment and directory", "su - is faster", "su is for remote logins only"], "a": 1, "e": "su - = login shell. It reads /etc/profile and ~/.bash_profile and changes to the new user's home. Plain su is a non-login shell."}, {"t": "Interview", "q": "Which output of echo $0 shows you are in a LOGIN shell?", "o": ["bash", "-bash", "sh", "/dev/tty1"], "a": 1, "e": "A leading dash (-bash) means the shell was started as a login shell."}, {"t": "Interview", "q": "Which start-up file does a NON-login Bash shell read?", "o": ["/etc/profile", "~/.bash_profile", "~/.bashrc", "/etc/shells"], "a": 2, "e": "Non-login shells read only ~/.bashrc. Login shells read /etc/profile, ~/.bash_profile, then ~/.bashrc."}, {"t": "Basics", "q": "What is the default shell on RHEL?", "o": ["zsh", "dash", "bash", "cmd.exe"], "a": 2, "e": "Bash (Bourne Again Shell)."}, {"t": "Basics", "q": "In ls -l /etc, what is -l?", "o": ["The command", "An option", "An argument", "A pipe"], "a": 1, "e": "-l is an option; /etc is the argument; ls is the command."}, {"t": "Commands", "q": "Which symbol runs the next command ONLY if the previous one succeeded?", "o": [";", "&&", "||", "|"], "a": 1, "e": "&& = run next if previous succeeded. || = run next if previous failed. ; = always run."}, {"t": "Commands", "q": "What does the pipe | do?", "o": ["Runs two commands at the same time without connection", "Sends the output of one command into the next command", "Saves output to a file", "Stops a command"], "a": 1, "e": "Example: cat /etc/passwd | wc -l counts the lines."}, {"t": "Commands", "q": "What is the difference between cat > file and cat >> file?", "o": ["No difference", "> overwrites the file, >> appends to the end", "> appends, >> overwrites", ">> deletes the file"], "a": 1, "e": "Single > overwrites. Double >> appends."}, {"t": "Shortcuts", "q": "Which shortcut repeats the last command?", "o": ["!!", "Ctrl+Z", "Ctrl+Q", "Esc Esc"], "a": 0, "e": "!! re-runs the previous command (for example: sudo !!)."}, {"t": "Shortcuts", "q": "Which shortcut searches your command history?", "o": ["Ctrl+S", "Ctrl+R", "Ctrl+H", "Ctrl+F"], "a": 1, "e": "Ctrl+R opens a reverse search through history."}, {"t": "Shortcuts", "q": "Which shortcut jumps to the START of the command line?", "o": ["Ctrl+A", "Ctrl+E", "Ctrl+U", "Ctrl+K"], "a": 0, "e": "Ctrl+A = start, Ctrl+E = end."}, {"t": "Systemd", "q": "Which target gives a text-only system?", "o": ["graphical.target", "multi-user.target", "reboot.target", "network.target"], "a": 1, "e": "multi-user.target = CLI. graphical.target = desktop."}, {"t": "Systemd", "q": "What is the difference between systemctl isolate and systemctl set-default?", "o": ["No difference", "isolate switches now (temporary); set-default changes every future boot", "isolate is permanent", "set-default switches now"], "a": 1, "e": "isolate is immediate but lost on reboot. set-default is saved for the next boots."}, {"t": "SSH", "q": "What is the default SSH port?", "o": ["21", "22", "80", "443"], "a": 1, "e": "SSH uses TCP port 22 by default."}, {"t": "SSH", "q": "What permission should a private key file have?", "o": ["777", "644", "600 (or 400)", "Anything"], "a": 2, "e": "Private keys must not be readable by others. OpenSSH refuses keys with loose permissions."}, {"t": "SSH", "q": "You connect to a server and SSH warns that its host key CHANGED. What could it mean?", "o": ["Nothing, ignore it", "The server was reinstalled, or someone may be impersonating it (man-in-the-middle)", "Your keyboard is broken", "The password expired"], "a": 1, "e": "A changed host key can mean a reinstall, but it can also be an attack. Verify before continuing."}, {"t": "SSH", "q": "Which is true for root SSH login on RHEL 10 by default?", "o": ["Root can log in with a password", "Root cannot log in with a password over SSH (prohibit-password)", "Root cannot be used at all, ever", "Root login is always allowed"], "a": 1, "e": "Default is PermitRootLogin prohibit-password. Use a normal user + sudo."}, {"t": "GNOME", "q": "What is the Super key?", "o": ["The Caps Lock key", "The Windows key (Command on Mac)", "The Escape key", "The Fn key"], "a": 1, "e": "Super = the Windows key. Super+L locks the screen."}, {"t": "GNOME", "q": "What is the default terminal app in RHEL 10?", "o": ["GNOME Terminal", "Ptyxis", "xterm", "Konsole"], "a": 1, "e": "RHEL 10 uses Ptyxis."}, {"t": "Interview", "q": "Which file stores your Bash command history, and why is it a security risk?", "o": ["~/.bashrc; it is empty", "~/.bash_history; it may contain passwords typed in commands", "/etc/history; it is public", "/var/log/history; it is encrypted"], "a": 1, "e": "~/.bash_history can hold passwords you typed in commands."}];var answered=0,correct=0;
+function render(){var box=document.getElementById('quiz');box.innerHTML='';answered=0;correct=0;document.getElementById('qresult').innerHTML='';
+Q.forEach(function(item,i){var d=document.createElement('div');d.className='qz';var h=document.createElement('h4');h.textContent='Q'+(i+1)+'. '+item.q;var tag=document.createElement('span');tag.className='qtag';tag.textContent=item.t;h.appendChild(tag);d.appendChild(h);
+var ex=document.createElement('div');ex.className='qe';
+item.o.forEach(function(opt,j){var b=document.createElement('button');b.className='qo';b.type='button';b.textContent=String.fromCharCode(65+j)+'. '+opt;
+b.onclick=function(){var btns=d.querySelectorAll('.qo');btns.forEach(function(x,k){x.disabled=true;if(k===item.a)x.classList.add('ok')});
+answered++;if(j===item.a){correct++;ex.textContent='✅ Correct! '+item.e}else{b.classList.add('bad');ex.textContent='❌ Not quite. Correct answer: '+String.fromCharCode(65+item.a)+'. '+item.o[item.a]+'. '+item.e}
+ex.classList.add('show');update()};d.appendChild(b)});d.appendChild(ex);box.appendChild(d)});update()}
+function update(){document.getElementById('qa').textContent=answered;document.getElementById('qn').textContent=Q.length;document.getElementById('qc').textContent=correct;document.getElementById('qp').textContent=answered?Math.round(correct/answered*100)+'%':'0%';
+if(answered===Q.length){var p=Math.round(correct/Q.length*100);var m=p>=90?'Excellent! You are interview-ready on this chapter.':p>=70?'Good job. Review the questions you missed in the Answer Key.':'Keep practising: read the chapter again, then retry.';document.getElementById('qresult').innerHTML='<div class="info-box '+(p>=70?'tip':'warning')+'"><span class="icon">'+(p>=70?'🏆':'📚')+'</span><div class="content"><strong>Final score: '+correct+' / '+Q.length+' ('+p+'%)</strong><p>'+m+'</p></div></div>'}}
+function resetQuiz(){render();document.getElementById('s14').scrollIntoView({behavior:'smooth'})}
+function buildKey(){var t='<div class="table-wrapper"><table><thead><tr><th>#</th><th>Question</th><th>Answer</th><th>Why</th></tr></thead><tbody>';
+Q.forEach(function(it,i){var tr=document.createElement('tr');t+='<tr><td>'+(i+1)+'</td><td></td><td></td><td></td></tr>'});t+='</tbody></table></div>';var k=document.getElementById('answerkey');k.innerHTML=t;
+var rows=k.querySelectorAll('tbody tr');Q.forEach(function(it,i){var c=rows[i].children;c[1].textContent=it.q;c[2].textContent=String.fromCharCode(65+it.a)+'. '+it.o[it.a];c[2].style.color='#86efac';c[3].textContent=it.e})}
+render();buildKey();</script>
+</body>
+</html>
