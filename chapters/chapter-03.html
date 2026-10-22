@@ -1,0 +1,1165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 03 — Manage Files from the Command Line | RH124 Study Notes</title>
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--bg3:#1a2236;--bg4:#232d44;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--red:#ee0000;--red2:#ff3333;--red-glow:rgba(238,0,0,.15);--green:#22c55e;--blue:#3b82f6;--yellow:#eab308;--orange:#f97316;--purple:#a855f7;--cyan:#06b6d4;--border:#1e293b;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:16px}
+::selection{background:var(--red);color:#fff}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--red),var(--red2));z-index:10000;transition:width .15s}
+.top-nav{position:sticky;top:3px;z-index:999;background:rgba(10,14,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top-nav a{color:var(--text2);text-decoration:none;font-size:.88rem;padding:6px 14px;border-radius:8px;transition:.2s;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+.top-nav a:hover{color:#fff;border-color:var(--red);background:var(--red-glow)}
+.nav-title{font-weight:700;color:var(--red);font-size:.95rem}
+.toc-toggle{position:fixed;bottom:80px;right:20px;z-index:998;width:44px;height:44px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:1.2rem;cursor:pointer}
+.toc-toggle:hover{border-color:var(--red);color:var(--red)}
+.toc-sidebar{position:fixed;top:0;right:-340px;width:320px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:9999;padding:24px 20px;overflow-y:auto;transition:right .3s ease}
+.toc-sidebar.open{right:0}
+.toc-sidebar h3{color:var(--red);margin-bottom:16px;font-size:1rem}
+.toc-sidebar a{display:block;color:var(--text2);text-decoration:none;padding:6px 0;font-size:.84rem;border-bottom:1px solid var(--border);transition:.2s}
+.toc-sidebar a:hover{color:var(--red);padding-left:8px}
+.toc-sidebar a.sub{padding-left:16px;font-size:.8rem;color:var(--text3)}
+.toc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none}
+.toc-overlay.show{display:block}
+.container{max-width:920px;margin:0 auto;padding:32px 20px 80px}
+.hero{text-align:center;padding:48px 20px 36px;margin-bottom:24px}
+.hero-badge{display:inline-block;background:var(--red-glow);color:var(--red);padding:4px 16px;border-radius:20px;font-size:.8rem;font-weight:600;margin-bottom:12px;border:1px solid rgba(238,0,0,.25)}
+.hero h1{font-size:2rem;margin-bottom:8px;background:linear-gradient(135deg,#fff,var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);max-width:660px;margin:0 auto}
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:28px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:12px;padding:18px 24px;background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--border)}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.section-header h2{font-size:1.15rem;color:#fff}
+.section-body{padding:24px}
+.section-body h3{color:var(--red2);font-size:1.05rem;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.section-body h3:first-child{margin-top:0}
+.section-body h4{color:var(--cyan);font-size:.98rem;margin:20px 0 8px}
+.section-body p{margin-bottom:12px}
+.section-body ul,.section-body ol{margin:8px 0 16px 22px}
+.section-body li{margin-bottom:6px}
+.info-box{border-radius:10px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:.93rem}
+.info-box .box-title{font-weight:700;margin-bottom:6px}
+.info-box.note{background:rgba(59,130,246,.08);border-color:var(--blue);color:#93c5fd}.info-box.note .box-title{color:var(--blue)}
+.info-box.tip{background:rgba(34,197,94,.08);border-color:var(--green);color:#86efac}.info-box.tip .box-title{color:var(--green)}
+.info-box.warning{background:rgba(234,179,8,.08);border-color:var(--yellow);color:#fde047}.info-box.warning .box-title{color:var(--yellow)}
+.info-box.important{background:rgba(168,85,247,.08);border-color:var(--purple);color:#d8b4fe}.info-box.important .box-title{color:var(--purple)}
+.info-box.analogy{background:rgba(6,182,212,.08);border-color:var(--cyan);color:#67e8f9}.info-box.analogy .box-title{color:var(--cyan)}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:12px 0;overflow-x:auto;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:.85rem;line-height:1.7;white-space:pre;color:#e2e8f0}
+.code-block .p{color:var(--green)}.code-block .c{color:#6a737d;font-style:italic}.code-block .o{color:var(--text3)}
+.code-inline{background:var(--bg3);color:var(--red2);padding:2px 7px;border-radius:5px;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:.87em}
+.table-wrapper{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid var(--border)}
+.table-wrapper table{width:100%;border-collapse:collapse;font-size:.88rem}
+.table-wrapper th{background:var(--bg3);color:var(--red2);padding:12px 16px;text-align:left;font-weight:600}
+.table-wrapper td{padding:10px 16px;border-top:1px solid var(--border);vertical-align:top}
+.table-wrapper tr:hover td{background:rgba(238,0,0,.04)}
+.table-wrapper tr.grp td{background:var(--bg3);color:var(--cyan);font-weight:700;letter-spacing:.03em}
+.visual{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:14px;margin:16px 0;text-align:center}
+.visual svg{max-width:100%;height:auto}
+.visual .cap{color:var(--text3);font-size:.8rem;margin-top:8px}
+.vs-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.vs-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px}
+.vs-card h4{margin:0 0 10px}
+.vs-card.a{border-color:rgba(59,130,246,.35)}.vs-card.a h4{color:var(--blue)}
+.vs-card.b{border-color:rgba(168,85,247,.35)}.vs-card.b h4{color:var(--purple)}
+.badge{display:inline-block;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.35);padding:2px 12px;border-radius:20px;font-size:.78rem;font-weight:600;margin-left:8px;vertical-align:middle}
+/* ls -l visual */
+.lsl{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.lsl .f{flex:1 1 118px;min-width:110px;background:var(--bg3);border:1px solid var(--border);border-top:4px solid var(--c);border-radius:10px;padding:10px 10px 12px;text-align:center}
+.lsl .lab{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--c);font-weight:700}
+.lsl .val{display:block;font-family:'Cascadia Code',Consolas,monospace;font-size:1.05rem;color:#fff;margin:6px 0;word-break:break-all}
+.lsl .exp{display:block;font-size:.78rem;color:var(--text2);line-height:1.4}
+/* quiz */
+.quiz-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.quiz-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.88rem;color:var(--text2);margin-bottom:10px}
+.quiz-bar{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:20px}
+.quiz-bar div{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--orange));transition:width .3s}
+.quiz-q{font-size:1.05rem;font-weight:600;color:#fff;margin-bottom:16px;line-height:1.5}
+.quiz-opt{display:block;width:100%;text-align:left;background:var(--bg2);color:var(--text);border:2px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:.95rem;font-family:inherit;cursor:pointer;transition:.15s}
+.quiz-opt:hover:not(:disabled){border-color:var(--blue);background:rgba(59,130,246,.08)}
+.quiz-opt:disabled{cursor:default}
+.quiz-opt.right{border-color:var(--green);background:rgba(34,197,94,.12)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(238,0,0,.12)}
+.quiz-fb{display:none;margin-top:6px;padding:12px 16px;border-radius:10px;font-size:.92rem;background:var(--bg2);border-left:4px solid var(--cyan);color:var(--text2)}
+.quiz-fb.show{display:block}
+.quiz-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:.95rem;font-weight:600;cursor:pointer;margin-top:14px;margin-right:8px;font-family:inherit}
+.quiz-btn:hover{background:var(--red2)}
+.quiz-btn.alt{background:var(--bg4);color:var(--text)}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--green);text-align:center;margin:8px 0}
+.quiz-miss{margin:14px 0;padding:12px 16px;background:var(--bg2);border-radius:10px;border-left:4px solid var(--red);font-size:.9rem}
+.quiz-miss b{color:var(--green)}
+.checklist-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:24px;margin-bottom:28px}
+.checklist-section h2{color:var(--red);margin-bottom:16px;font-size:1.1rem}
+.checklist-item{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid var(--border)}
+.checklist-item:last-child{border-bottom:none}
+.checklist-item input[type=checkbox]{appearance:none;width:20px;height:20px;border:2px solid var(--text3);border-radius:5px;cursor:pointer;flex-shrink:0;margin-top:2px;position:relative}
+.checklist-item input[type=checkbox]:checked{background:var(--green);border-color:var(--green)}
+.checklist-item input[type=checkbox]:checked::after{content:'✓';position:absolute;top:-1px;left:3px;color:#fff;font-size:.8rem;font-weight:700}
+.checklist-item label{cursor:pointer;color:var(--text2);font-size:.93rem}
+.checklist-item input:checked+label{color:var(--text3);text-decoration:line-through}
+.checklist-progress{margin-top:16px;font-size:.85rem;color:var(--text3)}
+.checklist-progress span{color:var(--green);font-weight:700}
+.scroll-top{position:fixed;bottom:24px;right:20px;width:44px;height:44px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:1.2rem;cursor:pointer;opacity:0;transition:.3s;z-index:997}
+.scroll-top.show{opacity:1}
+@media(max-width:700px){.hero h1{font-size:1.5rem}.vs-container{grid-template-columns:1fr}.section-body{padding:16px}.top-nav{padding:8px 12px}}
+</style>
+</head>
+<body>
+<div id="progress-bar" style="width:0%"></div>
+<nav class="top-nav">
+  <a href="../index.html">← Dashboard</a>
+  <span class="nav-title">Ch 03 · Manage Files from the Command Line</span>
+  <a href="chapter-04.html">Ch 04 →</a>
+</nav>
+<button class="toc-toggle" onclick="toggleTOC()" title="Table of Contents">☰</button>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleTOC()"></div>
+<aside class="toc-sidebar" id="tocSidebar">
+<h3>📑 Table of Contents</h3>
+  <a href="#prac" onclick="toggleTOC()">Practice area</a>
+  <a href="#s1" onclick="toggleTOC()">3.1 File System Hierarchy</a>
+  <a href="#s3" onclick="toggleTOC()">3.3 Specify Files by Name</a>
+  <a href="#s5" onclick="toggleTOC()">3.5 Manage Files with Commands</a>
+  <a href="#s7" onclick="toggleTOC()">3.7 Make Links Between Files</a>
+  <a href="#s7-1" class="sub" onclick="toggleTOC()">↳ What is an inode?</a>
+  <a href="#s7-2" class="sub" onclick="toggleTOC()">↳ Hard links</a>
+  <a href="#s7-fs" class="sub" onclick="toggleTOC()">↳ Is /boot a different file system?</a>
+  <a href="#s7-3" class="sub" onclick="toggleTOC()">↳ Symbolic links</a>
+  <a href="#s7-4" class="sub" onclick="toggleTOC()">↳ Link management</a>
+  <a href="#s9" onclick="toggleTOC()">3.9 Shell Expansions (short)</a>
+  <a href="#project" onclick="toggleTOC()">🏁 Practice Project</a>
+  <a href="#mistakes" onclick="toggleTOC()">⚠️ Common Mistakes</a>
+  <a href="#revision" onclick="toggleTOC()">✅ Revision Checklist</a>
+  <a href="#commands" onclick="toggleTOC()">📚 All Commands</a>
+  <a href="#quiz" onclick="toggleTOC()">🧠 Quiz</a>
+</aside>
+
+<div class="hero">
+  <div class="hero-badge">RH124 · Chapter 03 · RHEL 10</div>
+  <h1>Manage Files from the Command Line</h1>
+  <p>How to find your way around Linux, and how to create, copy, move, delete and link files using only the keyboard. Every idea comes with a picture and a small example you can type yourself.</p>
+</div>
+
+<div class="container">
+
+<div class="info-box tip"><div class="box-title">🧭 How to use these notes</div>Read a section, then type the commands in the practice area below. Typing is how the commands stay in your memory. Lines starting with <code class="code-inline">$</code> are commands you type (do not type the <code class="code-inline">$</code>). Lines without it are the output you should see. At the end there is a list of all commands and a quiz.</div>
+
+<h3 id="prac" style="color:#ff3333;margin:24px 0 10px">🧪 Practice area (set this up first)</h3>
+<div class="code-block"><span class="p">$ </span>mkdir ~/practice
+<span class="p">$ </span>cd ~/practice
+<span class="p">$ </span>pwd
+<span class="o">/home/john/practice</span></div>
+<p style="margin-bottom:16px">Do all experiments inside <code class="code-inline">~/practice</code> so you can never damage anything important. When you are completely finished: <code class="code-inline">cd ~</code> first, then <code class="code-inline">rm -r ~/practice</code>. (You cannot delete a folder while you are standing inside it.) The username <b>john</b> is just an example; your own name will show up on your machine.</p>
+
+<!-- ===================== 3.1 ===================== -->
+<div class="section-card" id="s1">
+<div class="section-header"><div class="section-icon" style="background:rgba(59,130,246,.15)">🌳</div><h2>3.1 Describe Linux File System Hierarchy Concepts</h2></div>
+<div class="section-body">
+
+<h3>Root directory structure</h3>
+<p>On Windows you have separate drives: <code class="code-inline">C:</code>, <code class="code-inline">D:</code>. Linux has <b>no drive letters</b>. Everything is in <b>one big upside-down tree</b>. The very top of the tree is called the <b>root directory</b>. It is written as a single slash: <code class="code-inline">/</code></p>
+
+<div class="visual">
+<svg viewBox="0 0 800 290" width="800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<g stroke="#475569" stroke-width="1.5" fill="none">
+<path d="M400 50 V70 M58 70 H746 M58 70 V90 M144 70 V90 M230 70 V90 M316 70 V90 M402 70 V90 M488 70 V90 M574 70 V90 M660 70 V90 M746 70 V90"/>
+<path d="M316 124 V150 M272 150 H360 M272 150 V176 M360 150 V176"/>
+<path d="M660 124 V150 M610 150 H742 M610 150 V176 M676 150 V176 M742 150 V176"/>
+</g>
+<rect x="350" y="14" width="100" height="36" rx="8" fill="#ee0000"/><text x="400" y="38" fill="#fff" text-anchor="middle" font-weight="700" font-size="15">/ (root)</text>
+<g fill="#1a2236" stroke="#3b82f6">
+<rect x="20" y="90" width="76" height="34" rx="7"/><rect x="106" y="90" width="76" height="34" rx="7"/><rect x="192" y="90" width="76" height="34" rx="7"/><rect x="278" y="90" width="76" height="34" rx="7"/><rect x="364" y="90" width="76" height="34" rx="7"/><rect x="450" y="90" width="76" height="34" rx="7"/><rect x="536" y="90" width="76" height="34" rx="7"/><rect x="622" y="90" width="76" height="34" rx="7"/><rect x="708" y="90" width="76" height="34" rx="7"/>
+</g>
+<g fill="#e2e8f0" text-anchor="middle">
+<text x="58" y="112">/boot</text><text x="144" y="112">/dev</text><text x="230" y="112">/etc</text><text x="316" y="112">/home</text><text x="402" y="112">/root</text><text x="488" y="112">/run</text><text x="574" y="112">/tmp</text><text x="660" y="112">/usr</text><text x="746" y="112">/var</text>
+</g>
+<g fill="#1a2236" stroke="#22c55e">
+<rect x="237" y="176" width="70" height="32" rx="7"/><rect x="325" y="176" width="70" height="32" rx="7"/>
+<rect x="580" y="176" width="60" height="32" rx="7"/><rect x="646" y="176" width="60" height="32" rx="7"/><rect x="712" y="176" width="60" height="32" rx="7"/>
+</g>
+<g fill="#e2e8f0" text-anchor="middle">
+<text x="272" y="197">john</text><text x="360" y="197">alice</text>
+<text x="610" y="197">bin</text><text x="676" y="197">sbin</text><text x="742" y="197">local</text>
+</g>
+<text x="746" y="146" fill="#94a3b8" text-anchor="middle" font-size="11">log · lib · tmp</text>
+<text x="316" y="232" fill="#94a3b8" text-anchor="middle" font-size="12">/home/john and /home/alice = personal folders</text>
+<text x="660" y="232" fill="#94a3b8" text-anchor="middle" font-size="12">/usr/bin = programs</text>
+<text x="400" y="272" fill="#64748b" text-anchor="middle" font-size="12">Red = top of the tree · Blue = main branches · Green = folders inside a branch</text>
+</svg>
+<div class="cap">The Linux tree: one top, many branches. Every file on the computer sits somewhere on this tree.</div>
+</div>
+
+<ul>
+<li>The <code class="code-inline">/</code> character has <b>two jobs</b>: it is the name of the top directory, and it separates names in a path. So <code class="code-inline">/etc/issue</code> means: file <i>issue</i>, inside folder <i>etc</i>, inside the top <i>/</i>.</li>
+<li>Each branch directly under <code class="code-inline">/</code> has a <b>standard purpose</b>, so every Linux system looks familiar.</li>
+</ul>
+<div class="info-box important"><div class="box-title">❗ Do not mix these up</div><code class="code-inline">/</code> is the <b>top of the whole tree</b>. <code class="code-inline">/root</code> is the <b>home folder of the administrator</b> (the root user). Two different things.</div>
+
+<h3>Essential directories</h3>
+<div class="table-wrapper"><table><thead><tr><th>Directory</th><th>What it holds</th><th>Think of it as…</th></tr></thead><tbody>
+<tr><td><code class="code-inline">/boot</code></td><td>Files needed to start (boot) the computer</td><td>The ignition key</td></tr>
+<tr><td><code class="code-inline">/dev</code></td><td>Device files that represent hardware (disks, keyboard…)</td><td>The hardware doorway</td></tr>
+<tr><td><code class="code-inline">/etc</code></td><td>System settings (configuration files)</td><td>The control panel</td></tr>
+<tr><td><code class="code-inline">/home</code></td><td>Personal folders of normal users</td><td>Everyone's own room</td></tr>
+<tr><td><code class="code-inline">/root</code></td><td>Home folder of the administrator</td><td>The admin's private room</td></tr>
+<tr><td><code class="code-inline">/run</code></td><td>Data of running programs. Wiped at every reboot</td><td>A whiteboard that is erased on restart</td></tr>
+<tr><td><code class="code-inline">/tmp</code></td><td>Temporary files; anyone can write here. Old files are removed automatically after about <b>10 days</b></td><td>A scratch pad</td></tr>
+<tr><td><code class="code-inline">/usr</code></td><td>Installed software and libraries. Inside: <code class="code-inline">/usr/bin</code> normal commands, <code class="code-inline">/usr/sbin</code> admin commands, <code class="code-inline">/usr/local</code> software you add yourself</td><td>The program shelf</td></tr>
+<tr><td><code class="code-inline">/var</code></td><td>Data that keeps changing but must stay after a reboot: logs, databases, mail, caches. <code class="code-inline">/var/tmp</code> is a temp area cleaned after about <b>30 days</b></td><td>The diary and filing cabinet</td></tr>
+</tbody></table></div>
+
+<h3>Directory organization</h3>
+<p>Directories are grouped by how their contents behave:</p>
+<div class="table-wrapper"><table><thead><tr><th>Kind</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+<tr><td><b>Static</b></td><td>Rarely changes</td><td><code class="code-inline">/usr</code> programs</td></tr>
+<tr><td><b>Dynamic (variable)</b></td><td>Changes all the time</td><td><code class="code-inline">/var/log</code></td></tr>
+<tr><td><b>Persistent</b></td><td>Still there after a reboot</td><td><code class="code-inline">/etc</code>, <code class="code-inline">/home</code></td></tr>
+<tr><td><b>Runtime</b></td><td>Deleted on reboot</td><td><code class="code-inline">/run</code></td></tr>
+</tbody></table></div>
+<ul>
+<li>In RHEL, the old folders <code class="code-inline">/bin</code>, <code class="code-inline">/sbin</code>, <code class="code-inline">/lib</code> and <code class="code-inline">/lib64</code> are now only <b>shortcuts (symbolic links)</b> to the same-named folders inside <code class="code-inline">/usr</code>. So <code class="code-inline">/bin/ls</code> and <code class="code-inline">/usr/bin/ls</code> are the same program.</li>
+<li>The official map of the tree is in the manual: <code class="code-inline">man 7 hier</code>.</li>
+</ul>
+<div class="code-block"><span class="p">$ </span>ls /
+<span class="o">afs  boot  dev  etc  home  media  mnt  opt  proc  root  run  srv  sys  tmp  usr  var  bin  lib  lib64  sbin</span>
+<span class="p">$ </span>ls -ld /bin
+<span class="o">lrwxrwxrwx. 1 root root 7 ... /bin -> usr/bin</span></div>
+
+</div></div>
+
+<!-- ===================== 3.3 ===================== -->
+<div class="section-card" id="s3">
+<div class="section-header"><div class="section-icon" style="background:rgba(34,197,94,.15)">🧭</div><h2>3.3 Specify Files by Name</h2></div>
+<div class="section-body">
+
+<h3>Absolute paths</h3>
+<p>A <b>path</b> is the address of a file or folder. An <b>absolute path</b> is the <b>full address from the top</b>. It always starts with <code class="code-inline">/</code> and works from <b>anywhere</b>, like a complete postal address.</p>
+<div class="code-block"><span class="c"># full address of a log file</span>
+/var/log/messages
+<span class="c"># full address of a file in John's home</span>
+/home/john/practice/notes.txt</div>
+<div class="info-box tip"><div class="box-title">💡 One-second rule</div>First character is <code class="code-inline">/</code> → <b>absolute</b>.</div>
+
+<h3>Relative paths</h3>
+<p>A <b>relative path</b> describes the route <b>starting from where you are now</b> (your <i>current working directory</i>). It never starts with <code class="code-inline">/</code>. It is like telling a friend in the same building, "second door on the left".</p>
+
+<div class="visual">
+<svg viewBox="0 0 760 210" width="760" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<g stroke="#475569" stroke-width="1.5" fill="none"><path d="M120 50 V80 M120 66 H300 V80 M300 118 V140 H210 V150 M300 140 H390 V150"/></g>
+<rect x="85" y="14" width="70" height="36" rx="7" fill="#1a2236" stroke="#3b82f6"/><text x="120" y="37" fill="#e2e8f0" text-anchor="middle">/home</text>
+<rect x="85" y="80" width="70" height="36" rx="7" fill="#1a2236" stroke="#3b82f6"/><text x="120" y="103" fill="#e2e8f0" text-anchor="middle">alice</text>
+<rect x="255" y="80" width="90" height="38" rx="7" fill="#ee0000"/><text x="300" y="104" fill="#fff" text-anchor="middle" font-weight="700">john</text>
+<text x="300" y="60" fill="#ff3333" text-anchor="middle" font-size="11">YOU ARE HERE</text>
+<rect x="165" y="150" width="90" height="36" rx="7" fill="#1a2236" stroke="#22c55e"/><text x="210" y="173" fill="#e2e8f0" text-anchor="middle">school</text>
+<rect x="345" y="150" width="90" height="36" rx="7" fill="#1a2236" stroke="#22c55e"/><text x="390" y="173" fill="#e2e8f0" text-anchor="middle">photos</text>
+<text x="470" y="40" fill="#86efac" font-size="12">Absolute: /home/john/school</text>
+<text x="470" y="62" fill="#93c5fd" font-size="12">Relative: school</text>
+<text x="470" y="100" fill="#86efac" font-size="12">Absolute: /home/alice</text>
+<text x="470" y="122" fill="#93c5fd" font-size="12">Relative: ../alice</text>
+<text x="470" y="160" fill="#94a3b8" font-size="12">(.. means "go up one level")</text>
+</svg>
+<div class="cap">Standing in /home/john: the same place has two names, one long (absolute) and one short (relative).</div>
+</div>
+
+<div class="table-wrapper"><table><thead><tr><th></th><th>Absolute</th><th>Relative</th></tr></thead><tbody>
+<tr><td>Starts with</td><td><code class="code-inline">/</code></td><td>Anything else (<code class="code-inline">school/</code>, <code class="code-inline">../</code>, <code class="code-inline">./</code>, <code class="code-inline">file.txt</code>)</td></tr>
+<tr><td>Depends on where you are?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Length</td><td>Longer</td><td>Shorter</td></tr>
+<tr><td>Example from <code class="code-inline">/home/john</code></td><td><code class="code-inline">/home/john/school</code></td><td><code class="code-inline">school</code></td></tr>
+</tbody></table></div>
+
+<h4>Spaces in names</h4>
+<p>Linux <i>allows</i> spaces in a file name, but the shell uses spaces to separate words. So <code class="code-inline">my file.txt</code> looks like <b>two</b> names. Either put quotes around it, <code class="code-inline">"my file.txt"</code>, or (better) avoid spaces and write <code class="code-inline">my_file.txt</code>.</p>
+
+<h4>Capital letters matter</h4>
+<ul>
+<li>Linux file systems (<b>XFS</b>, <b>ext4</b>) are <b>case-sensitive</b>: <code class="code-inline">Notes.txt</code> and <code class="code-inline">notes.txt</code> are <b>two different files</b>.</li>
+<li>Windows-style file systems (NTFS, VFAT) keep your capitals but treat both spellings as the <b>same</b> file.</li>
+</ul>
+
+<h3>Path navigation</h3>
+<p>Your shell is always "standing" in one folder: the <b>current working directory</b>. After login it is your home folder. Print it with <code class="code-inline">pwd</code> (print working directory).</p>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code class="code-inline">pwd</code></td><td>Show where I am</td></tr>
+<tr><td><code class="code-inline">cd school</code></td><td>Go into <code class="code-inline">school</code> (relative path)</td></tr>
+<tr><td><code class="code-inline">cd /var/log</code></td><td>Go to this exact place (absolute path)</td></tr>
+<tr><td><code class="code-inline">cd</code></td><td>With no argument: go home</td></tr>
+<tr><td><code class="code-inline">cd -</code></td><td>Jump back to the <b>previous</b> folder (press again to jump forth)</td></tr>
+<tr><td><code class="code-inline">cd ..</code></td><td>Up one level (the parent)</td></tr>
+<tr><td><code class="code-inline">cd ../..</code></td><td>Up two levels</td></tr>
+<tr><td><code class="code-inline">cd .</code></td><td>Stay right here</td></tr>
+</tbody></table></div>
+
+<h4>The two special names <code class="code-inline">.</code> and <code class="code-inline">..</code></h4>
+<p>Every folder contains two hidden entries: <code class="code-inline">.</code> means <b>this folder</b> and <code class="code-inline">..</code> means <b>the folder above</b>. They are very handy: <code class="code-inline">cp /etc/hostname .</code> means "copy it to <i>here</i>".</p>
+
+<h4>The tilde <code class="code-inline">~</code> = my home</h4>
+<div class="code-block"><span class="p">$ </span>cd /var/log
+<span class="p">$ </span>ls -l ~                 <span class="c"># list my home, even though I'm in /var/log</span>
+<span class="p">$ </span>touch ~/hello.txt       <span class="c"># create a file in my home from anywhere</span></div>
+
+<h4><code class="code-inline">touch</code>: make quick practice files</h4>
+<div class="code-block"><span class="p">$ </span>cd ~/practice
+<span class="p">$ </span>mkdir school photos
+<span class="p">$ </span>touch school/maths.txt school/science.txt
+<span class="p">$ </span>touch photos/beach1.jpg</div>
+
+<h4><code class="code-inline">ls</code>: look inside a folder</h4>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>Shows</th></tr></thead><tbody>
+<tr><td><code class="code-inline">ls</code></td><td>Just names (hidden files not shown)</td></tr>
+<tr><td><code class="code-inline">ls -l</code></td><td><b>L</b>ong format: details for each item</td></tr>
+<tr><td><code class="code-inline">ls -a</code></td><td><b>A</b>ll files, including hidden ones</td></tr>
+<tr><td><code class="code-inline">ls -R</code></td><td><b>R</b>ecursive: also look inside every subfolder</td></tr>
+<tr><td><code class="code-inline">ls -la</code> or <code class="code-inline">ls -al</code></td><td>Long <b>and</b> hidden (order of letters does not matter)</td></tr>
+<tr><td><code class="code-inline">ls -lh</code></td><td>Long, with human-friendly sizes (K, M, G)</td></tr>
+<tr><td><code class="code-inline">ls -ld /etc</code></td><td>Details of the folder <i>itself</i>, not its contents</td></tr>
+<tr><td><code class="code-inline">ls -i</code></td><td>Show the <b>inode number</b> (explained in 3.7)</td></tr>
+</tbody></table></div>
+
+<h4>How to read one line of <code class="code-inline">ls -l</code></h4>
+<p>This is one real line of output. Each coloured box below explains one part of it, from left to right.</p>
+<div class="code-block" style="text-align:center;font-size:1rem"><span class="o">drwxr-xr-x. 2 john john 6 Oct 21 10:15 school</span></div>
+<div class="lsl">
+<div class="f" style="--c:#ff3333"><span class="lab">1 · Type</span><span class="val">d</span><span class="exp"><b>d</b> = directory<br><b>-</b> = normal file<br><b>l</b> = symbolic link</span></div>
+<div class="f" style="--c:#eab308"><span class="lab">2 · Permissions</span><span class="val">rwxr-xr-x</span><span class="exp">Who may read, write, run. Owner / group / others. (Later chapter)</span></div>
+<div class="f" style="--c:#a855f7"><span class="lab">3 · SELinux</span><span class="val">.</span><span class="exp">A dot means the file has a SELinux label. See it with <code class="code-inline">ls -Z</code></span></div>
+<div class="f" style="--c:#06b6d4"><span class="lab">4 · Link count</span><span class="val">2</span><span class="exp">How many names point to this item</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">5 · Owner</span><span class="val">john</span><span class="exp">The user who owns it</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">6 · Group</span><span class="val">john</span><span class="exp">The group that owns it</span></div>
+<div class="f" style="--c:#3b82f6"><span class="lab">7 · Size</span><span class="val">6</span><span class="exp">Size in bytes</span></div>
+<div class="f" style="--c:#f97316"><span class="lab">8 · Last changed</span><span class="val">Oct 21 10:15</span><span class="exp">Date and time of the last content change</span></div>
+<div class="f" style="--c:#e2e8f0"><span class="lab">9 · Name</span><span class="val">school</span><span class="exp">The file or folder name</span></div>
+</div>
+
+<h4>Hidden files</h4>
+<ul>
+<li>A name that starts with a dot (<code class="code-inline">.bashrc</code>, <code class="code-inline">.config</code>) is <b>hidden</b>. See them with <code class="code-inline">ls -a</code>.</li>
+<li>Hidden does <b>not</b> mean secret. Hidden only means "not shown by default". Anyone can see hidden files with <code class="code-inline">ls -a</code>. To really protect a file, use <b>permissions</b>.</li>
+</ul>
+<div class="info-box note"><div class="box-title">🧹 Why are some files hidden?</div>
+Programs like your shell and your text editor store many small settings files in your home folder (<code class="code-inline">.bashrc</code>, <code class="code-inline">.bash_history</code>, <code class="code-inline">.config</code> …). If all of them were shown, your home folder would look <b>crowded and messy</b>, and it would be hard to find your own files. Hiding them keeps the list <b>short, clean and easy to read</b> (that is all "tidy" means: neat and not cluttered).
+<div class="code-block" style="margin:10px 0 0"><span class="p">$ </span>ls
+<span class="o">Desktop  Documents  Downloads  practice</span>
+<span class="p">$ </span>ls -a
+<span class="o">.  ..  .bash_history  .bash_logout  .bashrc  .config  Desktop  Documents  Downloads  practice</span></div></div>
+
+<div class="info-box note"><div class="box-title">🧪 Try it: where am I?</div>
+<div class="code-block" style="margin:8px 0 0"><span class="p">$ </span>cd ~/practice/school
+<span class="p">$ </span>pwd                 <span class="o">/home/john/practice/school</span>
+<span class="p">$ </span>cd ..                <span class="c"># now in practice</span>
+<span class="p">$ </span>cd -                 <span class="c"># jumps back to school</span>
+<span class="p">$ </span>cd ../../..           <span class="c"># three levels up = /home</span>
+<span class="p">$ </span>cd                    <span class="c"># straight home</span></div></div>
+
+</div></div>
+
+<!-- ===================== 3.5 ===================== -->
+<div class="section-card" id="s5">
+<div class="section-header"><div class="section-icon" style="background:rgba(168,85,247,.15)">📁</div><h2>3.5 Manage Files with Command-line Tools</h2></div>
+<div class="section-body">
+
+<h3>File operations</h3>
+
+<h4><code class="code-inline">touch</code>: create an empty file (or refresh its time)</h4>
+<p>If the file does not exist, <code class="code-inline">touch</code> creates an empty one. If it already exists, it only updates the "last modified" time.</p>
+<div class="code-block"><span class="p">$ </span>touch todo.txt
+<span class="p">$ </span>ls -l todo.txt               <span class="o">-rw-r--r--. 1 john john 0 ... todo.txt   (size 0)</span>
+<span class="p">$ </span>echo "buy milk" &gt; note.txt   <span class="c"># make a file WITH text in it</span>
+<span class="p">$ </span>cat note.txt                 <span class="o">buy milk</span></div>
+
+<h4><code class="code-inline">cp</code>: copy</h4>
+<p>A copy is a <b>second, independent file</b>. If you edit one later, the other does <b>not</b> change.</p>
+<div class="table-wrapper"><table><thead><tr><th>Form</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">cp a.txt b.txt</code></td><td>Copy <code class="code-inline">a.txt</code> to a new name <code class="code-inline">b.txt</code></td></tr>
+<tr><td><code class="code-inline">cp a.txt b.txt c.txt Folder</code></td><td>Copy several files <b>into</b> <code class="code-inline">Folder</code>. The last word must be a folder</td></tr>
+<tr><td><code class="code-inline">cp -r Folder1 Folder2</code></td><td>Copy a whole folder with everything inside (<b>r</b>ecursive)</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>cp note.txt note_backup.txt
+<span class="p">$ </span>cp -r school school_copy
+<span class="p">$ </span>cp school/maths.txt .          <span class="c"># the dot = "into this folder"</span>
+<span class="p">$ </span>cp school
+<span class="o">cp: -r not specified; omitting directory 'school'</span></div>
+<ul><li>Without <code class="code-inline">-r</code>, <code class="code-inline">cp</code> skips folders.</li><li>If a file with that name already exists, <code class="code-inline">cp</code> <b>overwrites it without asking</b>.</li></ul>
+
+<h4><code class="code-inline">mv</code>: move and rename (same command!)</h4>
+<p>In Linux, the full path <i>is</i> the file's name. So changing the folder part = moving, changing the last part = renaming. The content never changes.</p>
+<div class="code-block"><span class="p">$ </span>mv note.txt shopping.txt            <span class="c"># rename</span>
+<span class="p">$ </span>mv shopping.txt school/              <span class="c"># move into school</span>
+<span class="p">$ </span>mv -v school/shopping.txt .           <span class="c"># move back, -v shows what happened</span>
+<span class="o">renamed 'school/shopping.txt' -&gt; './shopping.txt'</span>
+<span class="p">$ </span>mv school photos old_stuff          <span class="c"># last name must be an existing folder</span></div>
+<ul><li><code class="code-inline">mv</code> works on folders <b>without</b> <code class="code-inline">-r</code>.</li><li>It also overwrites silently. Add <code class="code-inline">-i</code> to be asked first.</li><li>On the same disk partition a move is instant (only the name changes). Between partitions it must copy the data and then delete the original.</li></ul>
+
+<h4><code class="code-inline">rm</code>: delete a file</h4>
+<div class="code-block"><span class="p">$ </span>rm todo.txt
+<span class="p">$ </span>rm school
+<span class="o">rm: cannot remove 'school': Is a directory</span></div>
+
+<h3>Directory operations</h3>
+<h4><code class="code-inline">mkdir</code>: make folders</h4>
+<div class="code-block"><span class="p">$ </span>mkdir music
+<span class="p">$ </span>mkdir music videos docs                      <span class="c"># several at once</span>
+<span class="p">$ </span>mkdir -p trip/day1 trip/day2 trip/day3        <span class="c"># -p also creates missing parents</span>
+<span class="p">$ </span>ls -R trip</div>
+<ul><li><code class="code-inline">mkdir a/b</code> fails if <code class="code-inline">a</code> does not exist yet. <code class="code-inline">-p</code> builds the whole chain.</li></ul>
+<div class="info-box warning"><div class="box-title">⚠️ The <code class="code-inline">-p</code> typo trap</div>You want a folder <code class="code-inline">seen</code> inside <code class="code-inline">videos</code> but type <code class="code-inline">video</code>.<br>
+<code class="code-inline">mkdir video/seen</code> → <b>error</b> (this protects you).<br>
+<code class="code-inline">mkdir -p video/seen</code> → <b>no error</b>; it quietly creates a brand-new wrong folder <code class="code-inline">video</code>. Use <code class="code-inline">-p</code> only when you are sure of the spelling.</div>
+
+<h4>Removing folders</h4>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>Does</th></tr></thead><tbody>
+<tr><td><code class="code-inline">rmdir folder</code></td><td>Removes a folder only if it is <b>empty</b> (safe)</td></tr>
+<tr><td><code class="code-inline">rm -r folder</code></td><td>Removes the folder <b>and everything inside it</b></td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>rmdir docs                    <span class="c"># works, docs is empty</span>
+<span class="p">$ </span>rmdir trip
+<span class="o">rmdir: failed to remove 'trip': Directory not empty</span>
+<span class="p">$ </span>rm -r trip                    <span class="c"># removes trip and its 3 subfolders</span></div>
+
+<h3>File management commands at a glance</h3>
+<div class="table-wrapper"><table><thead><tr><th>Job</th><th>Command</th></tr></thead><tbody>
+<tr><td>Create a file</td><td><code class="code-inline">touch</code></td></tr><tr><td>Create a folder</td><td><code class="code-inline">mkdir</code></td></tr><tr><td>Copy</td><td><code class="code-inline">cp</code></td></tr><tr><td>Move or rename</td><td><code class="code-inline">mv</code></td></tr><tr><td>Delete</td><td><code class="code-inline">rm</code>, <code class="code-inline">rmdir</code></td></tr>
+</tbody></table></div>
+
+<h4>Useful options</h4>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th><code class="code-inline">cp</code></th><th><code class="code-inline">mv</code></th><th><code class="code-inline">rm</code></th></tr></thead><tbody>
+<tr><td><code class="code-inline">-r</code></td><td>Include folders</td><td>Not needed</td><td>Delete folders</td></tr>
+<tr><td><code class="code-inline">-i</code></td><td>Ask before overwriting</td><td>Ask before overwriting</td><td>Ask before deleting</td></tr>
+<tr><td><code class="code-inline">-f</code></td><td>Force</td><td>Force</td><td>Force, never ask, ignore missing files</td></tr>
+<tr><td><code class="code-inline">-v</code></td><td>Show each copy</td><td>Show each move</td><td>Show each deletion</td></tr>
+<tr><td><code class="code-inline">-p</code> / <code class="code-inline">-a</code></td><td>Keep time and owner / archive mode</td><td></td><td></td></tr>
+</tbody></table></div>
+<div class="info-box warning"><div class="box-title">⚠️ Same letter, slightly different job</div>The same option letter can behave a little differently from command to command. If you give <code class="code-inline">-i</code> and <code class="code-inline">-f</code> together, <code class="code-inline">-f</code> wins and nothing is asked.</div>
+
+<h4>Safe-delete habits</h4>
+<div class="code-block"><span class="p">$ </span>pwd                       <span class="c"># 1. where am I?</span>
+<span class="p">$ </span>ls -l report*              <span class="c"># 2. what does my pattern match?</span>
+<span class="p">$ </span>rm report_old.txt         <span class="c"># 3. delete only then</span>
+<span class="p">$ </span>rm -ri old_folder         <span class="c"># interactive: asks about every item</span></div>
+<ul>
+<li>Use <code class="code-inline">rm -i</code> while you are learning. The administrator account already has <code class="code-inline">rm</code> set up as <code class="code-inline">rm -i</code> (check with <code class="code-inline">alias</code>); a normal user usually does not.</li>
+<li>Be very careful with <code class="code-inline">rm -rf</code> combined with a wildcard or a variable. A mistake can wipe out much more than you meant.</li>
+</ul>
+
+<h4>Is a deleted file gone for good?</h4>
+<div class="info-box important"><div class="box-title">❗ No Recycle Bin on the command line</div><code class="code-inline">rm</code> deletes the name immediately. There is <b>no undo</b> and no trash folder to look in. A server install of RHEL (no desktop) has no Trash at all. If you use a graphical file manager, its own Trash belongs to that program only; <code class="code-inline">rm</code> never uses it.</div>
+<div class="table-wrapper"><table><thead><tr><th></th><th>Restore</th><th>Recovery</th></tr></thead><tbody>
+<tr><td>Needs</td><td>A copy that already exists (backup, snapshot)</td><td>No copy; tools try to dig data off the disk</td></tr>
+<tr><td>How reliable</td><td>Very</td><td>Uncertain, sometimes impossible</td></tr>
+<tr><td>Examples</td><td>Backup, <b>VM snapshot</b></td><td><code class="code-inline">testdisk</code>, <code class="code-inline">photorec</code></td></tr>
+<tr><td>If it happens</td><td>Do this first</td><td>Stop using the disk straight away so the data is not overwritten</td></tr>
+</tbody></table></div>
+<div class="info-box tip"><div class="box-title">💡 Habit</div>Take a <b>VM snapshot</b> before practising anything risky, and keep a backup of files you care about.</div>
+
+</div></div>
+
+<!-- ===================== 3.7 ===================== -->
+<div class="section-card" id="s7">
+<div class="section-header"><div class="section-icon" style="background:rgba(234,179,8,.15)">🔗</div><h2>3.7 Make Links Between Files</h2></div>
+<div class="section-body">
+
+<p>A <b>link</b> lets one file be reachable under more than one name or place, without copying it. Linux has two kinds: <b>hard links</b> and <b>symbolic links</b> (symlinks). To understand them, you first need to understand what a file really is. That is where the <b>inode</b> comes in.</p>
+
+<h3 id="s7-1">Step 1: What is an inode? (the simple version)</h3>
+
+<div class="info-box analogy"><div class="box-title">📱 Phone contacts analogy</div>
+When you call "Mom" on your phone you do not memorise her number. Three things work together:<br>
+• the <b>contact name</b> "Mom" → <b>the file name</b><br>
+• the <b>phone entry</b> with number, address, birthday → <b>the inode</b> (information about the file)<br>
+• the <b>actual person</b> who picks up → <b>the data</b> (the real content)<br><br>
+The name leads to the entry, and the entry leads to the person.</div>
+
+<p>In Linux, <b>every file is made of three separate pieces</b>:</p>
+<div class="visual">
+<svg viewBox="0 0 780 190" width="780" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="ar" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<rect x="10" y="40" width="190" height="90" rx="10" fill="#1a2236" stroke="#3b82f6" stroke-width="2"/>
+<text x="105" y="64" fill="#60a5fa" text-anchor="middle" font-weight="700">1. NAME</text>
+<text x="105" y="86" fill="#e2e8f0" text-anchor="middle">report.txt</text>
+<text x="105" y="108" fill="#94a3b8" text-anchor="middle" font-size="11">stored inside a directory</text>
+<rect x="290" y="40" width="210" height="90" rx="10" fill="#1a2236" stroke="#eab308" stroke-width="2"/>
+<text x="395" y="64" fill="#facc15" text-anchor="middle" font-weight="700">2. INODE  #8924107</text>
+<text x="395" y="86" fill="#e2e8f0" text-anchor="middle" font-size="12">owner, permissions, size,</text>
+<text x="395" y="104" fill="#e2e8f0" text-anchor="middle" font-size="12">times, link count,</text>
+<text x="395" y="122" fill="#e2e8f0" text-anchor="middle" font-size="12">where the data is</text>
+<rect x="590" y="40" width="180" height="90" rx="10" fill="#1a2236" stroke="#22c55e" stroke-width="2"/>
+<text x="680" y="64" fill="#4ade80" text-anchor="middle" font-weight="700">3. DATA</text>
+<text x="680" y="88" fill="#e2e8f0" text-anchor="middle">"Quarterly numbers…"</text>
+<text x="680" y="108" fill="#94a3b8" text-anchor="middle" font-size="11">the real content on disk</text>
+<path d="M200 85 H288" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar)"/>
+<path d="M500 85 H588" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar)"/>
+<text x="244" y="76" fill="#64748b" font-size="11" text-anchor="middle">points to</text>
+<text x="544" y="76" fill="#64748b" font-size="11" text-anchor="middle">points to</text>
+<text x="390" y="165" fill="#94a3b8" text-anchor="middle">A directory is really just a list: "name → inode number".</text>
+</svg>
+<div class="cap">Name → Inode → Data. The inode is the middle layer.</div>
+</div>
+
+<ul>
+<li><b>Inode</b> = "index node". It is a small record (a number plus details) that describes a file. It stores: file type, permissions, owner and group, size, timestamps, the <b>link count</b> (how many names the file has), where the data sits on disk, and the SELinux label.</li>
+<li>The <b>file name</b> is <b>not</b> stored in the inode; it lives in the <b>directory</b>. The <b>content</b> is also not in the inode.</li>
+<li>Because the name is separate from the file, <b>one file can have several names</b>. That single fact is what makes hard links possible.</li>
+<li>Inode numbers are only unique <b>inside one file system</b>. (Two different partitions can both have an inode #12.)</li>
+</ul>
+
+<h4>See the inode yourself</h4>
+<div class="code-block"><span class="p">$ </span>cd ~/practice
+<span class="p">$ </span>echo "Dear Sam" &gt; letter.txt
+<span class="p">$ </span>ls -i letter.txt                 <span class="c"># -i = show inode number</span>
+<span class="o">1049233 letter.txt</span>
+<span class="p">$ </span>stat letter.txt                  <span class="c"># everything the inode knows</span>
+<span class="o">  File: letter.txt
+  Size: 9          Blocks: 8          IO Block: 4096   regular file
+Device: fd00h/64768d  Inode: 1049233   Links: 1
+Access: (0644/-rw-r--r--)  Uid: ( 1000/ john)   Gid: ( 1000/ john)
+Context: unconfined_u:object_r:user_home_t:s0
+Access: 2026-10-21 20:10:11
+Modify: 2026-10-21 20:10:11
+Change: 2026-10-21 20:10:11
+ Birth: 2026-10-21 20:10:11</span></div>
+
+<div class="table-wrapper"><table><thead><tr><th><code class="code-inline">stat</code> line</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><b>Size</b></td><td>Size in bytes ("Dear Sam" + new line = 9)</td></tr>
+<tr><td><b>Inode</b> / <b>Links</b></td><td>The inode number, and how many names point to it</td></tr>
+<tr><td><b>Access: (0644/-rw-r--r--)</b></td><td>Permissions in number form and letter form</td></tr>
+<tr><td><b>Uid / Gid</b></td><td>Owner and group</td></tr>
+<tr><td><b>Context</b></td><td>SELinux security label</td></tr>
+<tr><td><b>Access</b></td><td>Last time the file was <b>read</b></td></tr>
+<tr><td><b>Modify</b></td><td>Last time the <b>content</b> changed</td></tr>
+<tr><td><b>Change</b></td><td>Last time the <b>inode</b> changed (permissions, owner, name, link count…)</td></tr>
+<tr><td><b>Birth</b></td><td>When the file was created</td></tr>
+</tbody></table></div>
+
+<h4>More about <code class="code-inline">df -i</code> and a folder's link count</h4>
+
+<div class="info-box analogy"><div class="box-title">📚 Library analogy: two different things can run out</div>
+A library has <b>shelf space</b> for books and <b>index cards</b> that list every book. Each file needs <b>both</b>: space on the shelf for its data (<b>disk space</b>) and one index card (<b>an inode</b>). You can run out of shelf space, or you can run out of index cards, even if the other still has room.</div>
+
+<ul>
+<li><code class="code-inline">df -h</code> shows how much <b>disk space</b> is used.</li>
+<li><code class="code-inline">df -i</code> shows how many <b>inodes</b> (index cards) are used.</li>
+</ul>
+<div class="code-block"><span class="p">$ </span>df -i /
+<span class="o">Filesystem               Inodes  IUsed    IFree IUse% Mounted on
+/dev/mapper/rhel-root   8910848 112340  8798508    2% /</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Column</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>Inodes</td><td>Total number of files and folders this file system can hold</td></tr>
+<tr><td>IUsed</td><td>How many are already used (one per file or folder)</td></tr>
+<tr><td>IFree</td><td>How many are still free</td></tr>
+<tr><td>IUse%</td><td>Percent used. If this reaches 100%, you cannot create new files</td></tr>
+</tbody></table></div>
+<ul>
+<li><b>When does this matter?</b> Imagine a program that creates millions of tiny files (for example, mail or cache files). Each tiny file uses one inode but almost no space. The inodes can finish while <code class="code-inline">df -h</code> still shows lots of free space. You then get the error <code class="code-inline">No space left on device</code> and you are confused, because the disk is not full. The answer is to check <code class="code-inline">df -i</code>.</li>
+<li>On <b>XFS</b> (the RHEL default) inodes are created as needed, so you rarely run out. On <b>ext4</b> the number of inodes is fixed when the disk is formatted.</li>
+</ul>
+
+<p><b>A folder's link count</b> follows a simple rule. A new empty folder has link count <b>2</b>, because it has two names: its own name in the parent folder, and the <code class="code-inline">.</code> entry inside itself. Every subfolder adds <b>+1</b>, because each subfolder contains a <code class="code-inline">..</code> entry that points back up to it. Files inside do <b>not</b> change the count.</p>
+<div class="code-block"><span class="p">$ </span>mkdir demo
+<span class="p">$ </span>ls -ld demo
+<span class="o">drwxr-xr-x. <b>2</b> john john 6 Oct 21 10:20 demo</span>          <span class="c"># empty folder = 2</span>
+<span class="p">$ </span>mkdir demo/a demo/b
+<span class="p">$ </span>ls -ld demo
+<span class="o">drwxr-xr-x. <b>4</b> john john 14 Oct 21 10:21 demo</span>         <span class="c"># 2 + 2 subfolders = 4</span>
+<span class="p">$ </span>touch demo/file1 demo/file2
+<span class="p">$ </span>ls -ld demo
+<span class="o">drwxr-xr-x. <b>4</b> john john 38 Oct 21 10:22 demo</span>         <span class="c"># files do not change it: still 4</span></div>
+
+<h3 id="s7-2">Step 2: Hard links (a second name for the same file)</h3>
+
+<div class="info-box analogy"><div class="box-title">👤 Nickname analogy</div>Your friend Sam is called "Sam" by you and "Sammy" by his family. Two names, <b>one person</b>. If you stop using "Sam", the person still exists because "Sammy" still points to him. Only when <b>every</b> name is gone is nobody left.</div>
+
+<p>When you create a file, it gets <b>one</b> name. The command <code class="code-inline">ln</code> adds <b>another name that points to the same inode</b>. Neither name is "the original"; they are equals.</p>
+
+<div class="visual">
+<svg viewBox="0 0 780 200" width="780" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="ar2" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<rect x="20" y="30" width="190" height="46" rx="8" fill="#1a2236" stroke="#3b82f6" stroke-width="2"/><text x="115" y="58" fill="#e2e8f0" text-anchor="middle">letter.txt</text>
+<rect x="20" y="124" width="190" height="46" rx="8" fill="#1a2236" stroke="#3b82f6" stroke-width="2"/><text x="115" y="152" fill="#e2e8f0" text-anchor="middle">letter-hard.txt</text>
+<rect x="320" y="62" width="190" height="76" rx="10" fill="#1a2236" stroke="#eab308" stroke-width="2"/><text x="415" y="90" fill="#facc15" text-anchor="middle" font-weight="700">INODE #1049233</text><text x="415" y="112" fill="#e2e8f0" text-anchor="middle">Links: 2</text>
+<rect x="610" y="62" width="150" height="76" rx="10" fill="#1a2236" stroke="#22c55e" stroke-width="2"/><text x="685" y="96" fill="#4ade80" text-anchor="middle" font-weight="700">DATA</text><text x="685" y="116" fill="#e2e8f0" text-anchor="middle">"Dear Sam"</text>
+<path d="M210 53 L318 90" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar2)"/>
+<path d="M210 147 L318 110" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar2)"/>
+<path d="M510 100 H608" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar2)"/>
+</svg>
+<div class="cap">Two names, one inode, one set of data. The link count shows 2.</div>
+</div>
+
+<p><b>Syntax: existing file first, new name second.</b></p>
+<div class="code-block"><span class="p">$ </span>ln letter.txt letter-hard.txt
+<span class="p">$ </span>ls -il letter.txt letter-hard.txt
+<span class="o">1049233 -rw-r--r--. <b>2</b> john john 9 Oct 21 20:10 letter-hard.txt
+1049233 -rw-r--r--. <b>2</b> john john 9 Oct 21 20:10 letter.txt</span></div>
+<ul>
+<li><b>Same inode number</b> (1049233) → it is the <b>same file</b>.</li>
+<li><b>Link count 2</b> → two names point to it.</li>
+<li>Both names share <b>everything</b> except the name itself: content, permissions, owner, times. Change permissions through one name and the other shows it too.</li>
+</ul>
+
+<h4>Deleting one name</h4>
+<div class="code-block"><span class="p">$ </span>rm letter.txt
+<span class="p">$ </span>cat letter-hard.txt
+<span class="o">Dear Sam</span>              <span class="c"># the data is still safe</span>
+<span class="p">$ </span>ls -l letter-hard.txt
+<span class="o">-rw-r--r--. <b>1</b> john john 9 ... letter-hard.txt    (count dropped to 1)</span></div>
+<p>The data is only freed when the <b>last</b> name is removed (link count reaches 0).</p>
+
+<h4>Two limits of hard links</h4>
+<ol>
+<li><b>Regular files only.</b> No folders.</li>
+<li><b>Same file system only.</b> An inode number only means something inside its own file system. So you cannot make a hard link from one file system to another:
+<div class="code-block"><span class="o">ln: failed to create hard link '/home/john/x' =&gt; '/boot/y': Invalid cross-device link</span></div></li>
+</ol>
+
+<h4 id="s7-fs">Is <code class="code-inline">/boot</code> really a different file system? (Everything is under <code class="code-inline">/</code>!)</h4>
+<p>Good question. <b>Yes</b>: everything <i>appears</i> under <code class="code-inline">/</code>, but that does not mean everything is on the same disk area. Linux builds the one big tree by <b>mounting</b>. A <b>mount point</b> is an ordinary folder where another file system is "plugged in". When you open that folder, you are really looking inside the other file system.</p>
+
+<div class="info-box analogy"><div class="box-title">🔌 USB stick analogy</div>When you plug in a USB stick, Linux shows its files inside a folder such as <code class="code-inline">/run/media/john/USB</code>. The stick is a separate file system, but you reach it through the same tree. <code class="code-inline">/boot</code> works the same way, except it is plugged in permanently at start-up.</div>
+
+<div class="visual">
+<svg viewBox="0 0 800 270" width="800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="ar5" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<rect x="15" y="25" width="500" height="225" rx="14" fill="rgba(59,130,246,.08)" stroke="#3b82f6" stroke-width="2"/>
+<text x="30" y="50" fill="#60a5fa" font-weight="700">File system 1: mounted at /  (XFS)</text>
+<text x="30" y="68" fill="#94a3b8" font-size="11">Most folders live here, usually on the main disk or an LVM volume</text>
+<g fill="#1a2236" stroke="#3b82f6">
+<rect x="35" y="90" width="90" height="32" rx="7"/><rect x="140" y="90" width="90" height="32" rx="7"/><rect x="245" y="90" width="90" height="32" rx="7"/>
+<rect x="35" y="140" width="90" height="32" rx="7"/><rect x="140" y="140" width="90" height="32" rx="7"/><rect x="245" y="140" width="90" height="32" rx="7"/>
+</g>
+<g fill="#e2e8f0" text-anchor="middle"><text x="80" y="111">/etc</text><text x="185" y="111">/home</text><text x="290" y="111">/usr</text><text x="80" y="161">/var</text><text x="185" y="161">/root</text><text x="290" y="161">/tmp</text></g>
+<rect x="375" y="115" width="115" height="36" rx="7" fill="none" stroke="#f97316" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="432" y="138" fill="#fb923c" text-anchor="middle" font-weight="700">/boot</text>
+<text x="432" y="170" fill="#94a3b8" text-anchor="middle" font-size="11">an empty "door" folder</text>
+<text x="432" y="184" fill="#94a3b8" text-anchor="middle" font-size="11">(the mount point)</text>
+<path d="M490 128 L560 90" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar5)"/>
+<rect x="560" y="25" width="225" height="105" rx="14" fill="rgba(249,115,22,.08)" stroke="#f97316" stroke-width="2"/>
+<text x="672" y="48" fill="#fb923c" text-anchor="middle" font-weight="700">File system 2</text>
+<text x="672" y="65" fill="#e2e8f0" text-anchor="middle" font-size="12">mounted at /boot  (XFS)</text>
+<text x="672" y="82" fill="#94a3b8" text-anchor="middle" font-size="11">kernel and boot files</text>
+<rect x="615" y="94" width="115" height="26" rx="6" fill="none" stroke="#a855f7" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="672" y="112" fill="#c084fc" text-anchor="middle" font-size="12">efi (mount point)</text>
+<path d="M672 120 V148" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar5)"/>
+<rect x="560" y="150" width="225" height="100" rx="14" fill="rgba(168,85,247,.08)" stroke="#a855f7" stroke-width="2"/>
+<text x="672" y="176" fill="#c084fc" text-anchor="middle" font-weight="700">File system 3</text>
+<text x="672" y="194" fill="#e2e8f0" text-anchor="middle" font-size="12">mounted at /boot/efi  (VFAT)</text>
+<text x="672" y="212" fill="#94a3b8" text-anchor="middle" font-size="11">EFI System Partition</text>
+<text x="672" y="228" fill="#94a3b8" text-anchor="middle" font-size="11">(only on UEFI computers)</text>
+</svg>
+<div class="cap">One tree, three file systems. A hard link cannot cross the coloured borders.</div>
+</div>
+
+<p><b>Your guess about EFI is correct.</b> On a typical RHEL install on a modern (UEFI) computer, these are three separate file systems:</p>
+<div class="table-wrapper"><table><thead><tr><th>Mount point</th><th>File system type</th><th>What it is for</th></tr></thead><tbody>
+<tr><td><code class="code-inline">/</code></td><td>XFS</td><td>The main system: <code class="code-inline">/etc</code>, <code class="code-inline">/usr</code>, <code class="code-inline">/var</code>, <code class="code-inline">/home</code> …</td></tr>
+<tr><td><code class="code-inline">/boot</code></td><td>XFS (about 1 GB)</td><td>Kernel and files needed at boot. Kept separate so the computer can start safely</td></tr>
+<tr><td><code class="code-inline">/boot/efi</code></td><td><b>VFAT</b> (FAT32)</td><td>The <b>EFI System Partition</b>. UEFI firmware can only read FAT. Not present on old BIOS computers</td></tr>
+</tbody></table></div>
+<p>Other mount points you may see: <code class="code-inline">/run</code> and <code class="code-inline">/dev/shm</code> are <b>tmpfs</b> (they live in memory, not on disk). On custom installs, <code class="code-inline">/home</code>, <code class="code-inline">/var</code> or <code class="code-inline">/tmp</code> may also be separate partitions.</p>
+
+<h4>How to check it yourself</h4>
+<div class="code-block"><span class="p">$ </span>df -hT / /boot /boot/efi             <span class="c"># -T shows the file system type</span>
+<span class="o">Filesystem              Type  Size  Used Avail Use% Mounted on
+/dev/mapper/rhel-root   xfs    17G  4.1G   13G  25% /
+/dev/vda2               xfs   960M  280M  681M  30% /boot
+/dev/vda1               vfat  200M  7.1M  193M   4% /boot/efi</span>
+<span class="c"># (example output: your sizes and device names will be different)</span>
+
+<span class="p">$ </span>findmnt /boot                        <span class="c"># which file system is plugged in at /boot?</span>
+<span class="p">$ </span>lsblk -f                            <span class="c"># all disks, partitions and their types</span>
+<span class="p">$ </span>df /home /boot                        <span class="c"># different "Filesystem" column = different file systems</span></div>
+<div class="info-box tip"><div class="box-title">💡 Quick rule</div>Two paths are on the <b>same file system</b> if <code class="code-inline">df</code> shows the <b>same device name</b> for both. If the names differ, a hard link between them will fail with <i>Invalid cross-device link</i>. Use a symlink instead.</div>
+
+<h3 id="s7-3">Step 3: Symbolic links (a shortcut that stores a path)</h3>
+
+<div class="info-box analogy"><div class="box-title">📌 Sticky note / Windows shortcut analogy</div>A symlink is like a sticky note that says "<i>the file you want is at /home/john/practice/letter.txt</i>". The note is <b>not</b> the file. It only tells you where to look. If that file is moved or deleted, the note points at nothing. If a new file appears with the same name, the note works again.</div>
+
+<p>Technically: a symlink is a <b>small file with its own inode</b>, and the content of that file is just <b>the path text</b> of the target.</p>
+
+<div class="visual">
+<svg viewBox="0 0 780 250" width="780" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="ar3" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<text x="10" y="22" fill="#a855f7" font-weight="700">Symbolic link chain</text>
+<rect x="10" y="50" width="150" height="46" rx="8" fill="#1a2236" stroke="#a855f7" stroke-width="2"/><text x="85" y="78" fill="#e2e8f0" text-anchor="middle">letter-soft.txt</text>
+<rect x="215" y="42" width="170" height="62" rx="8" fill="#1a2236" stroke="#a855f7" stroke-width="2"/><text x="300" y="64" fill="#d8b4fe" text-anchor="middle" font-weight="700">INODE #1049240</text><text x="300" y="84" fill="#e2e8f0" text-anchor="middle" font-size="12">contains text: "letter.txt"</text>
+<rect x="440" y="50" width="120" height="46" rx="8" fill="#1a2236" stroke="#3b82f6" stroke-width="2"/><text x="500" y="78" fill="#e2e8f0" text-anchor="middle">letter.txt</text>
+<rect x="615" y="42" width="150" height="62" rx="8" fill="#1a2236" stroke="#eab308" stroke-width="2"/><text x="690" y="64" fill="#facc15" text-anchor="middle" font-weight="700">INODE #1049233</text><text x="690" y="84" fill="#e2e8f0" text-anchor="middle" font-size="12">→ data "Dear Sam"</text>
+<path d="M160 73 H213" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+<path d="M385 73 H438" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+<path d="M560 73 H613" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+<text x="10" y="150" fill="#ef4444" font-weight="700">After deleting letter.txt (dangling link)</text>
+<rect x="10" y="175" width="150" height="46" rx="8" fill="#1a2236" stroke="#a855f7" stroke-width="2"/><text x="85" y="203" fill="#e2e8f0" text-anchor="middle">letter-soft.txt</text>
+<rect x="215" y="167" width="170" height="62" rx="8" fill="#1a2236" stroke="#a855f7" stroke-width="2"/><text x="300" y="189" fill="#d8b4fe" text-anchor="middle" font-weight="700">still says "letter.txt"</text><text x="300" y="209" fill="#e2e8f0" text-anchor="middle" font-size="12">(the note is intact)</text>
+<rect x="440" y="175" width="120" height="46" rx="8" fill="none" stroke="#ef4444" stroke-width="2" stroke-dasharray="6 4"/><text x="500" y="203" fill="#ef4444" text-anchor="middle">❌ gone</text>
+<path d="M160 198 H213" stroke="#94a3b8" stroke-width="2" marker-end="url(#ar3)"/>
+<path d="M385 198 H438" stroke="#ef4444" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#ar3)"/>
+<text x="600" y="203" fill="#94a3b8" font-size="12">Result: "No such file"</text>
+</svg>
+<div class="cap">A symlink follows the <b>name</b>. When the name disappears, the link is "dangling" (it points to nothing).</div>
+</div>
+
+<div class="code-block"><span class="p">$ </span>echo "Dear Sam" &gt; letter.txt        <span class="c"># recreate it, since we deleted it earlier</span>
+<span class="p">$ </span>ln -s letter.txt letter-soft.txt
+<span class="p">$ </span>ls -l letter-soft.txt
+<span class="o">lrwxrwxrwx. 1 john john 10 Oct 21 20:20 letter-soft.txt -&gt; letter.txt</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Part</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">l</code></td><td>First letter: this is a <b>symbolic link</b> (a normal file shows <code class="code-inline">-</code>)</td></tr>
+<tr><td><code class="code-inline">rwxrwxrwx</code></td><td>Always shown like this. The <b>target's</b> permissions are what really count</td></tr>
+<tr><td><code class="code-inline">1</code></td><td>Link count stays 1</td></tr>
+<tr><td><code class="code-inline">10</code></td><td>Size = length of the stored path. "letter.txt" has 10 characters</td></tr>
+<tr><td><code class="code-inline">-&gt; letter.txt</code></td><td>The target it points to</td></tr>
+</tbody></table></div>
+<p><b>Why symlinks are useful:</b> they can point to a <b>folder</b>, and they can cross <b>file systems</b>. Hard links cannot do either.</p>
+
+<h4>Dangling link and "revival"</h4>
+<div class="code-block"><span class="p">$ </span>rm letter.txt
+<span class="p">$ </span>ls -l letter-soft.txt             <span class="c"># still listed…</span>
+<span class="p">$ </span>cat letter-soft.txt                <span class="c"># …but broken</span>
+<span class="o">cat: letter-soft.txt: No such file or directory</span>
+<span class="p">$ </span>echo "A new letter" &gt; letter.txt   <span class="c"># make a NEW file with the same name</span>
+<span class="p">$ </span>cat letter-soft.txt
+<span class="o">A new letter</span>                        <span class="c"># the link works again!</span></div>
+<p>A symlink stores only the <b>name</b>, so any file that later gets that name fits. A hard link never behaves this way; it follows the original <b>data</b>.</p>
+
+<h4>The relative-target trap</h4>
+<p>If the target in <code class="code-inline">ln -s</code> is a <b>relative</b> path, it is read <b>from the folder where the link lives</b>, not from where you typed the command.</p>
+<div class="code-block"><span class="p">$ </span>mkdir files links
+<span class="p">$ </span>echo hi &gt; files/a.txt
+<span class="p">$ </span>ln -s files/a.txt links/a.soft              <span class="c"># ❌ looks for links/files/a.txt (does not exist)</span>
+<span class="p">$ </span>ln -s ../files/a.txt links/b.soft           <span class="c"># ✅ from links/, go up, then into files</span>
+<span class="p">$ </span>ln -s ~/practice/files/a.txt links/c.soft   <span class="c"># ✅ absolute path: always safe</span></div>
+<div class="info-box tip"><div class="box-title">💡 Beginner advice</div>When making symlinks, use the <b>absolute path</b> for the target. It avoids this whole problem.</div>
+
+<h4>Symlink to a directory</h4>
+<div class="code-block"><span class="p">$ </span>ln -s /var/log ~/mylogs
+<span class="p">$ </span>cd ~/mylogs
+<span class="p">$ </span>pwd
+<span class="o">/home/john/mylogs</span>          <span class="c"># shows the link's name</span>
+<span class="p">$ </span>cd -P ~/mylogs
+<span class="p">$ </span>pwd
+<span class="o">/var/log</span>                   <span class="c"># -P = follow to the real directory</span></div>
+
+<h3 id="s7-4">Step 4: Link management (comparing and choosing)</h3>
+<div class="table-wrapper"><table><thead><tr><th></th><th>Hard link</th><th>Symbolic link</th></tr></thead><tbody>
+<tr><td>Command</td><td><code class="code-inline">ln target link</code></td><td><code class="code-inline">ln -s target link</code></td></tr>
+<tr><td>What it is</td><td>Another <b>name</b> for the same file</td><td>A tiny file that stores a <b>path</b></td></tr>
+<tr><td>Inode</td><td><b>Same</b> as the original</td><td>Its <b>own</b> inode</td></tr>
+<tr><td>Link count</td><td>Goes <b>up</b></td><td>Stays 1</td></tr>
+<tr><td>Can link a folder?</td><td>No</td><td>Yes</td></tr>
+<tr><td>Across file systems?</td><td>No</td><td>Yes</td></tr>
+<tr><td><code class="code-inline">ls -l</code> shows</td><td>Looks like a normal file (<code class="code-inline">-</code>)</td><td><code class="code-inline">l</code> and <code class="code-inline">-&gt;</code></td></tr>
+<tr><td>Original deleted</td><td>Still works</td><td>Breaks (dangling)</td></tr>
+<tr><td>Original renamed/moved</td><td>Still works</td><td>Breaks</td></tr>
+<tr><td>Size shown</td><td>Size of the content</td><td>Length of the stored path</td></tr>
+</tbody></table></div>
+
+<div class="vs-container">
+<div class="vs-card a"><h4>🔗 Hard link follows the DATA</h4>Think "second name". Survives deletion and renaming of the other name.</div>
+<div class="vs-card b"><h4>📌 Symlink follows the NAME</h4>Think "shortcut". Breaks if the name it points to goes away.</div>
+</div>
+
+<h4>If I change the original, do the links show the change?</h4>
+<p>Here is a plain question: <b>after I add text to one file, do the other names show the new text too?</b> (Some books call this "staying in sync". It just means "showing the same content at all times".) Let us test all three: a hard link, a symlink and an ordinary copy.</p>
+<div class="code-block"><span class="p">$ </span>echo "version 1" &gt; report.txt
+<span class="p">$ </span>ln report.txt report.hard               <span class="c"># hard link</span>
+<span class="p">$ </span>ln -s report.txt report.soft            <span class="c"># symlink</span>
+<span class="p">$ </span>cp report.txt report.copy              <span class="c"># an ordinary COPY, for comparison</span>
+<span class="p">$ </span>echo "version 2" &gt;&gt; report.txt           <span class="c"># add a line to the original</span>
+<span class="p">$ </span>cat report.hard
+<span class="o">version 1
+version 2</span>                               <span class="c"># ✅ shows the new line</span>
+<span class="p">$ </span>cat report.soft
+<span class="o">version 1
+version 2</span>                               <span class="c"># ✅ shows the new line</span>
+<span class="p">$ </span>cat report.copy
+<span class="o">version 1</span>                               <span class="c"># ❌ a copy is a separate file: no new line</span></div>
+<div class="table-wrapper"><table><thead><tr><th>After I change the original…</th><th>Shows the new text?</th><th>Why</th></tr></thead><tbody>
+<tr><td>Hard link</td><td>✅ Yes</td><td>It is the same file (same inode)</td></tr>
+<tr><td>Symlink</td><td>✅ Yes</td><td>It opens the original by name</td></tr>
+<tr><td>Copy (<code class="code-inline">cp</code>)</td><td>❌ No</td><td>It is a completely separate file</td></tr>
+</tbody></table></div>
+<div class="info-box warning"><div class="box-title">⚠️ When a hard link stops showing the new text</div>Some tools (<code class="code-inline">sed -i</code>, many text editors) do not change the old file. They write a <b>brand-new file</b> and rename it over the old one. The new file gets a <b>new inode</b>, so the hard link still holds the <i>old</i> text. Now the two names are no longer the same file. Check with <code class="code-inline">ls -li</code>. Adding text with <code class="code-inline">&gt;&gt;</code> keeps the same inode. A symlink is not affected.</div>
+
+<h4>What happens when you rename, move or delete the original?</h4>
+<div class="table-wrapper"><table><thead><tr><th>Action on the original</th><th>Hard link</th><th>Symlink</th></tr></thead><tbody>
+<tr><td>Rename</td><td>Works</td><td><b>Breaks</b></td></tr>
+<tr><td>Move (same file system)</td><td>Works</td><td><b>Breaks</b></td></tr>
+<tr><td>Delete</td><td>Works (count goes down by 1)</td><td><b>Breaks</b></td></tr>
+<tr><td>New file with the old name</td><td>Not connected</td><td>Works again</td></tr>
+<tr><td>Move the <i>link itself</i></td><td>Works</td><td>A <b>relative</b> symlink may break</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>echo hello &gt; data.txt
+<span class="p">$ </span>ln data.txt data.hard
+<span class="p">$ </span>ln -s data.txt data.soft
+<span class="p">$ </span>mv data.txt old.txt
+<span class="p">$ </span>cat data.hard        <span class="o">hello</span>                         <span class="c"># unaffected</span>
+<span class="p">$ </span>cat data.soft        <span class="o">No such file or directory</span>    <span class="c"># broken</span>
+<span class="p">$ </span>mv old.txt data.txt
+<span class="p">$ </span>cat data.soft        <span class="o">hello</span>                         <span class="c"># fixed again</span></div>
+
+<h4>Telling the three apart</h4>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code class="code-inline">report.txt</code></th><th><code class="code-inline">report.hard</code></th><th><code class="code-inline">report.soft</code></th></tr></thead><tbody>
+<tr><td>Inode</td><td>A</td><td><b>A (same)</b></td><td><b>B (different)</b></td></tr>
+<tr><td>Links</td><td>2</td><td>2</td><td>1</td></tr>
+<tr><td>Type</td><td>regular file</td><td>regular file</td><td><b>symbolic link</b></td></tr>
+<tr><td>Size</td><td>11</td><td>11</td><td><b>10</b> (length of "report.txt")</td></tr>
+</tbody></table></div>
+
+<h4>Helpful link commands</h4>
+<div class="code-block"><span class="p">$ </span>stat -L report.soft             <span class="c"># follow the link and describe the TARGET</span>
+<span class="p">$ </span>readlink -f report.soft         <span class="c"># print the full real path of the target</span>
+<span class="p">$ </span>find . -samefile report.txt     <span class="c"># list every hard-link name of that file</span>
+<span class="p">$ </span>find . -xtype l                 <span class="c"># find broken (dangling) symlinks</span>
+<span class="p">$ </span>unlink report.soft             <span class="c"># remove one name (never touches the target)</span></div>
+
+<h4>Which one should I use?</h4>
+<div class="table-wrapper"><table><thead><tr><th>I want to…</th><th>Use</th></tr></thead><tbody>
+<tr><td>Protect an important file from accidental deletion</td><td>Hard link</td></tr>
+<tr><td>Keep a file in two places without using double space</td><td>Hard link (same file system)</td></tr>
+<tr><td>Point to a <b>folder</b></td><td>Symlink</td></tr>
+<tr><td>Link to something on <b>another disk/partition</b></td><td>Symlink</td></tr>
+<tr><td>Switch versions easily (<code class="code-inline">/opt/app</code> → <code class="code-inline">/opt/app-2.1</code>)</td><td>Symlink</td></tr>
+<tr><td>Not sure</td><td>Symlink (more flexible, and you can see it with <code class="code-inline">ls -l</code>)</td></tr>
+</tbody></table></div>
+<p>Real examples on RHEL: <code class="code-inline">/bin → /usr/bin</code> is a symlink; <code class="code-inline">systemctl enable</code> creates symlinks in <code class="code-inline">/etc/systemd/system/</code>; backup tools like <code class="code-inline">rsync --link-dest</code> use hard links to save space.</p>
+
+<div class="info-box note"><div class="box-title">🧪 Try it: link practice</div>
+<div class="code-block" style="margin:8px 0 0"><span class="p">$ </span>cd ~/practice
+<span class="p">$ </span>echo "my diary" &gt; diary.txt
+<span class="p">$ </span>ln diary.txt diary.hard                <span class="c"># hard link</span>
+<span class="p">$ </span>ln -s ~/practice/diary.txt diary.soft  <span class="c"># symlink with absolute target</span>
+<span class="p">$ </span>ln -s /tmp tmplink                     <span class="c"># symlink to a folder</span>
+<span class="p">$ </span>ls -li diary.txt diary.hard diary.soft tmplink
+<span class="c"># compare: inode numbers, link counts, first letter, arrows</span></div></div>
+
+</div></div>
+
+<!-- ===================== 3.9 (short) ===================== -->
+<div class="section-card" id="s9">
+<div class="section-header"><div class="section-icon" style="background:rgba(6,182,212,.15)">✨</div><h2>3.9 Match File Names with Shell Expansions <span class="badge">short · RHCSA essentials only</span></h2></div>
+<div class="section-body">
+
+<p>Before a command runs, the <b>shell rewrites what you typed</b>. The command never sees your pattern; it only sees the final result. For RHCSA you only need the items below.</p>
+<div class="code-block"><span class="c"># you type:   rm a*       the command really gets:   rm apple apricot</span>
+<span class="p">$ </span>echo a*        <span class="c"># 💡 put echo in front to PREVIEW what a pattern becomes (safe)</span></div>
+
+<h3>1. Wildcards (find existing names)</h3>
+<div class="table-wrapper"><table><thead><tr><th>Pattern</th><th>Matches</th></tr></thead><tbody>
+<tr><td><code class="code-inline">*</code></td><td>Any text, any length (even nothing)</td></tr>
+<tr><td><code class="code-inline">?</code></td><td>Exactly <b>one</b> character</td></tr>
+<tr><td><code class="code-inline">[abc]</code> / <code class="code-inline">[a-c]</code></td><td>One character from the list / range</td></tr>
+<tr><td><code class="code-inline">[!abc]</code></td><td>One character that is <b>not</b> in the list</td></tr>
+<tr><td><code class="code-inline">[[:digit:]]</code> <code class="code-inline">[[:alpha:]]</code> <code class="code-inline">[[:upper:]]</code> <code class="code-inline">[[:lower:]]</code></td><td>One digit / letter / uppercase / lowercase</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>cd ~/practice ; mkdir fruit ; cd fruit
+<span class="p">$ </span>touch apple apricot banana cherry grape kiwi mango melon
+<span class="p">$ </span>ls a*          <span class="o">apple apricot</span>                 <span class="c"># starts with a</span>
+<span class="p">$ </span>ls *e          <span class="o">apple grape</span>                   <span class="c"># ends with e</span>
+<span class="p">$ </span>ls [!a]*       <span class="o">banana cherry grape kiwi mango melon</span>   <span class="c"># does NOT start with a</span>
+<span class="p">$ </span>ls ????        <span class="o">kiwi</span>                          <span class="c"># exactly 4 characters</span></div>
+<ul><li>Wildcards skip <b>hidden files</b> unless you type the dot yourself.</li><li>If nothing matches, the shell leaves the pattern as typed.</li></ul>
+
+<h3>2. Brace expansion (makes up names)</h3>
+<div class="code-block"><span class="p">$ </span>touch file{1..3}.txt             <span class="c"># file1.txt file2.txt file3.txt</span>
+<span class="p">$ </span>mkdir -p trip/{day1,day2,day3}    <span class="c"># three folders at once</span>
+<span class="p">$ </span>touch week{1..2}_day{1..5}.log   <span class="c"># 10 files: every combination</span></div>
+<p>Braces <b>create</b> names (files need not exist). Wildcards <b>find</b> names (files must exist).</p>
+
+<h3>3. Tilde, variables and command substitution</h3>
+<div class="code-block"><span class="p">$ </span>echo ~                   <span class="o">/home/john</span>       <span class="c"># ~ = my home</span>
+<span class="p">$ </span>city=London ; echo $city   <span class="o">London</span>           <span class="c"># variable: NAME=value (no spaces around =)</span>
+<span class="p">$ </span>echo ${city}_trip         <span class="o">London_trip</span>      <span class="c"># braces mark where the name ends</span>
+<span class="p">$ </span>cp notes.txt notes_$(date +%F).txt    <span class="c"># $( ) = paste the command's output → notes_2026-10-21.txt</span></div>
+
+<h3>4. Quoting (switch expansion off)</h3>
+<div class="table-wrapper"><table><thead><tr><th>Item</th><th>No quotes</th><th><code class="code-inline">" "</code></th><th><code class="code-inline">' '</code></th></tr></thead><tbody>
+<tr><td><code class="code-inline">$name</code></td><td>Expands</td><td>Expands</td><td>Literal</td></tr>
+<tr><td><code class="code-inline">$(date)</code></td><td>Runs</td><td>Runs</td><td>Literal</td></tr>
+<tr><td><code class="code-inline">*</code></td><td>Matches files</td><td>Literal</td><td>Literal</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>name=Alice
+<span class="p">$ </span>echo "Hi $name"     <span class="o">Hi Alice</span>
+<span class="p">$ </span>echo 'Hi $name'     <span class="o">Hi $name</span>
+<span class="p">$ </span>echo \$name         <span class="o">$name</span>              <span class="c"># backslash protects ONE character</span>
+<span class="p">$ </span>touch "my file.txt"  <span class="c"># ONE file with a space; without quotes you get TWO files</span></div>
+<div class="info-box note"><div class="box-title">⏭️ Skipped on purpose</div>Details like history expansion (<code class="code-inline">!</code>) and old backtick style are not needed for RHCSA. Use <code class="code-inline">$( )</code> instead of backticks.</div>
+
+</div></div>
+
+<!-- ===================== PROJECT ===================== -->
+<div class="section-card" id="project">
+<div class="section-header"><div class="section-icon" style="background:rgba(238,0,0,.12)">🏁</div><h2>Practice Project: Build a Family Recipe Book</h2></div>
+<div class="section-body">
+<p>This one project uses every skill from the chapter. Type each block and check the result with <code class="code-inline">ls -R</code> after every step.</p>
+
+<h4>Step 1: Build the folder tree (mkdir -p, brace expansion)</h4>
+<div class="code-block"><span class="p">$ </span>cd ~/practice
+<span class="p">$ </span>mkdir -p recipes/{breakfast,lunch,dinner}
+<span class="p">$ </span>touch recipes/breakfast/{pancakes,omelette,toast}.txt
+<span class="p">$ </span>touch recipes/lunch/{salad,sandwich}.txt
+<span class="p">$ </span>touch recipes/dinner/{pasta,soup}.txt
+<span class="p">$ </span>ls -R recipes</div>
+
+<h4>Step 2: Copy and rename (cp, mv)</h4>
+<div class="code-block"><span class="p">$ </span>mkdir favourites
+<span class="p">$ </span>cp recipes/lunch/salad.txt favourites/
+<span class="p">$ </span>cp -r recipes/dinner favourites/                    <span class="c"># whole folder, needs -r</span>
+<span class="p">$ </span>mv recipes/breakfast/omelette.txt recipes/breakfast/cheese_omelette.txt   <span class="c"># rename</span></div>
+
+<h4>Step 3: Use wildcards</h4>
+<div class="code-block"><span class="p">$ </span>ls recipes/*/s*.txt                <span class="c"># every recipe that starts with s</span>
+<span class="p">$ </span>cp recipes/lunch/*.txt favourites/    <span class="c"># copy all lunch recipes</span>
+<span class="p">$ </span>echo recipes/dinner/[ps]*          <span class="c"># preview: pasta or soup</span></div>
+
+<h4>Step 4: Add links</h4>
+<div class="code-block"><span class="p">$ </span>echo "lettuce, tomato, olive oil" &gt; recipes/lunch/salad.txt
+<span class="p">$ </span>ln recipes/lunch/salad.txt favourites/salad_hard.txt                      <span class="c"># hard link</span>
+<span class="p">$ </span>ln -s ~/practice/recipes/dinner/pasta.txt favourites/pasta_link.txt       <span class="c"># symlink</span>
+<span class="p">$ </span>ls -li recipes/lunch/salad.txt favourites/salad_hard.txt favourites/pasta_link.txt
+<span class="c"># salad files: same inode, link count 2.   pasta_link: different inode, starts with l</span>
+<span class="p">$ </span>mv recipes/dinner/pasta.txt recipes/dinner/pasta_bolognese.txt
+<span class="p">$ </span>cat favourites/pasta_link.txt          <span class="c"># broken: the symlink followed the OLD name</span>
+<span class="p">$ </span>mv recipes/lunch/salad.txt recipes/lunch/green_salad.txt
+<span class="p">$ </span>cat favourites/salad_hard.txt            <span class="c"># still works: hard link followed the data</span></div>
+
+<h4>Step 5: Dated backup (command substitution)</h4>
+<div class="code-block"><span class="p">$ </span>cp favourites/sandwich.txt favourites/sandwich_$(date +%F).txt
+<span class="p">$ </span>ls favourites</div>
+
+<h4>Step 6: Clean up safely (rmdir vs rm -r)</h4>
+<div class="code-block"><span class="p">$ </span>rm favourites/sandwich.txt          <span class="c"># one file</span>
+<span class="p">$ </span>rmdir favourites
+<span class="o">rmdir: failed to remove 'favourites': Directory not empty</span>
+<span class="p">$ </span>rm -r favourites                       <span class="c"># removes folder and contents</span>
+<span class="p">$ </span>cd ~
+<span class="p">$ </span>rm -r ~/practice                      <span class="c"># finished: remove everything</span></div>
+
+<ul>
+<li>You cannot delete a folder while you are inside it: <code class="code-inline">cd ..</code> first.</li>
+<li><code class="code-inline">cd -</code> only returns to the previous folder if your last move was a single <code class="code-inline">cd</code>.</li>
+</ul>
+</div></div>
+
+<!-- ===================== MISTAKES ===================== -->
+<div class="section-card" id="mistakes">
+<div class="section-header"><div class="section-icon" style="background:rgba(249,115,22,.15)">⚠️</div><h2>Common Mistakes and Gotchas</h2></div>
+<div class="section-body">
+<div class="table-wrapper"><table><thead><tr><th>Mistake</th><th>Result</th><th>Fix</th></tr></thead><tbody>
+<tr><td><code class="code-inline">cp dir newdir</code> without <code class="code-inline">-r</code></td><td>"omitting directory"</td><td>Add <code class="code-inline">-r</code></td></tr>
+<tr><td><code class="code-inline">mkdir -p</code> with a typo</td><td>Wrong folder silently created</td><td>Check spelling, or drop <code class="code-inline">-p</code></td></tr>
+<tr><td><code class="code-inline">ln link target</code> (reversed)</td><td>Wrong or failing link</td><td>Existing file <b>first</b>, new name second</td></tr>
+<tr><td>Relative symlink target</td><td>Dangling link</td><td>Use an absolute path, or <code class="code-inline">../</code> from the link's folder</td></tr>
+<tr><td><code class="code-inline">rm dir</code></td><td>"Is a directory"</td><td><code class="code-inline">rm -r</code>, or <code class="code-inline">rmdir</code> if empty</td></tr>
+<tr><td><code class="code-inline">rm -rf</code> with an unchecked wildcard</td><td>Data loss</td><td><code class="code-inline">pwd</code> and <code class="code-inline">ls</code> first, or use <code class="code-inline">echo</code> to preview</td></tr>
+<tr><td>Space in a name, no quotes</td><td>Two files</td><td><code class="code-inline">"my file"</code></td></tr>
+<tr><td><code class="code-inline">echo '$HOME'</code></td><td>Prints <code class="code-inline">$HOME</code></td><td>Use double quotes</td></tr>
+<tr><td>Expecting <code class="code-inline">cp</code> to follow changes of the original</td><td>Independent copies</td><td>Use a link</td></tr>
+<tr><td>Hard link across file systems (e.g. <code class="code-inline">/boot</code> to <code class="code-inline">/home</code>)</td><td>"Invalid cross-device link"</td><td>Use a symlink</td></tr>
+<tr><td><code class="code-inline">rmdir -r</code></td><td>Invalid option (<code class="code-inline">rmdir</code> has no <code class="code-inline">-r</code>)</td><td><code class="code-inline">rm -r</code></td></tr>
+<tr><td>"No space left" but <code class="code-inline">df -h</code> shows free space</td><td>Inodes are used up</td><td>Check <code class="code-inline">df -i</code></td></tr>
+</tbody></table></div>
+</div></div>
+
+<!-- ===================== CHECKLIST ===================== -->
+<div class="checklist-section" id="revision">
+<h2>✅ Revision Checklist</h2>
+<div class="checklist-item"><input type="checkbox" id="c0"><label for="c0">I know what <code class="code-inline">/</code>, <code class="code-inline">/etc</code>, <code class="code-inline">/usr</code>, <code class="code-inline">/var</code>, <code class="code-inline">/home</code>, <code class="code-inline">/root</code>, <code class="code-inline">/boot</code>, <code class="code-inline">/dev</code>, <code class="code-inline">/run</code>, <code class="code-inline">/tmp</code> are for</label></div>
+<div class="checklist-item"><input type="checkbox" id="c1"><label for="c1">Absolute paths start with <code class="code-inline">/</code>; relative paths do not</label></div>
+<div class="checklist-item"><input type="checkbox" id="c2"><label for="c2"><code class="code-inline">pwd</code>, <code class="code-inline">cd</code>, <code class="code-inline">cd -</code>, <code class="code-inline">cd ..</code>, <code class="code-inline">cd ../..</code>, <code class="code-inline">.</code> and <code class="code-inline">~</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c3"><label for="c3"><code class="code-inline">ls -l</code>, <code class="code-inline">-a</code>, <code class="code-inline">-R</code>, <code class="code-inline">-al</code>; I can read every part of an <code class="code-inline">ls -l</code> line; hidden files are not secure</label></div>
+<div class="checklist-item"><input type="checkbox" id="c4"><label for="c4"><code class="code-inline">touch</code>, <code class="code-inline">mkdir</code>, and the <code class="code-inline">-p</code> typo risk</label></div>
+<div class="checklist-item"><input type="checkbox" id="c5"><label for="c5"><code class="code-inline">cp</code> needs <code class="code-inline">-r</code> for folders; last argument is the destination; it overwrites silently</label></div>
+<div class="checklist-item"><input type="checkbox" id="c6"><label for="c6"><code class="code-inline">mv</code> = move = rename; <code class="code-inline">rm -r</code> vs <code class="code-inline">rmdir</code>; <code class="code-inline">-f</code> beats <code class="code-inline">-i</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c7"><label for="c7">No Recycle Bin on the command line; restore vs recovery</label></div>
+<div class="checklist-item"><input type="checkbox" id="c8"><label for="c8">A file = name + inode + data; I can use <code class="code-inline">ls -i</code> and <code class="code-inline">stat</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c9"><label for="c9">Hard link: same inode, same file system, files only, link count goes up</label></div>
+<div class="checklist-item"><input type="checkbox" id="c10"><label for="c10">Symlink: own inode, stores a path, works across file systems and for folders, shows <code class="code-inline">l</code> and <code class="code-inline">-&gt;</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c11"><label for="c11">Hard link follows the <b>data</b>; symlink follows the <b>name</b></label></div>
+<div class="checklist-item"><input type="checkbox" id="c12"><label for="c12">I know <code class="code-inline">/boot</code> and <code class="code-inline">/boot/efi</code> can be separate file systems, and I can check with <code class="code-inline">df -hT</code> or <code class="code-inline">findmnt</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c13"><label for="c13">Wildcards <code class="code-inline">*</code> <code class="code-inline">?</code> <code class="code-inline">[abc]</code> <code class="code-inline">[!abc]</code> <code class="code-inline">[[:digit:]]</code> and braces <code class="code-inline">{a,b}</code> <code class="code-inline">{1..5}</code></label></div>
+<div class="checklist-item"><input type="checkbox" id="c14"><label for="c14"><code class="code-inline">~</code>, <code class="code-inline">$VAR</code>, <code class="code-inline">$(cmd)</code>; double quotes expand, single quotes are literal, backslash protects one character</label></div>
+<div class="checklist-item"><input type="checkbox" id="c15"><label for="c15">I completed the Family Recipe Book practice project</label></div>
+<div class="checklist-item"><input type="checkbox" id="c16"><label for="c16">I scored 80% or more in the quiz below</label></div>
+<div class="checklist-progress"><span id="chk-count">0</span> / 17 completed</div>
+</div>
+
+<!-- ===================== ALL COMMANDS ===================== -->
+<div class="section-card" id="commands">
+<div class="section-header"><div class="section-icon" style="background:rgba(34,197,94,.15)">📚</div><h2>All Commands of This Chapter</h2></div>
+<div class="section-body">
+<p>A full list in one place. Use it for quick revision before the exam.</p>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th><th>Important options and examples</th></tr></thead><tbody>
+<tr class="grp"><td colspan="3">🧭 Find your way around</td></tr>
+<tr><td><code class="code-inline">pwd</code></td><td>Show the current directory</td><td><code class="code-inline">pwd</code></td></tr>
+<tr><td><code class="code-inline">cd</code></td><td>Change directory</td><td><code class="code-inline">cd</code> home · <code class="code-inline">cd -</code> previous · <code class="code-inline">cd ..</code> up · <code class="code-inline">cd ~/dir</code> · <code class="code-inline">cd -P link</code> follow symlink</td></tr>
+<tr><td><code class="code-inline">ls</code></td><td>List files</td><td><code class="code-inline">-l</code> long · <code class="code-inline">-a</code> hidden · <code class="code-inline">-R</code> recursive · <code class="code-inline">-h</code> readable sizes · <code class="code-inline">-d</code> folder itself · <code class="code-inline">-i</code> inode · <code class="code-inline">-Z</code> SELinux label</td></tr>
+<tr><td><code class="code-inline">man 7 hier</code></td><td>Manual page about the file system tree</td><td><code class="code-inline">man 7 hier</code></td></tr>
+<tr class="grp"><td colspan="3">📁 Create, copy, move, delete</td></tr>
+<tr><td><code class="code-inline">touch</code></td><td>Create an empty file, or update its time</td><td><code class="code-inline">touch a.txt b.txt</code></td></tr>
+<tr><td><code class="code-inline">mkdir</code></td><td>Create folders</td><td><code class="code-inline">-p</code> make parents too · <code class="code-inline">-v</code> verbose</td></tr>
+<tr><td><code class="code-inline">cp</code></td><td>Copy files or folders</td><td><code class="code-inline">-r</code> folders · <code class="code-inline">-i</code> ask · <code class="code-inline">-f</code> force · <code class="code-inline">-v</code> verbose · <code class="code-inline">-p</code> keep time/owner · <code class="code-inline">-a</code> archive</td></tr>
+<tr><td><code class="code-inline">mv</code></td><td>Move or rename</td><td><code class="code-inline">-i</code> ask · <code class="code-inline">-f</code> force · <code class="code-inline">-v</code> verbose</td></tr>
+<tr><td><code class="code-inline">rm</code></td><td>Delete files (and folders with <code class="code-inline">-r</code>)</td><td><code class="code-inline">-r</code> folders · <code class="code-inline">-i</code> ask · <code class="code-inline">-f</code> force · <code class="code-inline">-v</code> verbose</td></tr>
+<tr><td><code class="code-inline">rmdir</code></td><td>Delete an <b>empty</b> folder</td><td><code class="code-inline">rmdir docs</code></td></tr>
+<tr><td><code class="code-inline">echo</code></td><td>Print text; preview expansions; write to a file with <code class="code-inline">&gt;</code></td><td><code class="code-inline">echo hi &gt; f.txt</code> · <code class="code-inline">&gt;&gt;</code> append</td></tr>
+<tr><td><code class="code-inline">cat</code></td><td>Show the content of a file</td><td><code class="code-inline">cat f.txt</code></td></tr>
+<tr><td><code class="code-inline">alias</code></td><td>Show shortcut commands (e.g. <code class="code-inline">rm</code> = <code class="code-inline">rm -i</code> for root)</td><td><code class="code-inline">alias</code></td></tr>
+<tr class="grp"><td colspan="3">🔗 Links and inodes</td></tr>
+<tr><td><code class="code-inline">ln</code></td><td>Make a <b>hard link</b></td><td><code class="code-inline">ln existing newname</code></td></tr>
+<tr><td><code class="code-inline">ln -s</code></td><td>Make a <b>symbolic link</b></td><td><code class="code-inline">ln -s /full/path/target linkname</code></td></tr>
+<tr><td><code class="code-inline">stat</code></td><td>Show everything the inode knows</td><td><code class="code-inline">stat file</code> · <code class="code-inline">stat -L link</code> describe the target</td></tr>
+<tr><td><code class="code-inline">readlink</code></td><td>Show where a symlink points</td><td><code class="code-inline">readlink -f link</code> full real path</td></tr>
+<tr><td><code class="code-inline">find</code></td><td>Find files</td><td><code class="code-inline">find . -samefile f</code> hard-link names · <code class="code-inline">find . -xtype l</code> broken symlinks</td></tr>
+<tr><td><code class="code-inline">unlink</code></td><td>Remove one name</td><td><code class="code-inline">unlink link</code></td></tr>
+<tr class="grp"><td colspan="3">💽 File systems and space</td></tr>
+<tr><td><code class="code-inline">df</code></td><td>Show space on file systems</td><td><code class="code-inline">-h</code> readable · <code class="code-inline">-i</code> inodes · <code class="code-inline">-T</code> file system type</td></tr>
+<tr><td><code class="code-inline">findmnt</code></td><td>Show what is mounted where</td><td><code class="code-inline">findmnt /boot</code></td></tr>
+<tr><td><code class="code-inline">lsblk</code></td><td>List disks and partitions</td><td><code class="code-inline">lsblk -f</code> with file system types</td></tr>
+<tr class="grp"><td colspan="3">✨ Shell helpers (3.9)</td></tr>
+<tr><td><code class="code-inline">date</code></td><td>Show date and time (used with <code class="code-inline">$( )</code>)</td><td><code class="code-inline">date +%F</code> 2026-10-21 · <code class="code-inline">date +%s</code> seconds · <code class="code-inline">date +%A</code> weekday</td></tr>
+<tr><td><code class="code-inline">hostname</code></td><td>Show the computer name</td><td><code class="code-inline">hostname -s</code> short name</td></tr>
+</tbody></table></div>
+
+<h4>Special characters</h4>
+<div class="table-wrapper"><table><thead><tr><th>Symbol</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">/</code></td><td>Top of the tree, and the separator in a path</td></tr>
+<tr><td><code class="code-inline">.</code> and <code class="code-inline">..</code></td><td>This folder, and the folder above</td></tr>
+<tr><td><code class="code-inline">~</code></td><td>My home folder</td></tr>
+<tr><td><code class="code-inline">*</code> <code class="code-inline">?</code> <code class="code-inline">[ ]</code></td><td>Wildcards (find existing names)</td></tr>
+<tr><td><code class="code-inline">{ }</code></td><td>Brace expansion (make up names)</td></tr>
+<tr><td><code class="code-inline">$VAR</code> · <code class="code-inline">$( )</code></td><td>Variable value · output of a command</td></tr>
+<tr><td><code class="code-inline">" "</code> · <code class="code-inline">' '</code> · <code class="code-inline">\</code></td><td>Quotes and backslash: stop expansion</td></tr>
+<tr><td><code class="code-inline">&gt;</code> · <code class="code-inline">&gt;&gt;</code></td><td>Write to a file · add to the end of a file</td></tr>
+</tbody></table></div>
+</div></div>
+
+<!-- ===================== QUIZ ===================== -->
+<div class="section-card" id="quiz">
+<div class="section-header"><div class="section-icon" style="background:rgba(238,0,0,.12)">🧠</div><h2>Chapter 03 Quiz (multiple choice)</h2></div>
+<div class="section-body">
+<p>Pick one answer for each question. You see the result and a short explanation right away. The answers are shuffled each time you start.</p>
+<div class="quiz-box" id="quizBox"></div>
+</div></div>
+
+</div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+<script>
+function toggleTOC(){document.getElementById('tocSidebar').classList.toggle('open');document.getElementById('tocOverlay').classList.toggle('show')}
+var pb=document.getElementById('progress-bar'),st=document.getElementById('scrollTop');
+window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;pb.style.width=(h>0?window.scrollY/h*100:0)+'%';st.classList.toggle('show',window.scrollY>400)});
+function upd(){document.getElementById('chk-count').textContent=document.querySelectorAll('.checklist-item input:checked').length}
+document.querySelectorAll('.checklist-item input').forEach(function(b){b.addEventListener('change',upd)});
+
+/* ---------- QUIZ ---------- */
+var QUESTIONS=[
+{q:"What is the top of the Linux file system tree called?",o:["/ (the root directory)","/root","/home","C:"],a:0,e:"The single slash / is the top of the whole tree. /root is only the administrator's home folder."},
+{q:"Which directory holds the system configuration (settings) files?",o:["/etc","/usr","/boot","/run"],a:0,e:"/etc is the 'control panel' of the system."},
+{q:"Which directory is erased every time the computer reboots?",o:["/run","/var","/etc","/home"],a:0,e:"/run holds data of running programs and is wiped at reboot."},
+{q:"Where do normal users keep their personal files?",o:["/home","/root","/usr","/dev"],a:0,e:"Each user has a folder under /home, such as /home/john."},
+{q:"Which one is an ABSOLUTE path?",o:["/home/john/school","school/maths.txt","../alice","./notes.txt"],a:0,e:"An absolute path always starts with /."},
+{q:"You are in /home/john. What is the relative path to /home/alice?",o:["../alice","/alice","alice","./../../alice"],a:0,e:".. goes up one level to /home, then alice goes down into alice."},
+{q:"Which command jumps back to the previous directory you were in?",o:["cd -","cd ..","cd ~","cd ."],a:0,e:"cd - returns to the previous folder. cd .. only goes to the parent."},
+{q:"Which option of ls shows hidden files?",o:["-a","-h","-R","-d"],a:0,e:"ls -a shows all files, including names that start with a dot."},
+{q:"In the output of ls -l, a line starting with the letter l means:",o:["A symbolic link","A directory","A regular file","A hidden file"],a:0,e:"d = directory, - = regular file, l = symbolic link."},
+{q:"Which command copies a whole folder with everything inside?",o:["cp -r","cp","mv -r","copy"],a:0,e:"cp needs -r (recursive) to copy folders. Without it, cp says 'omitting directory'."},
+{q:"What does the mv command do?",o:["Moves and also renames files","Only moves files","Only renames files","Copies files"],a:0,e:"In Linux the path is the name, so moving and renaming are the same job."},
+{q:"Which command removes a folder only if it is EMPTY?",o:["rmdir","rm -r","rm -f","unlink"],a:0,e:"rmdir is the safe choice. rm -r removes the folder and everything inside."},
+{q:"You delete a file with rm. Can you get it back from the Trash?",o:["No. The command line has no Recycle Bin","Yes, from ~/.Trash","Yes, with the undo command","Yes, from /tmp"],a:0,e:"rm deletes immediately. Use backups or VM snapshots to restore."},
+{q:"/videos does not exist yet. What does mkdir -p videos/seen do?",o:["Creates both videos and seen with no error","Shows an error","Creates only seen","Creates only videos"],a:0,e:"-p creates missing parent folders. A typo can silently create a wrong folder."},
+{q:"Which of these is NOT stored in an inode?",o:["The file name","The owner","The permissions","The link count"],a:0,e:"The name is stored in the directory. The inode stores owner, permissions, size, times, link count and where the data is."},
+{q:"What is the correct order for making a hard link?",o:["ln existing_file new_name","ln new_name existing_file","ln -s existing_file new_name","link new_name existing_file"],a:0,e:"Existing file first, new name second."},
+{q:"A hard link and its original file always have:",o:["The same inode number","Different inode numbers","Different permissions","Different data"],a:0,e:"A hard link is just another name for the same inode."},
+{q:"You delete the original file. What happens to a HARD link to it?",o:["It still works and shows the data","It becomes broken","It is deleted too","It turns into a symlink"],a:0,e:"The data stays until the last name is removed (link count reaches 0)."},
+{q:"You delete the original file. What happens to a SYMBOLIC link to it?",o:["It becomes a dangling (broken) link","It still works","It is deleted too","It turns into a hard link"],a:0,e:"A symlink stores only the path text, so it points to nothing when the target is gone."},
+{q:"Which kind of link can point to a directory?",o:["Symbolic link","Hard link","Both","Neither"],a:0,e:"Hard links work for regular files only."},
+{q:"Why does a hard link from /boot/file to /home/john/file fail?",o:["They are on different file systems","/boot is read-only","Hard links cannot use /home","The file is too large"],a:0,e:"Inode numbers only mean something inside one file system. The error is 'Invalid cross-device link'."},
+{q:"On a UEFI RHEL system, what is the file system type of /boot/efi?",o:["VFAT (FAT32)","XFS","ext4","tmpfs"],a:0,e:"The EFI System Partition must be FAT so the UEFI firmware can read it."},
+{q:"Which command shows how many inodes are used on each file system?",o:["df -i","df -h","ls -i","stat"],a:0,e:"df -i shows inode use. df -h shows disk space. ls -i shows the inode number of a file."},
+{q:"You create a new empty folder, then 2 subfolders and 3 files in it. What is the folder's link count?",o:["4","2","5","7"],a:0,e:"A new folder starts at 2. Each subfolder adds 1. Files do not change it. 2 + 2 = 4."},
+{q:"You copy a file with cp and then add text to the original. Does the copy show the new text?",o:["No. The copy is a separate file","Yes, always","Only after a reboot","Only if it is a hard link"],a:0,e:"cp makes an independent file. Hard links and symlinks show the change; copies do not."},
+{q:"You run from your home folder: ln -s files/a.txt links/a.soft. Why is the link broken?",o:["A relative target is read from the link's own folder (links/)","ln -s needs root","The target must be a folder","Symlinks cannot use files"],a:0,e:"The shell looks for links/files/a.txt. Use an absolute path or ../files/a.txt."},
+{q:"What does echo '$HOME' print?",o:["$HOME","/home/john","Nothing","An error"],a:0,e:"Single quotes switch off all expansion, so the text is printed exactly as typed."},
+{q:"What does touch day{1..3}.txt do?",o:["Creates day1.txt, day2.txt and day3.txt","Creates one file named day{1..3}.txt","Finds existing files day1 to day3","Shows an error"],a:0,e:"Braces make up names. Wildcards find existing names."},
+{q:"Which pattern matches file names that do NOT start with the letter a?",o:["[!a]*","a*","*[!a]","?a*"],a:0,e:"[!a] means one character that is not a. The * after it matches the rest."},
+{q:"Which command is best to check which file system is mounted at /boot?",o:["findmnt /boot","pwd /boot","ln /boot","stat -i /boot"],a:0,e:"findmnt shows what is mounted where. df -hT /boot also works."}
+];
+var quiz={list:[],i:0,score:0,missed:[],locked:false};
+var box=document.getElementById('quizBox');
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function startQuiz(pool){
+  quiz.list=shuffle(pool).map(function(q){
+    var opts=shuffle(q.o.map(function(t,idx){return {t:t,ok:idx===q.a}}));
+    return {q:q.q,opts:opts,e:q.e,src:q};
+  });
+  quiz.i=0;quiz.score=0;quiz.missed=[];quiz.locked=false;
+  renderQ();
+}
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
+function renderQ(){
+  box.innerHTML='';
+  var total=quiz.list.length,q=quiz.list[quiz.i];
+  var top=el('div','quiz-top');
+  top.appendChild(el('span','', 'Question '+(quiz.i+1)+' of '+total));
+  top.appendChild(el('span','', 'Score: '+quiz.score));
+  box.appendChild(top);
+  var bar=el('div','quiz-bar');var fill=el('div');fill.style.width=(quiz.i/total*100)+'%';bar.appendChild(fill);box.appendChild(bar);
+  box.appendChild(el('div','quiz-q',q.q));
+  var fb=el('div','quiz-fb');
+  var next=el('button','quiz-btn',quiz.i===total-1?'See result':'Next question →');
+  next.style.display='none';
+  next.onclick=function(){quiz.i++;if(quiz.i>=total){renderResult()}else{renderQ()}};
+  quiz.locked=false;
+  q.opts.forEach(function(o,idx){
+    var b=el('button','quiz-opt',String.fromCharCode(65+idx)+'.  '+o.t);
+    b.onclick=function(){
+      if(quiz.locked)return;quiz.locked=true;
+      var all=box.querySelectorAll('.quiz-opt');
+      all.forEach(function(x,k){x.disabled=true;if(q.opts[k].ok)x.classList.add('right')});
+      if(o.ok){quiz.score++;fb.textContent='✅ Correct! '+q.e}
+      else{b.classList.add('wrong');quiz.missed.push(q);fb.textContent='❌ Not quite. '+q.e}
+      fb.classList.add('show');next.style.display='inline-block';
+      top.lastChild.textContent='Score: '+quiz.score;
+      fill.style.width=((quiz.i+1)/total*100)+'%';
+    };
+    box.appendChild(b);
+  });
+  box.appendChild(fb);box.appendChild(next);
+}
+function renderResult(){
+  box.innerHTML='';
+  var total=quiz.list.length,pct=Math.round(quiz.score/total*100);
+  box.appendChild(el('div','quiz-q','Quiz finished'));
+  box.appendChild(el('div','quiz-score',quiz.score+' / '+total+'  ('+pct+'%)'));
+  var msg=pct>=80?'🎉 Great work! You know this chapter well.':(pct>=50?'👍 Good start. Read the explanations below and try again.':'📖 Read the chapter again, then retry the quiz.');
+  box.appendChild(el('p','',msg));
+  if(quiz.missed.length){
+    box.appendChild(el('p','', 'Questions you missed:'));
+    quiz.missed.forEach(function(q){
+      var d=el('div','quiz-miss');
+      d.appendChild(el('div','',q.q));
+      var right=q.opts.filter(function(o){return o.ok})[0].t;
+      var ans=el('div','','');ans.appendChild(document.createTextNode('Correct answer: '));ans.appendChild(el('b','',right));d.appendChild(ans);
+      d.appendChild(el('div','',q.e));
+      box.appendChild(d);
+    });
+  }
+  var again=el('button','quiz-btn','🔁 Restart full quiz');
+  again.onclick=function(){startQuiz(QUESTIONS)};
+  box.appendChild(again);
+  if(quiz.missed.length){
+    var retry=el('button','quiz-btn alt','Retry only missed questions');
+    retry.onclick=function(){startQuiz(quiz.missed.map(function(m){return m.src}))};
+    box.appendChild(retry);
+  }
+}
+(function(){
+  var intro=el('div','');
+  intro.appendChild(el('p','',QUESTIONS.length+' questions covering 3.1 to 3.9.'));
+  var go=el('button','quiz-btn','▶ Start quiz');
+  go.onclick=function(){startQuiz(QUESTIONS)};
+  intro.appendChild(go);box.appendChild(intro);
+})();
+</script>
+</body>
+</html>
