@@ -1,0 +1,1122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chapter 09 — Manage Local Users and Groups | RH124 Study Notes</title>
+<style>
+:root{--bg:#0a0e17;--bg2:#111827;--bg3:#1a2236;--bg4:#232d44;--text:#e2e8f0;--text2:#94a3b8;--text3:#64748b;--red:#ee0000;--red2:#ff3333;--red-glow:rgba(238,0,0,.15);--green:#22c55e;--blue:#3b82f6;--yellow:#eab308;--orange:#f97316;--purple:#a855f7;--cyan:#06b6d4;--border:#1e293b;--radius:12px}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{font-family:'Segoe UI',system-ui,-apple-system,sans-serif;background:var(--bg);color:var(--text);line-height:1.75;font-size:16px}
+::selection{background:var(--red);color:#fff}
+::-webkit-scrollbar{width:8px}::-webkit-scrollbar-track{background:var(--bg2)}::-webkit-scrollbar-thumb{background:var(--bg4);border-radius:4px}
+#progress-bar{position:fixed;top:0;left:0;height:3px;background:linear-gradient(90deg,var(--red),var(--red2));z-index:10000;transition:width .15s}
+.top-nav{position:sticky;top:3px;z-index:999;background:rgba(10,14,23,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.top-nav a{color:var(--text2);text-decoration:none;font-size:.88rem;padding:6px 14px;border-radius:8px;transition:.2s;border:1px solid var(--border);display:inline-flex;align-items:center;gap:6px}
+.top-nav a:hover{color:#fff;border-color:var(--red);background:var(--red-glow)}
+.nav-title{font-weight:700;color:var(--red);font-size:.95rem}
+.toc-toggle{position:fixed;bottom:80px;right:20px;z-index:998;width:44px;height:44px;border-radius:50%;background:var(--bg3);border:1px solid var(--border);color:var(--text2);font-size:1.2rem;cursor:pointer}
+.toc-toggle:hover{border-color:var(--red);color:var(--red)}
+.toc-sidebar{position:fixed;top:0;right:-340px;width:320px;height:100vh;background:var(--bg2);border-left:1px solid var(--border);z-index:9999;padding:24px 20px;overflow-y:auto;transition:right .3s ease}
+.toc-sidebar.open{right:0}
+.toc-sidebar h3{color:var(--red);margin-bottom:16px;font-size:1rem}
+.toc-sidebar a{display:block;color:var(--text2);text-decoration:none;padding:6px 0;font-size:.84rem;border-bottom:1px solid var(--border);transition:.2s}
+.toc-sidebar a:hover{color:var(--red);padding-left:8px}
+.toc-sidebar a.sub{padding-left:16px;font-size:.8rem;color:var(--text3)}
+.toc-overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:9998;display:none}
+.toc-overlay.show{display:block}
+.container{max-width:920px;margin:0 auto;padding:32px 20px 80px}
+.hero{text-align:center;padding:48px 20px 36px;margin-bottom:24px}
+.hero-badge{display:inline-block;background:var(--red-glow);color:var(--red);padding:4px 16px;border-radius:20px;font-size:.8rem;font-weight:600;margin-bottom:12px;border:1px solid rgba(238,0,0,.25)}
+.hero h1{font-size:2rem;margin-bottom:8px;background:linear-gradient(135deg,#fff,var(--text2));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.hero p{color:var(--text2);max-width:660px;margin:0 auto}
+.section-card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:28px;overflow:hidden}
+.section-header{display:flex;align-items:center;gap:12px;padding:18px 24px;background:linear-gradient(135deg,var(--bg3),var(--bg2));border-bottom:1px solid var(--border)}
+.section-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:1.3rem;flex-shrink:0}
+.section-header h2{font-size:1.15rem;color:#fff}
+.section-body{padding:24px}
+.section-body h3{color:var(--red2);font-size:1.05rem;margin:28px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.section-body h3:first-child{margin-top:0}
+.section-body h4{color:var(--cyan);font-size:.98rem;margin:20px 0 8px}
+.section-body p{margin-bottom:12px}
+.section-body ul,.section-body ol{margin:8px 0 16px 22px}
+.section-body li{margin-bottom:6px}
+.info-box{border-radius:10px;padding:14px 18px;margin:16px 0;border-left:4px solid;font-size:.93rem}
+.info-box .box-title{font-weight:700;margin-bottom:6px}
+.info-box.note{background:rgba(59,130,246,.08);border-color:var(--blue);color:#93c5fd}.info-box.note .box-title{color:var(--blue)}
+.info-box.tip{background:rgba(34,197,94,.08);border-color:var(--green);color:#86efac}.info-box.tip .box-title{color:var(--green)}
+.info-box.warning{background:rgba(234,179,8,.08);border-color:var(--yellow);color:#fde047}.info-box.warning .box-title{color:var(--yellow)}
+.info-box.important{background:rgba(168,85,247,.08);border-color:var(--purple);color:#d8b4fe}.info-box.important .box-title{color:var(--purple)}
+.info-box.analogy{background:rgba(6,182,212,.08);border-color:var(--cyan);color:#67e8f9}.info-box.analogy .box-title{color:var(--cyan)}
+.code-block{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:16px 20px;margin:12px 0;overflow-x:auto;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:.85rem;line-height:1.7;white-space:pre;color:#e2e8f0}
+.code-block .p{color:var(--green)}.code-block .c{color:#6a737d;font-style:italic}.code-block .o{color:var(--text3)}
+.code-inline{background:var(--bg3);color:var(--red2);padding:2px 7px;border-radius:5px;font-family:'Cascadia Code','Fira Code',Consolas,monospace;font-size:.87em}
+.table-wrapper{overflow-x:auto;margin:12px 0;border-radius:10px;border:1px solid var(--border)}
+.table-wrapper table{width:100%;border-collapse:collapse;font-size:.88rem}
+.table-wrapper th{background:var(--bg3);color:var(--red2);padding:12px 16px;text-align:left;font-weight:600}
+.table-wrapper td{padding:10px 16px;border-top:1px solid var(--border);vertical-align:top}
+.table-wrapper tr:hover td{background:rgba(238,0,0,.04)}
+.table-wrapper tr.grp td{background:var(--bg3);color:var(--cyan);font-weight:700;letter-spacing:.03em}
+.visual{background:#0d1117;border:1px solid var(--border);border-radius:10px;padding:14px;margin:16px 0;text-align:center}
+.visual svg{max-width:100%;height:auto}
+.visual .cap{color:var(--text3);font-size:.8rem;margin-top:8px}
+.vs-container{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:16px 0}
+.vs-card{background:var(--bg3);border:1px solid var(--border);border-radius:10px;padding:18px}
+.vs-card h4{margin:0 0 10px}
+.vs-card.a{border-color:rgba(59,130,246,.35)}.vs-card.a h4{color:var(--blue)}
+.vs-card.b{border-color:rgba(168,85,247,.35)}.vs-card.b h4{color:var(--purple)}
+.badge{display:inline-block;background:rgba(34,197,94,.12);color:var(--green);border:1px solid rgba(34,197,94,.35);padding:2px 12px;border-radius:20px;font-size:.78rem;font-weight:600;margin-left:8px;vertical-align:middle}
+.lsl{display:flex;flex-wrap:wrap;gap:10px;margin:16px 0}
+.lsl .f{flex:1 1 118px;min-width:110px;background:var(--bg3);border:1px solid var(--border);border-top:4px solid var(--c);border-radius:10px;padding:10px 10px 12px;text-align:center}
+.lsl .lab{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--c);font-weight:700}
+.lsl .val{display:block;font-family:'Cascadia Code',Consolas,monospace;font-size:1.02rem;color:#fff;margin:6px 0;word-break:break-all}
+.lsl .exp{display:block;font-size:.78rem;color:var(--text2);line-height:1.4}
+.quiz-box{background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);padding:24px}
+.quiz-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:.88rem;color:var(--text2);margin-bottom:10px}
+.quiz-bar{height:8px;background:var(--bg);border-radius:6px;overflow:hidden;margin-bottom:20px}
+.quiz-bar div{height:100%;width:0;background:linear-gradient(90deg,var(--red),var(--orange));transition:width .3s}
+.quiz-q{font-size:1.05rem;font-weight:600;color:#fff;margin-bottom:16px;line-height:1.5}
+.quiz-opt{display:block;width:100%;text-align:left;background:var(--bg2);color:var(--text);border:2px solid var(--border);border-radius:10px;padding:12px 16px;margin-bottom:10px;font-size:.95rem;font-family:inherit;cursor:pointer;transition:.15s}
+.quiz-opt:hover:not(:disabled){border-color:var(--blue);background:rgba(59,130,246,.08)}
+.quiz-opt:disabled{cursor:default}
+.quiz-opt.right{border-color:var(--green);background:rgba(34,197,94,.12)}
+.quiz-opt.wrong{border-color:var(--red);background:rgba(238,0,0,.12)}
+.quiz-fb{display:none;margin-top:6px;padding:12px 16px;border-radius:10px;font-size:.92rem;background:var(--bg2);border-left:4px solid var(--cyan);color:var(--text2)}
+.quiz-fb.show{display:block}
+.quiz-btn{background:var(--red);color:#fff;border:none;border-radius:8px;padding:10px 22px;font-size:.95rem;font-weight:600;cursor:pointer;margin-top:14px;margin-right:8px;font-family:inherit}
+.quiz-btn:hover{background:var(--red2)}
+.quiz-btn.alt{background:var(--bg4);color:var(--text)}
+.quiz-score{font-size:2.4rem;font-weight:800;color:var(--green);text-align:center;margin:8px 0}
+.quiz-miss{margin:14px 0;padding:12px 16px;background:var(--bg2);border-radius:10px;border-left:4px solid var(--red);font-size:.9rem}
+.quiz-miss b{color:var(--green)}
+.scroll-top{position:fixed;bottom:24px;right:20px;width:44px;height:44px;border-radius:50%;background:var(--red);color:#fff;border:none;font-size:1.2rem;cursor:pointer;opacity:0;transition:.3s;z-index:997}
+.scroll-top.show{opacity:1}
+@media(max-width:700px){.hero h1{font-size:1.5rem}.vs-container{grid-template-columns:1fr}.section-body{padding:16px}.top-nav{padding:8px 12px}}
+</style>
+</head>
+<body>
+<div id="progress-bar" style="width:0%"></div>
+<nav class="top-nav">
+  <a href="chapter-03.html">← Ch 03</a>
+  <span class="nav-title">Ch 09 · Manage Local Users and Groups</span>
+  <a href="../index.html">Dashboard →</a>
+</nav>
+<button class="toc-toggle" onclick="toggleTOC()" title="Table of Contents">☰</button>
+<div class="toc-overlay" id="tocOverlay" onclick="toggleTOC()"></div>
+<aside class="toc-sidebar" id="tocSidebar">
+<h3>📑 Table of Contents</h3>
+  <a href="#prep" onclick="toggleTOC()">Before you start</a>
+  <a href="#s1" onclick="toggleTOC()">9.1 Users and Groups: the Concepts</a>
+  <a href="#types" class="sub" onclick="toggleTOC()">↳ Types of users</a>
+  <a href="#files" class="sub" onclick="toggleTOC()">↳ Important files</a>
+  <a href="#getent" class="sub" onclick="toggleTOC()">↳ getent</a>
+  <a href="#groups" class="sub" onclick="toggleTOC()">↳ Groups: primary and secondary</a>
+  <a href="#logindefs" class="sub" onclick="toggleTOC()">↳ /etc/login.defs</a>
+  <a href="#s3" onclick="toggleTOC()">9.3 Gain Superuser Access</a>
+  <a href="#su" class="sub" onclick="toggleTOC()">↳ su and su -</a>
+  <a href="#sudo" class="sub" onclick="toggleTOC()">↳ sudo</a>
+  <a href="#sudoers" class="sub" onclick="toggleTOC()">↳ Give and limit sudo access</a>
+  <a href="#s5" onclick="toggleTOC()">9.5 Manage User Accounts</a>
+  <a href="#useradd" class="sub" onclick="toggleTOC()">↳ Create (useradd)</a>
+  <a href="#usermod" class="sub" onclick="toggleTOC()">↳ Modify (usermod)</a>
+  <a href="#home" class="sub" onclick="toggleTOC()">↳ Change vs move home folder</a>
+  <a href="#lock" class="sub" onclick="toggleTOC()">↳ Lock and unlock</a>
+  <a href="#userdel" class="sub" onclick="toggleTOC()">↳ Delete (userdel)</a>
+  <a href="#nologin" class="sub" onclick="toggleTOC()">↳ The nologin shell</a>
+  <a href="#s7" onclick="toggleTOC()">9.7 Manage Group Accounts</a>
+  <a href="#s9" onclick="toggleTOC()">9.9 Manage User Passwords</a>
+  <a href="#shadow" class="sub" onclick="toggleTOC()">↳ /etc/shadow</a>
+  <a href="#chage" class="sub" onclick="toggleTOC()">↳ Password aging (chage)</a>
+  <a href="#failed" class="sub" onclick="toggleTOC()">↳ Failed logins</a>
+  <a href="#mistakes" onclick="toggleTOC()">⚠️ Common Mistakes</a>
+  <a href="#commands" onclick="toggleTOC()">📚 All Commands</a>
+  <a href="#quiz" onclick="toggleTOC()">🧠 Quiz</a>
+</aside>
+
+<div class="hero">
+  <div class="hero-badge">RH124 · Chapter 09 · RHEL 10</div>
+  <h1>Manage Local Users and Groups</h1>
+  <p>Who can log in, who can become the administrator, and how passwords expire. Every idea has a picture, a small example, and an explanation of how to read the output.</p>
+</div>
+
+<div class="container">
+
+<div class="info-box tip" id="prep"><div class="box-title">🧭 Before you start</div>
+• Try every command on a <b>practice virtual machine</b>, never on an important computer. Take a VM snapshot first.<br>
+• The test users in these notes are <b>john</b>, <b>alice</b> and <b>user1</b>. Your own login name will be different.<br>
+• Lines starting with <code class="code-inline">$</code> are commands you type (do not type the <code class="code-inline">$</code>). Lines without it are the output.<br>
+• Most commands in this chapter need administrator power, so they start with <code class="code-inline">sudo</code>. You will learn exactly what that means in 9.3.<br>
+• Numbers, dates and hashes in the outputs are <b>examples</b>. Yours will look similar but not identical.</div>
+
+<!-- ===================== 9.1 ===================== -->
+<div class="section-card" id="s1">
+<div class="section-header"><div class="section-icon" style="background:rgba(59,130,246,.15)">👥</div><h2>9.1 Describe User and Group Concepts</h2></div>
+<div class="section-body">
+
+<h3>What is a user account?</h3>
+<p>A <b>user account</b> decides <b>who you are</b> on the system. Every program that runs belongs to some user, and every file has an owner. This is how Linux knows who is allowed to do what.</p>
+
+<div class="info-box analogy"><div class="box-title">🏨 Hotel key-card analogy</div>
+At a hotel, your room number is what the door lock really checks. Your name on the booking is only a friendly label. Linux works the same way:<br>
+• <b>UID</b> (User ID number) = the room number. This is what the system really uses.<br>
+• <b>Username</b> (john) = the name label. It is easy for humans to read.<br>
+• <b>GID</b> (Group ID number) = the number of a group, like "all guests on floor 3".</div>
+
+<h3 id="types">The three types of users</h3>
+
+<div class="visual">
+<svg viewBox="0 0 800 210" width="800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="arU" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#22c55e"/></marker></defs>
+<text x="400" y="20" fill="#94a3b8" text-anchor="middle" font-size="12">UID number line (not drawn to scale)</text>
+<rect x="10" y="40" width="110" height="60" rx="10" fill="rgba(238,0,0,.18)" stroke="#ee0000" stroke-width="2"/>
+<text x="65" y="66" fill="#ff6b6b" text-anchor="middle" font-weight="700" font-size="20">0</text><text x="65" y="88" fill="#e2e8f0" text-anchor="middle" font-size="12">Superuser</text>
+<rect x="135" y="40" width="165" height="60" rx="10" fill="rgba(59,130,246,.15)" stroke="#3b82f6" stroke-width="2"/>
+<text x="217" y="66" fill="#60a5fa" text-anchor="middle" font-weight="700" font-size="16">1 – 200</text><text x="217" y="88" fill="#e2e8f0" text-anchor="middle" font-size="12">System: fixed numbers</text>
+<rect x="310" y="40" width="200" height="60" rx="10" fill="rgba(6,182,212,.15)" stroke="#06b6d4" stroke-width="2"/>
+<text x="410" y="66" fill="#22d3ee" text-anchor="middle" font-weight="700" font-size="16">201 – 999</text><text x="410" y="88" fill="#e2e8f0" text-anchor="middle" font-size="12">System: handed out automatically</text>
+<rect x="525" y="40" width="265" height="60" rx="10" fill="rgba(34,197,94,.15)" stroke="#22c55e" stroke-width="2"/>
+<text x="657" y="66" fill="#4ade80" text-anchor="middle" font-weight="700" font-size="16">1000 – 60000  and more</text><text x="657" y="88" fill="#e2e8f0" text-anchor="middle" font-size="12">Regular users (people)</text>
+<path d="M135 125 H300" stroke="#3b82f6" stroke-width="2"/><path d="M310 125 H510" stroke="#06b6d4" stroke-width="2"/>
+<text x="217" y="145" fill="#94a3b8" text-anchor="middle" font-size="11">Service / daemon accounts</text>
+<text x="410" y="145" fill="#94a3b8" text-anchor="middle" font-size="11">(1 – 999 together)</text>
+<path d="M657 125 H780" stroke="#22c55e" stroke-width="2" marker-end="url(#arU)"/><text x="600" y="145" fill="#94a3b8" text-anchor="middle" font-size="11">the range can be extended by the administrator</text>
+<text x="400" y="190" fill="#64748b" text-anchor="middle" font-size="12">Red = full power · Blue/Cyan = programs, not people · Green = people</text>
+</svg>
+<div class="cap">Where each kind of user lives on the UID number line.</div>
+</div>
+
+<h4>1) Superuser (root): UID = 0, GID = 0</h4>
+<ul>
+<li>The <b>administrator</b> of the computer. It can read, change or delete <b>any</b> file, install software, create users, and stop any program. Permissions do not stop root.</li>
+<li>Home folder: <code class="code-inline">/root</code>. Equivalent to "Administrator" on Windows.</li>
+<li>The system knows root by the number <b>0</b>, not by the name. Any account with UID 0 is a superuser, so never create a second one.</li>
+</ul>
+<div class="code-block"><span class="p">$ </span>id root
+<span class="o">uid=0(root) gid=0(root) groups=0(root)</span>
+<span class="p">$ </span>grep ^root /etc/passwd
+<span class="o">root:x:0:0:root:/root:/bin/bash</span></div>
+<div class="info-box warning"><div class="box-title">⚠️ Best practice</div>Do not log in as root for daily work. Log in as a normal user and become root only for the moment you need it (with <code class="code-inline">sudo</code>). One typing mistake as root can destroy the whole system.</div>
+
+<h4>2) Regular (standard) user: UID/GID from 1000 upward</h4>
+<ul>
+<li>For <b>people</b>. Limited access: they can work in their own home folder (<code class="code-inline">/home/john</code>) and read most of the system, but they cannot install software, change system settings, or touch other users' files.</li>
+<li>Default range: <b>1000 to 60000</b>. (This is set by <code class="code-inline">UID_MIN</code> and <code class="code-inline">UID_MAX</code> in <code class="code-inline">/etc/login.defs</code>. The top is <b>60000</b>, five digits.) It is not a hard wall: an administrator can raise <code class="code-inline">UID_MAX</code> and the range grows. The special number 65534 is used by the account <i>nobody</i>.</li>
+<li>When you create a new user, the system gives the <b>next free number</b> starting from 1000.</li>
+</ul>
+<div class="code-block"><span class="p">$ </span>sudo useradd john
+<span class="p">$ </span>id john
+<span class="o">uid=1000(john) gid=1000(john) groups=1000(john)</span></div>
+
+<h4>3) Service / system account: UID/GID from 1 to 999</h4>
+<ul>
+<li>For <b>programs</b> (called <i>daemons</i> or services), not for people. Examples: the SSH server, the web server, the time service. Each service gets its own account so that if the service is hacked, the attacker is stuck with that service's small powers, not root's.</li>
+<li>Normally they have no password and the shell <code class="code-inline">/sbin/nologin</code>, so nobody can log in as them.</li>
+<li>This range is split in two:</li>
+</ul>
+<div class="table-wrapper"><table><thead><tr><th>Range</th><th>How numbers are given</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><b>1 – 200</b></td><td><b>Statically</b> (fixed)</td><td>Reserved for core services. The same service has the <b>same number on every RHEL computer</b>. Example: <code class="code-inline">sshd</code> is always 74.</td></tr>
+<tr><td><b>201 – 999</b></td><td><b>Dynamically</b> (automatic)</td><td>Given at install time to services that do not own files. The number <b>can differ</b> from one computer to another.</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>grep -E '^(sshd|chrony):' /etc/passwd
+<span class="o">sshd:x:74:74:Privilege-separated SSH:/usr/share/empty.sshd:/usr/sbin/nologin
+chrony:x:992:988:chrony system user:/var/lib/chrony:/sbin/nologin</span></div>
+<p>Reading this: <b>sshd</b> has fixed number 74 (static range). <b>chrony</b> got 992 automatically (dynamic range; yours may differ). Both end with <code class="code-inline">nologin</code>, so no one can open a shell with them.</p>
+<div class="info-box note"><div class="box-title">📝 UID and GID do not have to match</div>On RHEL, a new user normally gets the same number for UID and GID (john = 1000/1000), but that is only a habit. A user can have UID 1000 and a group with GID 5000. Groups use the same ranges as users.</div>
+
+<div class="table-wrapper"><table><thead><tr><th></th><th>Superuser</th><th>Regular user</th><th>Service account</th></tr></thead><tbody>
+<tr><td>UID / GID</td><td>0</td><td>1000 – 60000 (extendable)</td><td>1 – 999</td></tr>
+<tr><td>Made for</td><td>The administrator</td><td>People</td><td>Programs</td></tr>
+<tr><td>Power</td><td>Everything</td><td>Limited</td><td>Only what the service needs</td></tr>
+<tr><td>Can log in?</td><td>Yes (but avoid)</td><td>Yes</td><td>No (<code class="code-inline">nologin</code>)</td></tr>
+<tr><td>Example</td><td>root</td><td>john, alice</td><td>sshd, chrony</td></tr>
+</tbody></table></div>
+
+<h3 id="files">Important files: where accounts are stored</h3>
+<p>Linux has no special "user database program". Accounts live in four plain text files in <code class="code-inline">/etc</code>.</p>
+
+<div class="visual">
+<svg viewBox="0 0 800 240" width="800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="arF" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<text x="190" y="22" fill="#60a5fa" text-anchor="middle" font-weight="700">USERS</text>
+<text x="610" y="22" fill="#a855f7" text-anchor="middle" font-weight="700">GROUPS</text>
+<rect x="20" y="40" width="340" height="62" rx="10" fill="#1a2236" stroke="#3b82f6" stroke-width="2"/>
+<text x="190" y="64" fill="#fff" text-anchor="middle" font-weight="700">/etc/passwd</text><text x="190" y="84" fill="#94a3b8" text-anchor="middle" font-size="12">account info · anyone can read</text>
+<rect x="20" y="150" width="340" height="62" rx="10" fill="#1a2236" stroke="#ee0000" stroke-width="2"/>
+<text x="190" y="174" fill="#fff" text-anchor="middle" font-weight="700">/etc/shadow</text><text x="190" y="194" fill="#94a3b8" text-anchor="middle" font-size="12">password hashes + aging · root only</text>
+<rect x="440" y="40" width="340" height="62" rx="10" fill="#1a2236" stroke="#a855f7" stroke-width="2"/>
+<text x="610" y="64" fill="#fff" text-anchor="middle" font-weight="700">/etc/group</text><text x="610" y="84" fill="#94a3b8" text-anchor="middle" font-size="12">group info and members · anyone can read</text>
+<rect x="440" y="150" width="340" height="62" rx="10" fill="#1a2236" stroke="#ee0000" stroke-width="2"/>
+<text x="610" y="174" fill="#fff" text-anchor="middle" font-weight="700">/etc/gshadow</text><text x="610" y="194" fill="#94a3b8" text-anchor="middle" font-size="12">group passwords and admins · root only</text>
+<path d="M190 102 V148" stroke="#94a3b8" stroke-width="2" marker-end="url(#arF)"/><text x="200" y="130" fill="#94a3b8" font-size="11">the "x" means: look in shadow</text>
+<path d="M610 102 V148" stroke="#94a3b8" stroke-width="2" marker-end="url(#arF)"/><text x="620" y="130" fill="#94a3b8" font-size="11">the "x" means: look in gshadow</text>
+</svg>
+<div class="cap">Public information on top, secrets at the bottom. The red boxes can only be read by root.</div>
+</div>
+
+<div class="table-wrapper"><table><thead><tr><th>File</th><th>What it stores</th><th>Who can read it</th></tr></thead><tbody>
+<tr><td><code class="code-inline">/etc/passwd</code></td><td>User account information (name, UID, GID, home, shell)</td><td>Everyone</td></tr>
+<tr><td><code class="code-inline">/etc/group</code></td><td>Group information (name, GID, members)</td><td>Everyone</td></tr>
+<tr><td><code class="code-inline">/etc/shadow</code></td><td>Password <b>hashes</b> and password aging settings</td><td>Root only</td></tr>
+<tr><td><code class="code-inline">/etc/gshadow</code></td><td>Group passwords and group administrators</td><td>Root only</td></tr>
+</tbody></table></div>
+<p><b>Why two files for users?</b> A long time ago the password hash was in <code class="code-inline">/etc/passwd</code>, and that file must be readable by everyone (programs need to turn UID numbers into names). So everyone could copy the hashes. The fix: keep public data in <code class="code-inline">passwd</code> and move the secret to <code class="code-inline">shadow</code>, which only root can read. The <code class="code-inline">x</code> in <code class="code-inline">passwd</code> is a note saying "the password is in shadow".</p>
+
+<h4>How to read one line of <code class="code-inline">/etc/passwd</code></h4>
+<p>One line = one user. Seven fields separated by a colon <code class="code-inline">:</code></p>
+<div class="code-block" style="text-align:center;font-size:1rem"><span class="o">john:x:1000:1000:John Smith:/home/john:/bin/bash</span></div>
+<div class="lsl">
+<div class="f" style="--c:#ff3333"><span class="lab">1 · Username</span><span class="val">john</span><span class="exp">The login name</span></div>
+<div class="f" style="--c:#eab308"><span class="lab">2 · Password</span><span class="val">x</span><span class="exp">Placeholder. Real hash is in /etc/shadow</span></div>
+<div class="f" style="--c:#3b82f6"><span class="lab">3 · UID</span><span class="val">1000</span><span class="exp">User ID number</span></div>
+<div class="f" style="--c:#a855f7"><span class="lab">4 · GID</span><span class="val">1000</span><span class="exp">Number of the <b>primary</b> group</span></div>
+<div class="f" style="--c:#06b6d4"><span class="lab">5 · Comment</span><span class="val">John Smith</span><span class="exp">Real name or note (can be empty)</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">6 · Home</span><span class="val">/home/john</span><span class="exp">Folder you start in after login</span></div>
+<div class="f" style="--c:#f97316"><span class="lab">7 · Shell</span><span class="val">/bin/bash</span><span class="exp">Program that gives you the prompt. <code class="code-inline">nologin</code> = no login</span></div>
+</div>
+<div class="info-box tip"><div class="box-title">💡 Memory trick</div><b>N</b>ame : <b>P</b>assword : <b>U</b>ID : <b>G</b>ID : <b>C</b>omment : <b>H</b>ome : <b>S</b>hell &nbsp;→ "<b>N</b>ew <b>P</b>eople <b>U</b>se <b>G</b>reat <b>C</b>omputers <b>H</b>ere <b>S</b>oon"</div>
+<div class="code-block"><span class="p">$ </span>grep john /etc/passwd                   <span class="c"># show only john's line</span>
+<span class="o">john:x:1000:1000:John Smith:/home/john:/bin/bash</span>
+<span class="p">$ </span>cut -d: -f1,3 /etc/passwd | tail -3    <span class="c"># -d: = split at colons, -f1,3 = keep fields 1 and 3</span>
+<span class="o">chrony:992
+john:1000
+alice:1001</span></div>
+<p>The second command shows <i>username:UID</i> pairs. <code class="code-inline">cut -d: -f1,3</code> means "cut each line at colons and keep field 1 and field 3".</p>
+
+<h4>How to read one line of <code class="code-inline">/etc/group</code></h4>
+<div class="code-block" style="text-align:center;font-size:1rem"><span class="o">devs:x:10000:john,alice</span></div>
+<div class="table-wrapper"><table><thead><tr><th>#</th><th>Field</th><th>Example</th><th>Meaning</th></tr></thead><tbody>
+<tr><td>1</td><td>Group name</td><td>devs</td><td>Name of the group</td></tr>
+<tr><td>2</td><td>Password</td><td>x</td><td>Placeholder (details in <code class="code-inline">/etc/gshadow</code>)</td></tr>
+<tr><td>3</td><td>GID</td><td>10000</td><td>Group ID number</td></tr>
+<tr><td>4</td><td>Members</td><td>john,alice</td><td>Users who have this as a <b>secondary</b> group. A user whose <i>primary</i> group this is is <b>not</b> listed here</td></tr>
+</tbody></table></div>
+<p><code class="code-inline">/etc/gshadow</code> has four fields too: <i>group name : encrypted password : administrators : members</i>. In daily work you rarely open it.</p>
+
+<h3 id="getent">getent: ask the system "who is this?"</h3>
+<p><code class="code-inline">getent</code> means <b>get ent</b>ries. It reads account information from <b>every source the computer is set up to use</b>, not only the local file.</p>
+<div class="code-block"><span class="p">$ </span>getent passwd john
+<span class="o">john:x:1000:1000:John Smith:/home/john:/bin/bash</span>
+<span class="p">$ </span>getent group devs
+<span class="o">devs:x:10000:john,alice</span>
+<span class="p">$ </span>getent passwd 1000              <span class="c"># you can also search by UID</span>
+<span class="o">john:x:1000:1000:John Smith:/home/john:/bin/bash</span>
+<span class="p">$ </span>grep john /etc/passwd            <span class="c"># same answer for a LOCAL user</span></div>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code class="code-inline">grep john /etc/passwd</code></th><th><code class="code-inline">getent passwd john</code></th></tr></thead><tbody>
+<tr><td>Searches</td><td>Only the local file</td><td>Local file <b>and</b> network sources (LDAP, IdM, Active Directory through SSSD)</td></tr>
+<tr><td>Output format</td><td colspan="2">Identical (same 7 fields)</td></tr>
+<tr><td>Best for</td><td>Quick local checks</td><td>Real servers in a company; scripts that must find any user</td></tr>
+</tbody></table></div>
+<p>The output is exactly the same as a line from <code class="code-inline">/etc/passwd</code>, so you read it the same way. If the user does not exist, <code class="code-inline">getent</code> prints nothing (the command returns an error status of 2).</p>
+<div class="info-box note"><div class="box-title">📌 Where else does getent appear?</div>
+In your earlier notes (the users chapter, "extras" part) getent appeared only as a one-line tip, and it is not explained in Chapter 03. I could not confirm from your notes whether a later chapter covers it in detail. Network accounts (LDAP/SSSD) are a topic of the more advanced courses. So: <b>learn it here</b>, and treat the "network users" part as background for later. For this chapter, you only need to know it works like <code class="code-inline">grep</code> on <code class="code-inline">/etc/passwd</code> and also covers non-local users.</div>
+
+<h3 id="groups">Groups: primary and secondary</h3>
+<p>A <b>group</b> is a set of users who share access to some files. Example: the group <i>devs</i> can all read the project folder.</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th>Primary group</th><th>Secondary groups</th></tr></thead><tbody>
+<tr><td>How many per user?</td><td><b>Exactly one</b></td><td>Zero or many</td></tr>
+<tr><td>Stored in</td><td>4th field of <code class="code-inline">/etc/passwd</code> (a GID number)</td><td>Member list of <code class="code-inline">/etc/group</code></td></tr>
+<tr><td>Main job</td><td>It becomes the <b>group owner of new files</b> the user creates</td><td>Gives extra access to files owned by those groups</td></tr>
+<tr><td>Change it with</td><td><code class="code-inline">usermod -g</code></td><td><code class="code-inline">usermod -aG</code></td></tr>
+</tbody></table></div>
+<p>RHEL uses <b>User Private Groups</b>: when you create <i>john</i>, a group also called <i>john</i> is created, and it becomes his primary group. Only john is in it. For checking permissions, <b>primary and secondary groups count the same</b>: if any of your groups has access, you get access.</p>
+
+<h4>How to read the <code class="code-inline">id</code> command</h4>
+<div class="code-block" style="text-align:center;font-size:1rem"><span class="o">uid=1000(john) gid=1000(john) groups=1000(john),10(wheel),10000(devs)</span></div>
+<div class="lsl">
+<div class="f" style="--c:#3b82f6"><span class="lab">uid</span><span class="val">1000(john)</span><span class="exp">User number and name</span></div>
+<div class="f" style="--c:#a855f7"><span class="lab">gid</span><span class="val">1000(john)</span><span class="exp"><b>Primary</b> group</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">groups</span><span class="val">1000, 10, 10000</span><span class="exp"><b>All</b> groups: the primary one first, then the secondary ones (wheel, devs)</span></div>
+</div>
+<p>Other ways to look: <code class="code-inline">groups john</code> (just the group names), <code class="code-inline">whoami</code> (just my name), <code class="code-inline">who</code> and <code class="code-inline">w</code> (who is logged in now), <code class="code-inline">last</code> (login history).</p>
+<div class="info-box note"><div class="box-title">🔢 How many groups can one user join?</div>The usual rule taught is: <b>a user can be in up to 16 groups in total, counting the primary group</b> (so 1 primary + 15 secondary). Keep to 16 to be safe, because some network file systems (NFS) only understand 16 groups. Newer Linux kernels can technically handle many more, but 16 is the number to remember.</div>
+
+<h3 id="logindefs">/etc/login.defs: the default settings for new accounts</h3>
+<p>When you run <code class="code-inline">useradd</code>, it reads its default rules from <code class="code-inline">/etc/login.defs</code>.</p>
+<div class="code-block"><span class="p">$ </span>grep -E '^(UMASK|PASS_|UID_|GID_|SYS_UID)' /etc/login.defs
+<span class="o">UMASK           022
+PASS_MAX_DAYS   99999
+PASS_MIN_DAYS   0
+PASS_WARN_AGE   7
+UID_MIN         1000
+UID_MAX         60000
+GID_MIN         1000
+GID_MAX         60000
+SYS_UID_MIN     201
+SYS_UID_MAX     999</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Setting</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">UMASK 022</code></td><td>Default permission "filter" for new files. With 022, new files get <code class="code-inline">rw-r--r--</code> (644) and new folders <code class="code-inline">rwxr-xr-x</code> (755). Permissions are a later chapter.</td></tr>
+<tr><td><code class="code-inline">PASS_MAX_DAYS</code></td><td>Maximum days a password may be used. 99999 days (about 273 years) = never expires</td></tr>
+<tr><td><code class="code-inline">PASS_MIN_DAYS</code></td><td>Minimum days before a password may be changed again. 0 = change any time</td></tr>
+<tr><td><code class="code-inline">PASS_WARN_AGE</code></td><td>Days of warning before a password expires</td></tr>
+<tr><td><code class="code-inline">UID_MIN</code> / <code class="code-inline">UID_MAX</code></td><td>Range of numbers for <b>regular</b> users (1000 to 60000)</td></tr>
+<tr><td><code class="code-inline">SYS_UID_MIN</code> / <code class="code-inline">SYS_UID_MAX</code></td><td>Range for <b>system</b> accounts created with <code class="code-inline">useradd -r</code> (201 to 999)</td></tr>
+</tbody></table></div>
+<div class="info-box important"><div class="box-title">❗ Only new users are affected</div>If you edit <code class="code-inline">/etc/login.defs</code>, existing users keep their old settings. To change an existing user, use <code class="code-inline">chage</code> (see 9.9). Two more helpers: <code class="code-inline">useradd -D</code> shows the other defaults (from <code class="code-inline">/etc/default/useradd</code>, such as the shell and home base), and <code class="code-inline">/etc/skel</code> holds the starter files (<code class="code-inline">.bashrc</code> …) copied into every new home folder.</div>
+
+</div></div>
+
+<!-- ===================== 9.3 ===================== -->
+<div class="section-card" id="s3">
+<div class="section-header"><div class="section-icon" style="background:rgba(238,0,0,.12)">🔑</div><h2>9.3 Gain Superuser Access</h2></div>
+<div class="section-body">
+
+<p>You work as a normal user. When you need administrator power for one task, you <b>escalate</b> (raise) your privileges. There are two tools: <code class="code-inline">su</code> (switch user) and <code class="code-inline">sudo</code> (super user do).</p>
+
+<h3 id="su">su and su - (switch user)</h3>
+<p><code class="code-inline">su</code> turns your whole shell into another user. You must type <b>that user's</b> password. With no name, it means root.</p>
+<div class="code-block"><span class="p">$ </span>whoami
+<span class="o">john</span>
+<span class="p">$ </span>su - alice                     <span class="c"># become alice (asks for ALICE's password)</span>
+<span class="o">Password:</span>
+<span class="p">$ </span>whoami ; pwd
+<span class="o">alice
+/home/alice</span>
+<span class="p">$ </span>exit                           <span class="c"># go back to john</span></div>
+<h4><code class="code-inline">su</code> versus <code class="code-inline">su -</code> (a dash makes a big difference)</h4>
+<div class="vs-container">
+<div class="vs-card a"><h4><code class="code-inline">su</code> (no dash)</h4>You become the new user, but you keep your <b>old environment</b>: same folder, same PATH settings. It is a "half switch".
+<div class="code-block" style="margin-top:10px"><span class="p">$ </span>su
+<span class="p">$ </span>pwd
+<span class="o">/home/john</span>      <span class="c"># still john's folder</span></div></div>
+<div class="vs-card b"><h4><code class="code-inline">su -</code> (with dash)</h4>You become the new user <b>completely</b>, as if they had just logged in: their folder, their settings. This is the correct way.
+<div class="code-block" style="margin-top:10px"><span class="p">$ </span>su -
+<span class="p">$ </span>pwd
+<span class="o">/root</span>             <span class="c"># root's own home</span></div></div>
+</div>
+<div class="info-box tip"><div class="box-title">💡 Rule of thumb</div>Always use <code class="code-inline">su -</code> with the dash. Leave with <code class="code-inline">exit</code>. If you are already root, <code class="code-inline">su - alice</code> needs <b>no password</b>.</div>
+
+<h3 id="sudo">sudo (super user do)</h3>
+<p><code class="code-inline">sudo</code> runs <b>one command</b> with another user's power (root by default). It asks for <b>your own</b> password, not root's, and it writes a log entry for every command. This is why it is safer than sharing the root password.</p>
+<div class="code-block"><span class="p">$ </span>whoami
+<span class="o">john</span>
+<span class="p">$ </span>sudo whoami                       <span class="c"># this one command runs AS ROOT</span>
+<span class="o">[sudo] password for john:</span>        <span class="c"># type JOHN's password (nothing shows on screen)</span>
+<span class="o">root</span>
+<span class="p">$ </span>sudo touch /tmp/test.txt
+<span class="p">$ </span>ls -l /tmp/test.txt
+<span class="o">-rw-r--r--. 1 root root 0 Oct 24 10:05 /tmp/test.txt</span></div>
+<p>Look at the file's owner: <b>root root</b>, not john. That proves it: <b>everything done with sudo is done by the user root</b>. After the command finishes, you are john again. The password is remembered for about 5 minutes.</p>
+
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code class="code-inline">sudo command</code></td><td>Run one command as root</td></tr>
+<tr><td><code class="code-inline">sudo -u alice command</code></td><td>Run one command as alice</td></tr>
+<tr><td><code class="code-inline">sudo -i</code></td><td>Open a root <b>login shell</b> (like <code class="code-inline">su -</code> but with your own password). Leave with <code class="code-inline">exit</code></td></tr>
+<tr><td><code class="code-inline">sudo -s</code></td><td>Open a root shell, keeping more of your own environment</td></tr>
+<tr><td><code class="code-inline">sudo -l</code></td><td><b>L</b>ist what I am allowed to run with sudo</td></tr>
+<tr><td><code class="code-inline">sudo -k</code></td><td>Forget my remembered password now</td></tr>
+</tbody></table></div>
+
+<h4>Privilege escalation: which tool to choose?</h4>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code class="code-inline">su</code></th><th><code class="code-inline">su -</code></th><th><code class="code-inline">sudo</code></th></tr></thead><tbody>
+<tr><td>Password asked</td><td>The <b>target</b> user's</td><td>The <b>target</b> user's</td><td><b>Your own</b></td></tr>
+<tr><td>Environment</td><td>Yours (old)</td><td>The new user's</td><td>Yours</td></tr>
+<tr><td>Lasts for</td><td>Until <code class="code-inline">exit</code></td><td>Until <code class="code-inline">exit</code></td><td>One command</td></tr>
+<tr><td>Logged?</td><td>Only that you ran <code class="code-inline">su</code></td><td>Only that you ran <code class="code-inline">su</code></td><td><b>Every command</b></td></tr>
+<tr><td>Who is allowed</td><td>Anyone who knows the password</td><td>Anyone who knows the password</td><td>Only users the sudo rules allow</td></tr>
+</tbody></table></div>
+
+<h3 id="sudoers">Giving and limiting sudo access</h3>
+<p>Not every user may use sudo. Two ways to allow a regular user:</p>
+
+<h4>Way 1: add the user to the <code class="code-inline">wheel</code> group (easiest)</h4>
+<p>On RHEL, the group <b>wheel</b> is the "administrators" group. The main sudo file already contains a rule that allows it.</p>
+<div class="code-block"><span class="p">$ </span>sudo usermod -aG wheel john         <span class="c"># -aG = Append to Group (keeps john's other groups)</span>
+<span class="p">$ </span>id john
+<span class="o">uid=1000(john) gid=1000(john) groups=1000(john),10(wheel)</span>
+<span class="p">$ </span>sudo grep wheel /etc/sudoers
+<span class="o">%wheel  ALL=(ALL)       ALL
+# %wheel  ALL=(ALL)       NOPASSWD: ALL</span></div>
+<p>Reading the output: wheel is group number 10 and john is now in it. The first line (no <code class="code-inline">#</code>) is the active rule: everyone in wheel can run everything. The second line starts with <code class="code-inline">#</code>, so it is a <b>comment</b> (switched off). John must <b>log out and log in again</b> for the new group to work.</p>
+
+<h4>Way 2: write a rule in the sudoers files</h4>
+<p>The main file is <code class="code-inline">/etc/sudoers</code>. Better practice: leave it alone and put your own rules in small files inside <code class="code-inline">/etc/sudoers.d/</code>. <b>Always edit with <code class="code-inline">visudo</code></b>, never with a normal editor. <code class="code-inline">visudo</code> checks the syntax before saving, because a typo can lock everyone out of sudo.</p>
+<p><b>Steps to give john full sudo access:</b></p>
+<ol>
+<li>Open a safe editor on a new file: <code class="code-inline">sudo visudo -f /etc/sudoers.d/john</code></li>
+<li>Press <code class="code-inline">i</code> (insert) and type the rule: <code class="code-inline">john ALL=(ALL) ALL</code></li>
+<li>Press <code class="code-inline">Esc</code>, then type <code class="code-inline">:wq</code> and Enter to save and quit. (If you made a mistake, visudo says <i>syntax error</i> and asks "What now?". Press <code class="code-inline">e</code> to edit again.)</li>
+<li>Test it: <code class="code-inline">sudo -l -U john</code> lists john's rights, or log in as john and run <code class="code-inline">sudo whoami</code>.</li>
+</ol>
+<div class="code-block"><span class="p">$ </span>sudo visudo -c                    <span class="c"># check all sudoers files for mistakes</span>
+<span class="o">/etc/sudoers: parsed OK
+/etc/sudoers.d/john: parsed OK</span></div>
+
+<h4>What are the "three ALL"?</h4>
+<div class="code-block" style="text-align:center;font-size:1.05rem"><span class="o">john   ALL=(ALL)   ALL</span></div>
+<div class="lsl">
+<div class="f" style="--c:#3b82f6"><span class="lab">1 · WHO</span><span class="val">john</span><span class="exp">The user this rule is for. A <b>%</b> in front (<code class="code-inline">%wheel</code>) means a <b>group</b></span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">2 · WHERE (1st ALL)</span><span class="val">ALL</span><span class="exp">On which computers the rule works. ALL = any</span></div>
+<div class="f" style="--c:#eab308"><span class="lab">3 · AS WHOM (2nd ALL)</span><span class="val">(ALL)</span><span class="exp">Which user john may become. ALL = any, including root. <code class="code-inline">(ALL:ALL)</code> adds "any group"</span></div>
+<div class="f" style="--c:#ff3333"><span class="lab">4 · WHAT (3rd ALL)</span><span class="val">ALL</span><span class="exp">Which commands john may run. ALL = every command</span></div>
+</div>
+<p>So <code class="code-inline">john ALL=(ALL) ALL</code> means: "john, on any computer, may become any user and run any command."</p>
+
+<h4>Same thing without a password (NOPASSWD)</h4>
+<ol>
+<li><code class="code-inline">sudo visudo -f /etc/sudoers.d/john</code></li>
+<li>Change the rule to: <code class="code-inline">john ALL=(ALL) NOPASSWD: ALL</code></li>
+<li>Save and quit (<code class="code-inline">Esc</code>, <code class="code-inline">:wq</code>).</li>
+<li>Test: <code class="code-inline">sudo whoami</code> now prints <code class="code-inline">root</code> without asking for a password.</li>
+</ol>
+<div class="info-box warning"><div class="box-title">⚠️ Be careful with NOPASSWD</div>Anyone who sits at john's open terminal gets root power with no barrier. Use it only for automation accounts that log in with SSH keys, never for a normal person.</div>
+
+<h4>Allow a whole group (for example, wheel or a new group)</h4>
+<p>The group <code class="code-inline">wheel</code> is already allowed (see above). To allow another group, such as <b>devs</b>:</p>
+<ol>
+<li>Create the group and add people: <code class="code-inline">sudo groupadd devs</code> then <code class="code-inline">sudo usermod -aG devs john</code></li>
+<li>Open a new sudoers file: <code class="code-inline">sudo visudo -f /etc/sudoers.d/devs</code></li>
+<li>Type: <code class="code-inline">%devs ALL=(ALL) ALL</code> (the <b>%</b> means group)</li>
+<li>Save and quit. Everyone in <i>devs</i> can now run all commands with sudo.</li>
+</ol>
+
+<h4>Block a user from running certain commands</h4>
+<p>Put the rule in its own custom file. First find the exact path of each command with <code class="code-inline">which</code> (sudoers needs the <b>full path</b>):</p>
+<div class="code-block"><span class="p">$ </span>which useradd adduser userdel
+<span class="o">/usr/sbin/useradd
+/usr/sbin/adduser
+/usr/sbin/userdel</span>
+<span class="p">$ </span>sudo visudo -f /etc/sudoers.d/custom</div>
+<p>Type this one line (an <b>exclamation mark</b> means "not allowed"):</p>
+<div class="code-block"><span class="o">user2 ALL=(ALL) ALL, !/usr/sbin/useradd, !/usr/sbin/adduser, !/usr/sbin/userdel</span></div>
+<p>Read it as: "user2 may run <b>everything</b> (<code class="code-inline">ALL</code>), <b>except</b> useradd, adduser and userdel." Save with <code class="code-inline">:wq</code>. Test as user2:</p>
+<div class="code-block"><span class="p">$ </span>sudo useradd test1
+<span class="o">Sorry, user user2 is not allowed to execute '/usr/sbin/useradd test1' as root on server1.</span>
+<span class="p">$ </span>sudo id                             <span class="c"># other commands still work</span>
+<span class="o">uid=0(root) gid=0(root) groups=0(root)</span></div>
+<div class="info-box warning"><div class="box-title">⚠️ Two important notes</div>
+• The rule needs <b><code class="code-inline">ALL,</code> before the "!" items</b>. A line with only <code class="code-inline">!/usr/sbin/useradd</code> gives user2 nothing at all, because there is nothing allowed to subtract from.<br>
+• A block list is <b>weak</b>. A user with <code class="code-inline">ALL</code> can run <code class="code-inline">sudo -i</code> to get a root shell and then run any command. So it only prevents mistakes. For real control, use the opposite: allow <b>only</b> a short list, for example <code class="code-inline">user2 ALL=(ALL) /usr/bin/systemctl restart httpd</code>.</div>
+
+<h4>How to check failed sudo attempts</h4>
+<p>If a user without sudo rights tries it, they see this on screen:</p>
+<div class="code-block"><span class="p">$ </span>sudo id
+<span class="o">alice is not in the sudoers file.  This incident will be reported.</span></div>
+<p>"Reported" means it is <b>written to the log file</b> <code class="code-inline">/var/log/secure</code>. The administrator can look there:</p>
+<div class="code-block"><span class="p">$ </span>sudo grep "NOT in sudoers" /var/log/secure
+<span class="o">Oct 24 10:20:11 server1 sudo[2411]: alice : user NOT in sudoers ; TTY=pts/0 ; PWD=/home/alice ; USER=root ; COMMAND=/usr/bin/id</span>
+<span class="p">$ </span>sudo grep "incorrect password" /var/log/secure     <span class="c"># wrong sudo passwords</span>
+<span class="p">$ </span>sudo grep "COMMAND=" /var/log/secure | tail -3  <span class="c"># everything people ran with sudo</span>
+<span class="p">$ </span>sudo journalctl _COMM=sudo --since today          <span class="c"># same information from the journal</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Part of the log line</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">Oct 24 10:20:11 server1</code></td><td>When it happened and on which computer</td></tr>
+<tr><td><code class="code-inline">alice : user NOT in sudoers</code></td><td>Who tried, and why it failed</td></tr>
+<tr><td><code class="code-inline">TTY=pts/0</code> · <code class="code-inline">PWD=/home/alice</code></td><td>The terminal used and the folder alice was in</td></tr>
+<tr><td><code class="code-inline">USER=root</code></td><td>Whom she tried to become</td></tr>
+<tr><td><code class="code-inline">COMMAND=/usr/bin/id</code></td><td>The command she tried to run</td></tr>
+</tbody></table></div>
+
+</div></div>
+
+<!-- ===================== 9.5 ===================== -->
+<div class="section-card" id="s5">
+<div class="section-header"><div class="section-icon" style="background:rgba(34,197,94,.15)">👤</div><h2>9.5 Manage Local User Accounts</h2></div>
+<div class="section-body">
+
+<h3 id="useradd">Creating users: useradd (and adduser)</h3>
+<p>On RHEL, <code class="code-inline">adduser</code> is just another name (a symbolic link) for <code class="code-inline">useradd</code>. They are the <b>same command</b>.</p>
+<div class="code-block"><span class="p">$ </span>ls -l /usr/sbin/adduser
+<span class="o">lrwxrwxrwx. 1 root root 7 ... /usr/sbin/adduser -> useradd</span></div>
+<p><b>Syntax:</b> <code class="code-inline">useradd [options] username</code>. On success it prints nothing. Silence means success.</p>
+<div class="code-block"><span class="p">$ </span>sudo useradd john                    <span class="c"># simplest form</span>
+<span class="p">$ </span>grep john /etc/passwd
+<span class="o">john:x:1000:1000::/home/john:/bin/bash</span></div>
+<p>What <code class="code-inline">useradd</code> did automatically: picked the next free UID (1000), created the private group <i>john</i>, created <code class="code-inline">/home/john</code> and copied starter files from <code class="code-inline">/etc/skel</code>. The comment field is empty (the <code class="code-inline">::</code> after 1000). <b>No password is set</b>, so john cannot log in until you run <code class="code-inline">passwd</code>.</p>
+
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">-u 2000</code></td><td>Choose the UID yourself</td></tr>
+<tr><td><code class="code-inline">-g group</code> / <code class="code-inline">-G list</code></td><td>Primary group / secondary groups (comma separated)</td></tr>
+<tr><td><code class="code-inline">-c "text"</code></td><td>Comment (full name)</td></tr>
+<tr><td><code class="code-inline">-d /path</code></td><td>Home folder location</td></tr>
+<tr><td><code class="code-inline">-m</code> / <code class="code-inline">-M</code></td><td>Create / do not create the home folder</td></tr>
+<tr><td><code class="code-inline">-s /bin/sh</code></td><td>Login shell</td></tr>
+<tr><td><code class="code-inline">-r</code></td><td>Make a <b>system</b> account (number from the 1–999 range)</td></tr>
+<tr><td><code class="code-inline">-e 2026-12-31</code></td><td>Account expiry date</td></tr>
+</tbody></table></div>
+
+<h4>Example A: choose the UID and the shell</h4>
+<div class="code-block"><span class="p">$ </span>sudo adduser -u 2000 -s /bin/sh user1
+<span class="p">$ </span>grep user1 /etc/passwd
+<span class="o">user1:x:2000:2000::/home/user1:/bin/sh</span>
+<span class="p">$ </span>id user1
+<span class="o">uid=2000(user1) gid=2000(user1) groups=2000(user1)</span></div>
+<p>Reading it: UID is <b>2000</b> (our choice, it is inside the regular range), the private group also got 2000, and the shell is <code class="code-inline">/bin/sh</code> instead of bash.</p>
+
+<h4>Example B: a system account with a chosen UID</h4>
+<div class="code-block"><span class="p">$ </span>sudo adduser -r -u 888 user2
+<span class="p">$ </span>id user2
+<span class="o">uid=888(user2) gid=888(user2) groups=888(user2)</span>
+<span class="p">$ </span>ls -ld /home/user2
+<span class="o">ls: cannot access '/home/user2': No such file or directory</span></div>
+<p><code class="code-inline">-r</code> says "system account", so the number must come from the <b>1–999</b> range. <code class="code-inline">-u 888</code> asks for 888 specifically, and it works only if 888 is <b>free</b> (check with <code class="code-inline">getent passwd 888</code>; empty output = free). If it is taken you get <i>UID 888 is not unique</i>. System accounts get <b>no home folder</b> by default (add <code class="code-inline">-m</code> if you want one).</p>
+
+<h4>Set the password: passwd</h4>
+<div class="code-block"><span class="p">$ </span>sudo passwd john
+<span class="o">New password:
+Retype new password:
+passwd: all authentication tokens updated successfully.</span></div>
+<p>You type the password twice (nothing appears on the screen). The last line means success. If you are root and choose a weak password, you only get a <i>BAD PASSWORD</i> warning and it is still accepted. A regular user changing their own password must follow the quality rules (not too short, not a dictionary word, not their username). Run <code class="code-inline">passwd</code> with no name to change <b>your own</b> password.</p>
+
+<h3 id="usermod">Modifying users: usermod</h3>
+<p><code class="code-inline">usermod</code> changes the properties of an <b>existing</b> user. Syntax: <code class="code-inline">usermod [options] username</code></p>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>What it changes</th><th>Example</th></tr></thead><tbody>
+<tr><td><code class="code-inline">-u</code></td><td>The <b>UID</b></td><td><code class="code-inline">usermod -u 3000 john</code></td></tr>
+<tr><td><code class="code-inline">-d</code></td><td>The <b>home directory</b> path</td><td><code class="code-inline">usermod -d /home/newjohn john</code></td></tr>
+<tr><td><code class="code-inline">-m</code></td><td><b>Move</b> the old home contents (use together with <code class="code-inline">-d</code>)</td><td><code class="code-inline">usermod -m -d /home/newjohn john</code></td></tr>
+<tr><td><code class="code-inline">-s</code></td><td>The login <b>shell</b></td><td><code class="code-inline">usermod -s /bin/sh john</code></td></tr>
+<tr><td><code class="code-inline">-aG</code></td><td><b>A</b>ppend to a secondary <b>G</b>roup</td><td><code class="code-inline">usermod -aG devs john</code></td></tr>
+<tr><td><code class="code-inline">-g</code></td><td>The <b>primary</b> group</td><td><code class="code-inline">usermod -g devs john</code></td></tr>
+<tr><td><code class="code-inline">-c</code></td><td>The <b>comment</b> (full name)</td><td><code class="code-inline">usermod -c "John Smith" john</code></td></tr>
+<tr><td><code class="code-inline">-L</code></td><td><b>L</b>ock the password</td><td><code class="code-inline">usermod -L john</code></td></tr>
+<tr><td><code class="code-inline">-U</code></td><td><b>U</b>nlock the password</td><td><code class="code-inline">usermod -U john</code></td></tr>
+<tr><td><code class="code-inline">-e</code></td><td>Account expiry date</td><td><code class="code-inline">usermod -e 2026-12-31 john</code></td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>sudo usermod -c "John Smith" john
+<span class="p">$ </span>sudo usermod -s /bin/sh john
+<span class="p">$ </span>grep john /etc/passwd
+<span class="o">john:x:1000:1000:John Smith:/home/john:/bin/sh</span>        <span class="c"># field 5 and field 7 changed</span>
+<span class="p">$ </span>sudo usermod -u 3000 john
+<span class="p">$ </span>id john
+<span class="o">uid=3000(john) gid=1000(john) groups=1000(john)</span></div>
+<div class="info-box warning"><div class="box-title">⚠️ Two traps</div>
+• <code class="code-inline">usermod -G devs john</code> <b>without <code class="code-inline">-a</code></b> replaces all of john's secondary groups with only <i>devs</i>. Always write <code class="code-inline">-aG</code>.<br>
+• After <code class="code-inline">usermod -u</code>, only john's <b>home folder</b> files are updated to the new number. Files elsewhere keep the old UID and become "orphans". Find them with <code class="code-inline">sudo find / -uid 1000 2>/dev/null</code> and fix them with <code class="code-inline">chown</code>. Do not change a UID while the user is logged in.</div>
+
+<h3 id="home">Change versus move the home directory</h3>
+<h4>When and why do you need this?</h4>
+<ul>
+<li>The <code class="code-inline">/home</code> disk is <b>full</b>, so you want the user's files on a bigger disk (for example <code class="code-inline">/data/john</code>).</li>
+<li>Company rule: all homes must be under a certain path.</li>
+<li>The user was created without a home folder (<code class="code-inline">-M</code> or <code class="code-inline">-r</code>) and now needs one.</li>
+<li>You renamed a user and want the folder name to match.</li>
+</ul>
+
+<div class="visual">
+<svg viewBox="0 0 800 270" width="800" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="13">
+<defs><marker id="arH" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0 0 L10 4 L0 8 z" fill="#94a3b8"/></marker></defs>
+<rect x="10" y="10" width="385" height="250" rx="12" fill="rgba(59,130,246,.06)" stroke="#3b82f6" stroke-width="2"/>
+<text x="202" y="36" fill="#60a5fa" text-anchor="middle" font-weight="700">CHANGE:  usermod -d /home/newjohn john</text>
+<rect x="30" y="60" width="150" height="80" rx="8" fill="#1a2236" stroke="#64748b"/><text x="105" y="82" fill="#e2e8f0" text-anchor="middle">/home/john</text><text x="105" y="104" fill="#94a3b8" text-anchor="middle" font-size="11">notes.txt  photos/</text><text x="105" y="122" fill="#94a3b8" text-anchor="middle" font-size="11">(files stay here)</text>
+<rect x="225" y="60" width="150" height="80" rx="8" fill="#1a2236" stroke="#22c55e" stroke-dasharray="5 4"/><text x="300" y="82" fill="#e2e8f0" text-anchor="middle">/home/newjohn</text><text x="300" y="108" fill="#94a3b8" text-anchor="middle" font-size="11">empty folder</text><text x="300" y="124" fill="#94a3b8" text-anchor="middle" font-size="11">(you must create it)</text>
+<path d="M180 100 H223" stroke="#ef4444" stroke-width="2" stroke-dasharray="4 4"/><text x="202" y="92" fill="#ef4444" text-anchor="middle" font-size="16">✕</text>
+<text x="202" y="170" fill="#e2e8f0" text-anchor="middle" font-size="12">Only the path written in /etc/passwd changes.</text>
+<text x="202" y="190" fill="#e2e8f0" text-anchor="middle" font-size="12">Nothing is copied or moved.</text>
+<text x="202" y="222" fill="#facc15" text-anchor="middle" font-size="12">John logs in and finds an EMPTY home.</text>
+<rect x="405" y="10" width="385" height="250" rx="12" fill="rgba(34,197,94,.06)" stroke="#22c55e" stroke-width="2"/>
+<text x="597" y="36" fill="#4ade80" text-anchor="middle" font-weight="700">MOVE:  usermod -m -d /home/newjohn john</text>
+<rect x="425" y="60" width="150" height="80" rx="8" fill="#1a2236" stroke="#64748b" stroke-dasharray="5 4"/><text x="500" y="82" fill="#e2e8f0" text-anchor="middle">/home/john</text><text x="500" y="112" fill="#94a3b8" text-anchor="middle" font-size="11">(gone)</text>
+<rect x="620" y="60" width="150" height="80" rx="8" fill="#1a2236" stroke="#22c55e"/><text x="695" y="82" fill="#e2e8f0" text-anchor="middle">/home/newjohn</text><text x="695" y="104" fill="#94a3b8" text-anchor="middle" font-size="11">notes.txt  photos/</text><text x="695" y="122" fill="#94a3b8" text-anchor="middle" font-size="11">(files arrive here)</text>
+<path d="M575 100 H618" stroke="#22c55e" stroke-width="3" marker-end="url(#arH)"/>
+<text x="597" y="170" fill="#e2e8f0" text-anchor="middle" font-size="12">The folder is created, all files are moved,</text>
+<text x="597" y="190" fill="#e2e8f0" text-anchor="middle" font-size="12">and /etc/passwd is updated.</text>
+<text x="597" y="222" fill="#86efac" text-anchor="middle" font-size="12">John logs in and finds everything.</text>
+</svg>
+<div class="cap">Change = update the address only. Move = update the address and carry the belongings.</div>
+</div>
+
+<h4>Option 1: change only (new, empty home)</h4>
+<div class="code-block"><span class="p">$ </span>sudo mkdir /home/newjohn                  <span class="c"># 1. the folder must exist first</span>
+<span class="p">$ </span>sudo chown john:john /home/newjohn      <span class="c"># 2. make john (user:group) its owner</span>
+<span class="p">$ </span>sudo chmod 700 /home/newjohn              <span class="c"># 3. only john may enter (private)</span>
+<span class="p">$ </span>sudo usermod -d /home/newjohn john      <span class="c"># 4. update /etc/passwd</span>
+<span class="p">$ </span>grep john /etc/passwd
+<span class="o">john:x:1000:1000:John Smith:/home/newjohn:/bin/bash</span>      <span class="c"># field 6 changed</span></div>
+<p>Careful: <code class="code-inline">chown user:group folder</code> only <b>sets the owner</b>, and <code class="code-inline">usermod -d</code> alone only <b>changes the path</b>. Neither of them <i>copies</i> anything. If you also want the old files in the new folder, copy them yourself and keep owners and permissions with <code class="code-inline">-a</code>:</p>
+<div class="code-block"><span class="p">$ </span>sudo cp -a /home/john/. /home/newjohn/     <span class="c"># "." copies hidden files too</span></div>
+
+<h4>Option 2: move (one command does it all)</h4>
+<div class="code-block"><span class="p">$ </span>sudo usermod -m -d /home/newjohn john
+<span class="p">$ </span>ls -ld /home/newjohn
+<span class="o">drwx------. 5 john john 138 Oct 24 11:02 /home/newjohn</span>
+<span class="p">$ </span>ls -ld /home/john
+<span class="o">ls: cannot access '/home/john': No such file or directory</span></div>
+<p>The path after <code class="code-inline">-d</code> is always the <b>new</b> location. <code class="code-inline">-m</code> works <b>only together with</b> <code class="code-inline">-d</code>. The old folder is gone and the owner (<b>john john</b>) is kept. The user should be logged out while you do this.</p>
+<div class="table-wrapper"><table><thead><tr><th></th><th><code class="code-inline">usermod -d</code> (change)</th><th><code class="code-inline">usermod -m -d</code> (move)</th></tr></thead><tbody>
+<tr><td>Updates /etc/passwd</td><td>Yes</td><td>Yes</td></tr>
+<tr><td>Creates the new folder</td><td>No (you do it)</td><td>Yes</td></tr>
+<tr><td>Carries old files</td><td>No</td><td>Yes</td></tr>
+<tr><td>Old folder</td><td>Stays untouched</td><td>Removed</td></tr>
+<tr><td>Use when</td><td>The new folder is already prepared</td><td>You want the whole home relocated</td></tr>
+</tbody></table></div>
+
+<h3 id="lock">Lock and unlock an account</h3>
+<div class="code-block"><span class="p">$ </span>sudo usermod -L john                  <span class="c"># Lock the password</span>
+<span class="p">$ </span>sudo passwd -S john                  <span class="c"># -S = Status</span>
+<span class="o">john LK 2026-10-24 0 99999 7 -1 (Password locked.)</span>
+<span class="p">$ </span>sudo usermod -U john                  <span class="c"># Unlock</span>
+<span class="p">$ </span>sudo passwd -S john
+<span class="o">john PS 2026-10-24 0 99999 7 -1 (Password set, SHA512 crypt.)</span></div>
+<h4>How to read <code class="code-inline">passwd -S</code></h4>
+<div class="lsl">
+<div class="f" style="--c:#ff3333"><span class="lab">1 · Name</span><span class="val">john</span><span class="exp">The account</span></div>
+<div class="f" style="--c:#eab308"><span class="lab">2 · Status</span><span class="val">LK / PS / NP</span><span class="exp"><b>LK</b> = locked · <b>PS</b> = password set and usable · <b>NP</b> = no password</span></div>
+<div class="f" style="--c:#3b82f6"><span class="lab">3 · Last change</span><span class="val">2026-10-24</span><span class="exp">Date the password was last changed</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">4 · Min days</span><span class="val">0</span><span class="exp">Days before it may be changed again</span></div>
+<div class="f" style="--c:#a855f7"><span class="lab">5 · Max days</span><span class="val">99999</span><span class="exp">Days until it expires</span></div>
+<div class="f" style="--c:#06b6d4"><span class="lab">6 · Warn days</span><span class="val">7</span><span class="exp">Days of warning before expiry</span></div>
+<div class="f" style="--c:#f97316"><span class="lab">7 · Inactive</span><span class="val">-1</span><span class="exp">-1 = never locked after expiry</span></div>
+</div>
+<p><b>How locking works:</b> it adds an exclamation mark <code class="code-inline">!</code> in front of the password hash in <code class="code-inline">/etc/shadow</code>. Now no typed password can ever match.</p>
+<div class="code-block"><span class="p">$ </span>sudo grep john /etc/shadow
+<span class="o">john:$6$Xk2...Qz9:20750:0:99999:7:::</span>          <span class="c"># before: normal hash</span>
+<span class="o">john:!$6$Xk2...Qz9:20750:0:99999:7:::</span>         <span class="c"># after usermod -L: "!" added</span></div>
+<div class="info-box warning"><div class="box-title">⚠️ A lock does NOT stop root or sudo users</div>
+Locking only blocks <b>password</b> logins. Root (or anyone with sudo) can still become the locked user, because root never needs the user's password:
+<div class="code-block" style="margin:8px 0"><span class="p">$ </span>sudo su - john                    <span class="c"># works even though john is locked</span>
+<span class="p">$ </span>sudo -u john id                    <span class="c"># works too</span></div>
+Also, the user can still log in with an <b>SSH key</b>. To block everything, lock <b>and</b> expire the account: <code class="code-inline">sudo usermod -L -e 1 john</code> (or <code class="code-inline">sudo chage -E 0 john</code>), and optionally give the <code class="code-inline">nologin</code> shell.</div>
+
+<h3 id="userdel">Deleting users: userdel</h3>
+<div class="code-block"><span class="p">$ </span>sudo userdel user1             <span class="c"># removes the account, KEEPS the home folder</span>
+<span class="p">$ </span>sudo userdel -r alice           <span class="c"># removes the account AND home folder AND mail spool</span>
+<span class="p">$ </span>ls -l /home
+<span class="o">drwx------. 3 1001 1001 78 Oct 24 11:30 user1</span></div>
+<p>Look at the last line: after <code class="code-inline">userdel user1</code> (no <code class="code-inline">-r</code>) the folder <code class="code-inline">/home/user1</code> is still there, but the owner is shown as plain numbers (<b>1001 1001</b>) because the name no longer exists. These are <b>orphaned files</b>. If a new user later receives the same UID 1001, they would own the old files. Safer habits:</p>
+<ul>
+<li>Use <code class="code-inline">userdel -r</code> to remove everything, or</li>
+<li>Find leftovers: <code class="code-inline">sudo find / -nouser 2>/dev/null</code> (files with no owner).</li>
+<li>A logged-in user cannot be deleted: <i>userdel: user john is currently used by process 2301</i>. Log them out first (or use <code class="code-inline">-f</code> to force).</li>
+<li>If unsure, <b>lock</b> the account instead of deleting it.</li>
+</ul>
+
+<h3 id="nologin">The nologin shell</h3>
+<p>The login shell (field 7 of <code class="code-inline">/etc/passwd</code>) is the program that starts when someone logs in. <code class="code-inline">/sbin/nologin</code> is a "fake shell" that does nothing except print a polite refusal and exit. It is for accounts that must <b>exist</b> (a program uses them) but must <b>not give a command prompt</b> to a person.</p>
+<div class="code-block"><span class="p">$ </span>sudo usermod -s /sbin/nologin user1
+<span class="p">$ </span>grep user1 /etc/passwd
+<span class="o">user1:x:2000:2000::/home/user1:/sbin/nologin</span>
+<span class="p">$ </span>su - user1
+<span class="o">This account is currently not available.</span>
+<span class="p">$ </span>grep -c nologin /etc/passwd            <span class="c"># how many accounts have no login?</span>
+<span class="o">32</span></div>
+<div class="table-wrapper"><table><thead><tr><th></th><th>Lock (<code class="code-inline">usermod -L</code>)</th><th><code class="code-inline">nologin</code> shell</th></tr></thead><tbody>
+<tr><td>What it blocks</td><td>Logging in with the <b>password</b></td><td>Getting a <b>shell / command prompt</b></td></tr>
+<tr><td>Still possible</td><td>SSH key login, root using <code class="code-inline">su</code></td><td>The account can still be used by a service (web, mail, FTP) and by root</td></tr>
+<tr><td>Typical use</td><td>Pause a person's account</td><td>Service accounts</td></tr>
+</tbody></table></div>
+<p>Tip: to show a custom message instead of the default text, put it in <code class="code-inline">/etc/nologin.txt</code>.</p>
+
+</div></div>
+
+<!-- ===================== 9.7 ===================== -->
+<div class="section-card" id="s7">
+<div class="section-header"><div class="section-icon" style="background:rgba(168,85,247,.15)">🧑‍🤝‍🧑</div><h2>9.7 Manage Local Group Accounts</h2></div>
+<div class="section-body">
+
+<h3>Creating, changing and deleting groups</h3>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th></tr></thead><tbody>
+<tr><td><code class="code-inline">groupadd devs</code></td><td>Create a group. The GID is the next free number</td></tr>
+<tr><td><code class="code-inline">groupadd -g 10000 devs</code></td><td>Create a group with a chosen GID</td></tr>
+<tr><td><code class="code-inline">groupadd -r svcgroup</code></td><td>Create a <b>system</b> group (GID from the 1–999 range)</td></tr>
+<tr><td><code class="code-inline">groupmod -n team devs</code></td><td>Rename group <i>devs</i> to <i>team</i></td></tr>
+<tr><td><code class="code-inline">groupmod -g 20000 team</code></td><td>Change the GID</td></tr>
+<tr><td><code class="code-inline">groupdel team</code></td><td>Delete a group</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>sudo groupadd -g 10000 devs
+<span class="p">$ </span>getent group devs
+<span class="o">devs:x:10000:</span>                      <span class="c"># empty at the end = no members yet</span>
+<span class="p">$ </span>sudo groupmod -n team devs
+<span class="p">$ </span>getent group team
+<span class="o">team:x:10000:</span>                      <span class="c"># same GID, new name</span>
+<span class="p">$ </span>sudo groupdel team</div>
+<div class="info-box warning"><div class="box-title">⚠️ You cannot delete a user's primary group</div>
+<div class="code-block" style="margin:8px 0 0"><span class="p">$ </span>sudo groupdel john
+<span class="o">groupdel: cannot remove the primary group of user 'john'</span></div>
+Delete the user first, or change that user's primary group. Also check for files that belong to the group: <code class="code-inline">sudo find / -group devs 2>/dev/null</code>.</div>
+
+<h3>Group membership</h3>
+<h4>Add a user to a secondary group</h4>
+<div class="code-block"><span class="p">$ </span>sudo usermod -aG devs john
+<span class="p">$ </span>id john
+<span class="o">uid=1000(john) gid=1000(john) groups=1000(john),10000(devs)</span>
+<span class="p">$ </span>getent group devs
+<span class="o">devs:x:10000:john</span></div>
+<p>Reading: john's primary group is still <i>john</i> (1000). <i>devs</i> (10000) was <b>added</b> to his list. In <code class="code-inline">/etc/group</code>, the 4th field of <i>devs</i> now lists <i>john</i>.</p>
+<p><code class="code-inline">usermod -aG</code> also takes several groups at once: <code class="code-inline">sudo usermod -aG devs,wheel john</code>. The user must <b>log out and log in again</b> before the new group applies to their current session.</p>
+
+<h4>Remove a user from a group</h4>
+<div class="code-block"><span class="p">$ </span>sudo gpasswd -d john devs
+<span class="o">Removing user john from group devs</span>
+<span class="p">$ </span>id john
+<span class="o">uid=1000(john) gid=1000(john) groups=1000(john)</span></div>
+<div class="info-box note"><div class="box-title">📝 Mind the order</div>The syntax is <code class="code-inline">gpasswd -d <b>user</b> <b>group</b></code> (user first, then group). Related: <code class="code-inline">gpasswd -a john devs</code> adds a user, and <code class="code-inline">gpasswd -M john,alice devs</code> sets the whole member list.</div>
+
+<h4>Change the primary group</h4>
+<div class="code-block"><span class="p">$ </span>sudo usermod -g devs john
+<span class="p">$ </span>id john
+<span class="o">uid=1000(john) gid=10000(devs) groups=10000(devs)</span></div>
+<p>Now <i>gid</i> shows <b>devs</b>, so new files created by john will belong to the group devs. (John's <code class="code-inline">groups</code> list changed too, because the old private group is no longer in it.)</p>
+
+<h4>Use another group only for now: newgrp</h4>
+<p>A user can switch the primary group of the <b>current shell</b>, but only to a group they already belong to. It lasts until <code class="code-inline">exit</code>.</p>
+<div class="code-block"><span class="p">$ </span>newgrp devs
+<span class="p">$ </span>id
+<span class="o">uid=1000(john) gid=10000(devs) groups=10000(devs),1000(john)</span>
+<span class="p">$ </span>exit</div>
+
+</div></div>
+
+<!-- ===================== 9.9 ===================== -->
+<div class="section-card" id="s9">
+<div class="section-header"><div class="section-icon" style="background:rgba(234,179,8,.15)">🔐</div><h2>9.9 Manage User Passwords</h2></div>
+<div class="section-body">
+
+<h3 id="shadow">Where passwords live: /etc/shadow</h3>
+<p>A password is <b>never stored as typed</b>. Linux stores a <b>hash</b>: a scrambled version that cannot be turned back into the password. At login, the system hashes what you typed and compares the two. The file is <code class="code-inline">/etc/shadow</code>, readable only by root.</p>
+<div class="code-block"><span class="p">$ </span>sudo grep john /etc/shadow
+<span class="o">john:$6$Xk2aB9qL$Hw8...Qz9:20750:0:99999:7:::</span></div>
+<p>Nine fields, separated by colons. Fields 3 to 8 are the <b>aging properties</b>:</p>
+<div class="lsl">
+<div class="f" style="--c:#ff3333"><span class="lab">1 · Name</span><span class="val">john</span><span class="exp">Username</span></div>
+<div class="f" style="--c:#eab308"><span class="lab">2 · Hash</span><span class="val">$6$Xk2…Qz9</span><span class="exp">The scrambled password. <b>!</b> in front = locked. <b>!!</b> or <b>*</b> = no password</span></div>
+<div class="f" style="--c:#3b82f6"><span class="lab">3 · Last change</span><span class="val">20750</span><span class="exp">Days since 1 Jan 1970 when the password was last set</span></div>
+<div class="f" style="--c:#22c55e"><span class="lab">4 · Minimum</span><span class="val">0</span><span class="exp">Days you must wait before changing it again. 0 = any time</span></div>
+<div class="f" style="--c:#a855f7"><span class="lab">5 · Maximum</span><span class="val">99999</span><span class="exp">Days the password stays valid. 99999 = never expires</span></div>
+<div class="f" style="--c:#06b6d4"><span class="lab">6 · Warning</span><span class="val">7</span><span class="exp">Days of warning before it expires</span></div>
+<div class="f" style="--c:#f97316"><span class="lab">7 · Inactive</span><span class="val">(empty)</span><span class="exp">Days after expiry until the account is locked. Empty = never</span></div>
+<div class="f" style="--c:#e2e8f0"><span class="lab">8 · Expire</span><span class="val">(empty)</span><span class="exp">Day number when the whole <b>account</b> dies. Empty = never</span></div>
+<div class="f" style="--c:#64748b"><span class="lab">9 · Reserved</span><span class="val">(empty)</span><span class="exp">Not used</span></div>
+</div>
+
+<h4>The hash itself: <code class="code-inline">$6$Xk2aB9qL$Hw8…</code></h4>
+<table style="display:none"></table>
+<div class="table-wrapper"><table><thead><tr><th>Part</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">$6$</code></td><td>The <b>algorithm</b>: 1 = MD5 (old, weak), 5 = SHA-256, <b>6 = SHA-512</b> (the RHEL default)</td></tr>
+<tr><td><code class="code-inline">Xk2aB9qL</code></td><td>The <b>salt</b>: random text added before hashing, so two users with the same password still have different hashes</td></tr>
+<tr><td>the rest</td><td>The <b>hash</b> value</td></tr>
+</tbody></table></div>
+
+<h4>Why "days since 1970"? Reading field 3</h4>
+<p>Computers need one starting point to count time. For Unix and Linux this "time zero" is <b>1 January 1970</b> (called the <i>Unix epoch</i>). Many fields in <code class="code-inline">/etc/shadow</code> are simply "number of days after that day". The number 20750 means "20750 days after 1 Jan 1970". Convert it to a normal date with:</p>
+<div class="code-block"><span class="p">$ </span>date -d "1970-01-01 +20750 days" +%F
+<span class="o">2026-10-24</span>
+<span class="p">$ </span>echo $(( $(date +%s) / 86400 ))        <span class="c"># today as a day number</span>
+<span class="o">20750</span></div>
+<p>So john's password was last set on 24 October 2026. The other way round (date to number) is the second command: seconds since 1970 divided by 86400 seconds per day.</p>
+
+<h3 id="chage">Password aging: the chage command</h3>
+<p><code class="code-inline">chage</code> means <b>ch</b>ange <b>age</b>. It shows and changes the aging properties of an account (the fields 3 to 8 above). Aging forces people to change passwords regularly.</p>
+
+<div class="visual">
+<svg viewBox="0 0 820 270" width="820" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI,Arial,sans-serif" font-size="12">
+<text x="410" y="20" fill="#94a3b8" text-anchor="middle">Example: chage -m 5 -M 30 -W 5 -I 10 user2  (and -E set to a later date)</text>
+<rect x="50" y="60" width="60" height="34" fill="#475569"/>
+<rect x="110" y="60" width="240" height="34" fill="#16a34a"/>
+<rect x="350" y="60" width="60" height="34" fill="#ca8a04"/>
+<rect x="410" y="60" width="120" height="34" fill="#ea580c"/>
+<rect x="530" y="60" width="160" height="34" fill="#b91c1c"/>
+<text x="80" y="82" fill="#fff" text-anchor="middle" font-weight="700">locked-in</text>
+<text x="230" y="82" fill="#fff" text-anchor="middle" font-weight="700">password is fine</text>
+<text x="380" y="82" fill="#fff" text-anchor="middle" font-weight="700">warn</text>
+<text x="470" y="82" fill="#fff" text-anchor="middle" font-weight="700">expired</text>
+<text x="610" y="82" fill="#fff" text-anchor="middle" font-weight="700">account locked</text>
+<g stroke="#94a3b8" stroke-width="1.5"><path d="M50 50 V110"/><path d="M110 50 V110"/><path d="M350 50 V110"/><path d="M410 50 V110"/><path d="M530 50 V110"/><path d="M770 50 V110" stroke="#a855f7" stroke-width="3"/></g>
+<g fill="#e2e8f0" text-anchor="middle"><text x="50" y="128">Day 0</text><text x="110" y="128">Day 5</text><text x="350" y="128">Day 25</text><text x="410" y="128">Day 30</text><text x="530" y="128">Day 40</text><text x="770" y="128" fill="#c084fc">Day 60 (example)</text></g>
+<g fill="#94a3b8" text-anchor="middle" font-size="11"><text x="50" y="146">password set</text><text x="110" y="146">-m 5 passed</text><text x="350" y="146">-W 5 starts</text><text x="410" y="146">-M 30 reached</text><text x="530" y="146">-I 10 passed</text><text x="770" y="146">-E date</text></g>
+<text x="80" y="185" fill="#cbd5e1" text-anchor="middle" font-size="11">cannot change</text><text x="80" y="200" fill="#cbd5e1" text-anchor="middle" font-size="11">yet (-m)</text>
+<text x="230" y="185" fill="#86efac" text-anchor="middle" font-size="11">normal use</text>
+<text x="380" y="185" fill="#fde047" text-anchor="middle" font-size="11">"password will</text><text x="380" y="200" fill="#fde047" text-anchor="middle" font-size="11">expire" message</text>
+<text x="470" y="185" fill="#fdba74" text-anchor="middle" font-size="11">login still works,</text><text x="470" y="200" fill="#fdba74" text-anchor="middle" font-size="11">must set new password</text>
+<text x="610" y="185" fill="#fca5a5" text-anchor="middle" font-size="11">cannot log in at all;</text><text x="610" y="200" fill="#fca5a5" text-anchor="middle" font-size="11">admin must unlock</text>
+<text x="770" y="170" fill="#c084fc" text-anchor="middle" font-size="11">Account dies on this date,</text><text x="770" y="185" fill="#c084fc" text-anchor="middle" font-size="11">no matter what</text>
+<text x="410" y="245" fill="#64748b" text-anchor="middle" font-size="11">Not to scale. -E is independent: it can fall on any day, even before the password expires.</text>
+</svg>
+<div class="cap">The life of a password: from the day it is set until the account is locked.</div>
+</div>
+
+<h4>chage options</h4>
+<div class="table-wrapper"><table><thead><tr><th>Option</th><th>Meaning</th><th>Example</th></tr></thead><tbody>
+<tr><td><code class="code-inline">-l</code></td><td><b>L</b>ist the current settings</td><td><code class="code-inline">chage -l john</code></td></tr>
+<tr><td><code class="code-inline">-m days</code></td><td><b>M</b>inimum days between changes</td><td><code class="code-inline">chage -m 2 user1</code></td></tr>
+<tr><td><code class="code-inline">-M days</code></td><td><b>M</b>aximum days a password is valid</td><td><code class="code-inline">chage -M 30 user1</code></td></tr>
+<tr><td><code class="code-inline">-W days</code></td><td><b>W</b>arning days before expiry</td><td><code class="code-inline">chage -W 5 user1</code></td></tr>
+<tr><td><code class="code-inline">-I days</code></td><td><b>I</b>nactive days after expiry, then the account is locked</td><td><code class="code-inline">chage -I 10 user1</code></td></tr>
+<tr><td><code class="code-inline">-E date</code></td><td>Account <b>E</b>xpiry date (<code class="code-inline">YYYY-MM-DD</code>). <code class="code-inline">-1</code> = never</td><td><code class="code-inline">chage -E "2026-12-31" user1</code></td></tr>
+<tr><td><code class="code-inline">-d 0</code></td><td>Set the "last changed" day to 0: <b>force a new password at next login</b></td><td><code class="code-inline">chage -d 0 user1</code></td></tr>
+</tbody></table></div>
+<p>Small letter <code class="code-inline">-m</code> = minimum, capital <code class="code-inline">-M</code> = maximum. Remember: <b>capital = bigger</b>.</p>
+
+<h4>How to read <code class="code-inline">chage -l</code></h4>
+<div class="code-block"><span class="p">$ </span>sudo chage -m 5 -M 30 -I 10 -W 5 user2         <span class="c"># set everything in one command</span>
+<span class="p">$ </span>sudo chage -l user2
+<span class="o">Last password change                                    : Oct 24, 2026
+Password expires                                        : Nov 23, 2026
+Password inactive                                       : Dec 03, 2026
+Account expires                                         : never
+Minimum number of days between password change          : 5
+Maximum number of days between password change          : 30
+Number of days of warning before password expires       : 5</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Line</th><th>Meaning here</th></tr></thead><tbody>
+<tr><td>Last password change</td><td>The day the password was set (today)</td></tr>
+<tr><td>Password expires</td><td>Last change + <b>30</b> days (-M) = Nov 23</td></tr>
+<tr><td>Password inactive</td><td>Expiry + <b>10</b> days (-I) = Dec 03. After this date the account is locked</td></tr>
+<tr><td>Account expires</td><td>The -E date. "never" because none was set</td></tr>
+<tr><td>Minimum / Maximum</td><td>The -m (5) and -M (30) values</td></tr>
+<tr><td>Warning</td><td>The -W value: warn 5 days before Nov 23</td></tr>
+</tbody></table></div>
+<p>Before any change a fresh account shows <b>never</b> for expiry, minimum <b>0</b>, maximum <b>99999</b>, warning <b>7</b>. Those are the defaults from <code class="code-inline">/etc/login.defs</code>, and also what you see in <code class="code-inline">/etc/shadow</code> fields 4–6.</p>
+
+<h4>After the password expires, does it still work?</h4>
+<p><b>Yes, one more time.</b> When the maximum age is reached, the old password is still accepted, but the system <b>forces the user to choose a new one right away</b>. If they ignore this for a long time, nothing happens by default (the account is not locked). The <code class="code-inline">-I</code> option adds the deadline:</p>
+<div class="code-block"><span class="p">$ </span>sudo chage -I 10 user1      <span class="c"># 10 days after expiry, user1 is locked out completely</span></div>
+<ul>
+<li>Day 0 to 10 after expiry: login works, new password is required.</li>
+<li>After day 10: the account is <b>locked</b>. The user cannot log in or change the password. Only an administrator can fix it.</li>
+</ul>
+
+<h4>Account expiry and forced change</h4>
+<div class="code-block"><span class="p">$ </span>sudo chage -E "2026-12-31" user1         <span class="c"># the account dies on 31 Dec 2026</span>
+<span class="p">$ </span>sudo chage -l user1 | grep "Account expires"
+<span class="o">Account expires                                         : Dec 31, 2026</span>
+<span class="p">$ </span>sudo chage -E -1 user1                  <span class="c"># remove the expiry date</span>
+
+<span class="p">$ </span>sudo chage -d 0 user1                   <span class="c"># force a new password at next login</span>
+<span class="p">$ </span>sudo chage -l user1 | head -1
+<span class="o">Last password change                                    : password must be changed</span>
+<span class="p">$ </span>su - user1
+<span class="o">Password:
+You are required to change your password immediately (administrator enforced).
+Changing password for user user1.
+New password:</span></div>
+<div class="info-box note"><div class="box-title">📝 Do not mix these up</div><b><code class="code-inline">-M</code></b> = how long the <b>password</b> lasts. <b><code class="code-inline">-E</code></b> = when the <b>whole account</b> ends. <b><code class="code-inline">-d 0</code></b> = "change your password right now". Aging only affects people who log in with passwords; changing the settings of <code class="code-inline">/etc/login.defs</code> only affects <b>new</b> users, so use <code class="code-inline">chage</code> for existing ones.</div>
+
+<h3>Password policy</h3>
+<ul>
+<li><b>Aging rules</b> (how long): <code class="code-inline">/etc/login.defs</code> for new users, <code class="code-inline">chage</code> for existing users.</li>
+<li><b>Quality rules</b> (how strong): <code class="code-inline">/etc/security/pwquality.conf</code> sets the minimum length and the kinds of characters a regular user must use. Root can override them with a warning.</li>
+</ul>
+
+<h3 id="failed">How to check failed login attempts</h3>
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>Shows</th></tr></thead><tbody>
+<tr><td><code class="code-inline">sudo lastb</code></td><td>List of <b>b</b>ad (failed) login attempts</td></tr>
+<tr><td><code class="code-inline">sudo faillock --user john</code></td><td>Failed attempts counted for john (used for automatic lockout)</td></tr>
+<tr><td><code class="code-inline">sudo grep "Failed password" /var/log/secure</code></td><td>Failed password tries over SSH</td></tr>
+<tr><td><code class="code-inline">last</code> / <code class="code-inline">lastlog</code></td><td>Successful logins / last login time of every user</td></tr>
+</tbody></table></div>
+<div class="code-block"><span class="p">$ </span>sudo lastb | head -3
+<span class="o">john     ssh:notty    192.168.1.50     Sat Oct 24 10:15 - 10:15  (00:00)
+alice    pts/1                         Sat Oct 24 10:12 - 10:12  (00:00)
+btmp begins Thu Oct 22 08:01:44 2026</span>
+<span class="p">$ </span>sudo faillock --user john
+<span class="o">john:
+When                Type  Source                                           Valid
+2026-10-24 10:15:03 RHOST 192.168.1.50                                         V
+2026-10-24 10:15:09 RHOST 192.168.1.50                                         V</span>
+<span class="p">$ </span>sudo faillock --user john --reset          <span class="c"># clear the counter (unlocks a user blocked by too many failures)</span></div>
+<div class="table-wrapper"><table><thead><tr><th>Part (lastb)</th><th>Meaning</th></tr></thead><tbody>
+<tr><td><code class="code-inline">john</code></td><td>The username that was tried</td></tr>
+<tr><td><code class="code-inline">ssh:notty</code> / <code class="code-inline">pts/1</code></td><td>Where: over SSH (no terminal) / on a terminal window</td></tr>
+<tr><td><code class="code-inline">192.168.1.50</code></td><td>The address the attempt came from (empty = local)</td></tr>
+<tr><td><code class="code-inline">Sat Oct 24 10:15</code></td><td>When it happened</td></tr>
+<tr><td><code class="code-inline">btmp begins …</code></td><td>The log file <code class="code-inline">/var/log/btmp</code> starts on this date</td></tr>
+</tbody></table></div>
+<p>In the <code class="code-inline">faillock</code> table, each row is one failed try. <b>V</b> means the failure is still valid (it counts toward the lockout limit). Once the limit is reached, the user is blocked for a while. <code class="code-inline">--reset</code> clears the rows.</p>
+
+</div></div>
+
+<!-- ===================== MISTAKES ===================== -->
+<div class="section-card" id="mistakes">
+<div class="section-header"><div class="section-icon" style="background:rgba(249,115,22,.15)">⚠️</div><h2>Common Mistakes and Gotchas</h2></div>
+<div class="section-body">
+<div class="table-wrapper"><table><thead><tr><th>Mistake</th><th>Result</th><th>Fix</th></tr></thead><tbody>
+<tr><td><code class="code-inline">usermod -G devs john</code> (no <code class="code-inline">-a</code>)</td><td>All other secondary groups are lost</td><td>Use <code class="code-inline">usermod -aG</code></td></tr>
+<tr><td>Editing <code class="code-inline">/etc/sudoers</code> with a normal editor</td><td>A typo can lock out sudo</td><td>Use <code class="code-inline">visudo</code></td></tr>
+<tr><td>Using <code class="code-inline">su</code> without the dash</td><td>Old folder and settings are kept</td><td>Use <code class="code-inline">su -</code></td></tr>
+<tr><td>Forgetting <code class="code-inline">passwd</code> after <code class="code-inline">useradd</code></td><td>User cannot log in</td><td>Run <code class="code-inline">passwd username</code></td></tr>
+<tr><td><code class="code-inline">userdel</code> without <code class="code-inline">-r</code></td><td>Home folder stays, files become orphans</td><td>Use <code class="code-inline">-r</code>, or lock instead</td></tr>
+<tr><td>Editing <code class="code-inline">/etc/login.defs</code> to change existing users</td><td>Nothing changes for them</td><td>Use <code class="code-inline">chage</code></td></tr>
+<tr><td>Thinking <code class="code-inline">usermod -L</code> stops everyone</td><td>Root, sudo and SSH keys still work</td><td>Also expire it (<code class="code-inline">-e 1</code>) or use <code class="code-inline">nologin</code></td></tr>
+<tr><td><code class="code-inline">usermod -d newpath</code> and expecting files to move</td><td>Empty home folder</td><td>Add <code class="code-inline">-m</code></td></tr>
+<tr><td><code class="code-inline">gpasswd -d group user</code> (wrong order)</td><td>Error</td><td><code class="code-inline">gpasswd -d user group</code></td></tr>
+<tr><td>Sudo rule with only <code class="code-inline">!/usr/sbin/useradd</code></td><td>Grants nothing</td><td>Write <code class="code-inline">ALL, !/usr/sbin/useradd</code></td></tr>
+<tr><td>Deleting a user's primary group</td><td>Not allowed</td><td>Delete the user or change the primary group first</td></tr>
+<tr><td>Mixing up <code class="code-inline">chage -M</code> (password) and <code class="code-inline">-E</code> (account)</td><td>Wrong thing expires</td><td>M = Max password age · E = account End date</td></tr>
+</tbody></table></div>
+</div></div>
+
+<!-- ===================== ALL COMMANDS ===================== -->
+<div class="section-card" id="commands">
+<div class="section-header"><div class="section-icon" style="background:rgba(34,197,94,.15)">📚</div><h2>All Commands Used in This Chapter</h2></div>
+<div class="section-body">
+<div class="table-wrapper"><table><thead><tr><th>Command</th><th>What it does</th><th>Examples and options</th></tr></thead><tbody>
+<tr class="grp"><td colspan="3">🔎 Look at users and groups</td></tr>
+<tr><td><code class="code-inline">id</code></td><td>Show UID, GID and all groups</td><td><code class="code-inline">id</code> · <code class="code-inline">id john</code></td></tr>
+<tr><td><code class="code-inline">whoami</code> · <code class="code-inline">groups</code></td><td>My username · my group names</td><td><code class="code-inline">groups john</code></td></tr>
+<tr><td><code class="code-inline">who</code> · <code class="code-inline">w</code> · <code class="code-inline">last</code></td><td>Who is logged in · what they do · login history</td><td><code class="code-inline">last -5</code></td></tr>
+<tr><td><code class="code-inline">getent</code></td><td>Read an account database (local + network)</td><td><code class="code-inline">getent passwd john</code> · <code class="code-inline">getent group devs</code> · <code class="code-inline">getent passwd 1000</code></td></tr>
+<tr><td><code class="code-inline">grep</code></td><td>Find a line in a file</td><td><code class="code-inline">grep john /etc/passwd</code> · <code class="code-inline">sudo grep john /etc/shadow</code></td></tr>
+<tr><td><code class="code-inline">cut</code></td><td>Keep chosen columns</td><td><code class="code-inline">cut -d: -f1,3 /etc/passwd</code></td></tr>
+<tr class="grp"><td colspan="3">🔑 Become root</td></tr>
+<tr><td><code class="code-inline">su</code> · <code class="code-inline">su -</code></td><td>Switch user (half) · switch user (full, correct)</td><td><code class="code-inline">su - alice</code> · <code class="code-inline">su -</code></td></tr>
+<tr><td><code class="code-inline">sudo</code></td><td>Run a command as root (or another user)</td><td><code class="code-inline">sudo cmd</code> · <code class="code-inline">-u alice</code> · <code class="code-inline">-i</code> · <code class="code-inline">-s</code> · <code class="code-inline">-l</code> · <code class="code-inline">-l -U john</code> · <code class="code-inline">-k</code></td></tr>
+<tr><td><code class="code-inline">visudo</code></td><td>Edit sudo rules safely</td><td><code class="code-inline">sudo visudo</code> · <code class="code-inline">sudo visudo -f /etc/sudoers.d/custom</code> · <code class="code-inline">sudo visudo -c</code></td></tr>
+<tr><td><code class="code-inline">which</code></td><td>Show the full path of a command</td><td><code class="code-inline">which useradd</code></td></tr>
+<tr class="grp"><td colspan="3">👤 Users</td></tr>
+<tr><td><code class="code-inline">useradd</code> / <code class="code-inline">adduser</code></td><td>Create a user (both are the same)</td><td><code class="code-inline">-u</code> UID · <code class="code-inline">-g</code>/<code class="code-inline">-G</code> groups · <code class="code-inline">-s</code> shell · <code class="code-inline">-d</code> home · <code class="code-inline">-m</code>/<code class="code-inline">-M</code> · <code class="code-inline">-c</code> · <code class="code-inline">-r</code> system · <code class="code-inline">-e</code> expiry</td></tr>
+<tr><td><code class="code-inline">passwd</code></td><td>Set or change a password; show status</td><td><code class="code-inline">passwd john</code> · <code class="code-inline">passwd -S john</code> · <code class="code-inline">-l</code> lock · <code class="code-inline">-u</code> unlock</td></tr>
+<tr><td><code class="code-inline">usermod</code></td><td>Change a user</td><td><code class="code-inline">-u</code> UID · <code class="code-inline">-d</code> home · <code class="code-inline">-m</code> move home · <code class="code-inline">-s</code> shell · <code class="code-inline">-aG</code> add group · <code class="code-inline">-g</code> primary group · <code class="code-inline">-c</code> comment · <code class="code-inline">-L</code> lock · <code class="code-inline">-U</code> unlock · <code class="code-inline">-e</code> expiry</td></tr>
+<tr><td><code class="code-inline">userdel</code></td><td>Delete a user</td><td><code class="code-inline">userdel user1</code> · <code class="code-inline">userdel -r user1</code> (also home) · <code class="code-inline">-f</code> force</td></tr>
+<tr class="grp"><td colspan="3">🧑‍🤝‍🧑 Groups</td></tr>
+<tr><td><code class="code-inline">groupadd</code></td><td>Create a group</td><td><code class="code-inline">groupadd -g 10000 devs</code> · <code class="code-inline">-r</code> system group</td></tr>
+<tr><td><code class="code-inline">groupmod</code></td><td>Change a group</td><td><code class="code-inline">-n</code> new name · <code class="code-inline">-g</code> new GID</td></tr>
+<tr><td><code class="code-inline">groupdel</code></td><td>Delete a group</td><td><code class="code-inline">groupdel devs</code></td></tr>
+<tr><td><code class="code-inline">gpasswd</code></td><td>Manage group members</td><td><code class="code-inline">gpasswd -d john devs</code> remove · <code class="code-inline">-a</code> add · <code class="code-inline">-M</code> set list</td></tr>
+<tr><td><code class="code-inline">newgrp</code></td><td>Temporarily use another primary group</td><td><code class="code-inline">newgrp devs</code> then <code class="code-inline">exit</code></td></tr>
+<tr class="grp"><td colspan="3">🔐 Passwords and logins</td></tr>
+<tr><td><code class="code-inline">chage</code></td><td>Show and change password aging</td><td><code class="code-inline">-l</code> list · <code class="code-inline">-m</code> min · <code class="code-inline">-M</code> max · <code class="code-inline">-W</code> warn · <code class="code-inline">-I</code> inactive · <code class="code-inline">-E</code> account expiry · <code class="code-inline">-d 0</code> force change</td></tr>
+<tr><td><code class="code-inline">lastb</code></td><td>Failed login attempts</td><td><code class="code-inline">sudo lastb</code></td></tr>
+<tr><td><code class="code-inline">faillock</code></td><td>Failed-login counter</td><td><code class="code-inline">sudo faillock --user john</code> · <code class="code-inline">--reset</code></td></tr>
+<tr><td><code class="code-inline">lastlog</code></td><td>Last login of every user</td><td><code class="code-inline">lastlog</code></td></tr>
+<tr><td><code class="code-inline">journalctl</code></td><td>Read the system journal</td><td><code class="code-inline">sudo journalctl _COMM=sudo</code></td></tr>
+<tr><td><code class="code-inline">date</code></td><td>Show or convert dates</td><td><code class="code-inline">date -d "1970-01-01 +20750 days" +%F</code> · <code class="code-inline">date +%s</code></td></tr>
+<tr class="grp"><td colspan="3">🛠️ Helpers</td></tr>
+<tr><td><code class="code-inline">mkdir</code> · <code class="code-inline">chown</code> · <code class="code-inline">chmod</code> · <code class="code-inline">cp -a</code></td><td>Prepare or copy a new home folder</td><td><code class="code-inline">chown john:john /home/newjohn</code> · <code class="code-inline">cp -a /home/john/. /home/newjohn/</code></td></tr>
+<tr><td><code class="code-inline">find</code></td><td>Find orphaned files</td><td><code class="code-inline">sudo find / -nouser</code> · <code class="code-inline">-group devs</code> · <code class="code-inline">-uid 1000</code></td></tr>
+<tr><td><code class="code-inline">ls -l</code> · <code class="code-inline">ls -ld</code></td><td>Check owner and group of files and folders</td><td><code class="code-inline">ls -ld /home/newjohn</code></td></tr>
+</tbody></table></div>
+
+<h4>Important files and folders</h4>
+<div class="table-wrapper"><table><thead><tr><th>Path</th><th>Purpose</th></tr></thead><tbody>
+<tr><td><code class="code-inline">/etc/passwd</code> · <code class="code-inline">/etc/shadow</code></td><td>Accounts · password hashes and aging</td></tr>
+<tr><td><code class="code-inline">/etc/group</code> · <code class="code-inline">/etc/gshadow</code></td><td>Groups · group passwords and admins</td></tr>
+<tr><td><code class="code-inline">/etc/login.defs</code></td><td>Defaults for new accounts (UMASK, PASS_*, UID_MIN/MAX)</td></tr>
+<tr><td><code class="code-inline">/etc/default/useradd</code> · <code class="code-inline">/etc/skel</code></td><td>More useradd defaults · starter files for new homes</td></tr>
+<tr><td><code class="code-inline">/etc/sudoers</code> · <code class="code-inline">/etc/sudoers.d/</code></td><td>Sudo rules (main file · your own small files)</td></tr>
+<tr><td><code class="code-inline">/etc/security/pwquality.conf</code></td><td>Password strength rules</td></tr>
+<tr><td><code class="code-inline">/var/log/secure</code> · <code class="code-inline">/var/log/btmp</code></td><td>Login and sudo log · failed logins (read with <code class="code-inline">lastb</code>)</td></tr>
+</tbody></table></div>
+</div></div>
+
+<!-- ===================== QUIZ ===================== -->
+<div class="section-card" id="quiz">
+<div class="section-header"><div class="section-icon" style="background:rgba(238,0,0,.12)">🧠</div><h2>Chapter 09 Quiz (multiple choice)</h2></div>
+<div class="section-body">
+<p>Pick one answer for each question. You see the result and a short explanation right away. Answers are shuffled each time you start.</p>
+<div class="quiz-box" id="quizBox"></div>
+</div></div>
+
+</div>
+<button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" title="Back to top">↑</button>
+<script>
+function toggleTOC(){document.getElementById('tocSidebar').classList.toggle('open');document.getElementById('tocOverlay').classList.toggle('show')}
+var pb=document.getElementById('progress-bar'),st=document.getElementById('scrollTop');
+window.addEventListener('scroll',function(){var h=document.documentElement.scrollHeight-window.innerHeight;pb.style.width=(h>0?window.scrollY/h*100:0)+'%';st.classList.toggle('show',window.scrollY>400)});
+
+/* ---------- QUIZ ---------- */
+var QUESTIONS=[
+{q:"What are the UID and GID of the superuser (root)?",o:["0 and 0","1 and 1","1000 and 1000","999 and 999"],a:0,e:"root always has UID 0 and GID 0. The system recognises it by this number, not by the name."},
+{q:"Which UID range is the default for regular (human) users?",o:["1000 to 60000","1 to 200","201 to 999","0 to 100"],a:0,e:"UID_MIN 1000 and UID_MAX 60000 in /etc/login.defs. The administrator can extend the range."},
+{q:"Which UID range is for system accounts with FIXED (static) numbers?",o:["1 to 200","201 to 999","1000 to 60000","0"],a:0,e:"1-200 are static (the same on every RHEL machine, e.g. sshd = 74). 201-999 are handed out dynamically."},
+{q:"Why do service accounts like sshd usually have the nologin shell?",o:["Programs use them, but people must not log in with them","They have no home folder","They need a password","They are locked by default"],a:0,e:"A service account exists only so a program can run with small powers. nologin stops people from getting a prompt with it."},
+{q:"Which file stores the password HASHES?",o:["/etc/shadow","/etc/passwd","/etc/group","/etc/login.defs"],a:0,e:"/etc/shadow is readable only by root. The x in /etc/passwd just points there."},
+{q:"In the line john:x:1000:1000:John Smith:/home/john:/bin/bash, what is the 4th field?",o:["The GID of the primary group","The UID","The home folder","The shell"],a:0,e:"Order: name, password placeholder, UID, GID, comment, home, shell."},
+{q:"In /etc/group, who is listed in the 4th (members) field?",o:["Users who have the group as a secondary group","Users who have it as the primary group","Only the group owner","All users on the system"],a:0,e:"Users whose primary group is this one are stored in /etc/passwd, not in the member list."},
+{q:"What is the difference between su and su - ?",o:["su - loads the new user's full environment and home folder; su keeps the old one","su - needs no password","su is only for root","There is no difference"],a:0,e:"Always use su - (with the dash) for a clean, complete switch."},
+{q:"Whose password does sudo ask for?",o:["Your own password","The root password","The password of the target user","No password, always"],a:0,e:"sudo asks for the password of the user who runs it (unless the rule says NOPASSWD)."},
+{q:"You run 'sudo touch /tmp/a.txt'. Who owns the new file?",o:["root","The user who ran the command","nobody","The group wheel"],a:0,e:"Commands run with sudo are executed by root, so root owns what they create."},
+{q:"Which command safely adds john to the wheel group so he can use sudo, without removing his other groups?",o:["usermod -aG wheel john","usermod -G wheel john","useradd wheel john","groupadd wheel john"],a:0,e:"-aG appends. -G without -a replaces all secondary groups."},
+{q:"In the rule 'john ALL=(ALL) ALL', what does the SECOND ALL (inside the brackets) mean?",o:["john may become any user","john may use any computer","john may run any command","john may use any group password"],a:0,e:"1st ALL = any host, (ALL) = run as any user, last ALL = any command."},
+{q:"Which sudoers line lets john use sudo without typing his password?",o:["john ALL=(ALL) NOPASSWD: ALL","john ALL=(ALL) ALL","john NOPASSWD=(ALL) ALL","john ALL=(NOPASSWD) ALL"],a:0,e:"NOPASSWD: is written before the command list."},
+{q:"What does the % sign mean at the start of a sudoers rule, as in %devs ALL=(ALL) ALL?",o:["The rule is for a group","The rule is a comment","The rule is for all users","The rule is disabled"],a:0,e:"A name with no % is a user. %name is a group."},
+{q:"Why must you use visudo instead of a normal editor for sudoers files?",o:["It checks the syntax, so a typo cannot lock you out","It is faster","It gives you root power","It makes a backup copy"],a:0,e:"A broken sudoers file can stop sudo from working at all. visudo checks before saving."},
+{q:"Where do you look for failed sudo attempts (\"user NOT in sudoers\")?",o:["/var/log/secure","/etc/sudoers","/etc/passwd","/var/log/btmp"],a:0,e:"sudo writes its events to /var/log/secure on RHEL. /var/log/btmp holds failed logins (read with lastb)."},
+{q:"What does 'useradd -r -u 888 user2' create?",o:["A system account with UID 888 (if 888 is free) and no home folder","A regular user with UID 888","A locked regular user","A group named user2 only"],a:0,e:"-r means system account, so the UID must come from the 1-999 range. No home folder is created by default."},
+{q:"adduser and useradd on RHEL are:",o:["The same command (adduser is a link to useradd)","Two different programs","adduser is for groups","useradd is only for root"],a:0,e:"ls -l /usr/sbin/adduser shows: adduser -> useradd."},
+{q:"What does 'usermod -d /home/newjohn john' do?",o:["Only changes the home path in /etc/passwd; no files are moved","Moves all files to /home/newjohn","Copies all files to /home/newjohn","Deletes the old home"],a:0,e:"To also move the files, add -m: usermod -m -d /home/newjohn john."},
+{q:"Which command moves john's home folder, with all its files, to /data/john?",o:["usermod -m -d /data/john john","usermod -d /data/john john","chown john /data/john","usermod -M /data/john john"],a:0,e:"-m moves the content and works only together with -d (the new location)."},
+{q:"You run 'usermod -L john'. Who can STILL become john?",o:["root, or anyone with sudo (for example sudo su - john)","Nobody","Only john himself","Only users in the wheel group by password"],a:0,e:"Locking blocks only password logins. Root never needs the password, and SSH keys still work."},
+{q:"In 'passwd -S john' output, what does the status LK mean?",o:["The password is locked","The password is set and usable","There is no password","The account is expired"],a:0,e:"PS = password set, LK = locked, NP = no password."},
+{q:"What is the difference between 'userdel user1' and 'userdel -r user1'?",o:["-r also removes the home folder and mail spool","-r also removes the user's group only","-r forces deletion of logged-in users","There is no difference"],a:0,e:"Without -r the home folder stays and its files become orphaned (shown with plain numbers as owner)."},
+{q:"Which command with the shell /sbin/nologin gives this message: 'This account is currently not available'?",o:["su - user1 (when user1's shell is nologin)","passwd user1","chage -l user1","id user1"],a:0,e:"The nologin shell refuses an interactive session politely and exits."},
+{q:"What is the correct command to remove john from the group devs?",o:["gpasswd -d john devs","gpasswd -d devs john","usermod -d john devs","groupdel john devs"],a:0,e:"Syntax: gpasswd -d USER GROUP. usermod -d changes the home folder."},
+{q:"What does the number 20750 in field 3 of /etc/shadow mean?",o:["Days since 1 January 1970 when the password was last changed","The user's UID","Days until the password expires","The number of failed logins"],a:0,e:"1 Jan 1970 is time zero for Unix. 20750 days after that is 24 Oct 2026."},
+{q:"In /etc/shadow, what does a maximum age of 99999 mean?",o:["The password effectively never expires","The password expires in 99999 hours","The account is locked","The password is 99999 characters long"],a:0,e:"99999 days is about 273 years."},
+{q:"Which command shows the aging settings of user1?",o:["chage -l user1","chage -L user1","passwd -a user1","usermod -l user1"],a:0,e:"-l = list. (usermod -l renames a user.)"},
+{q:"What does 'chage -M 30 user1' do?",o:["The password is valid for at most 30 days","The account ends in 30 days","The user must wait 30 days before changing the password","The user is warned 30 days before expiry"],a:0,e:"-M = maximum password age. -m = minimum. -W = warning. -E = account expiry date."},
+{q:"After a password expires, what happens by default (no -I set)?",o:["The old password still works, but the user must choose a new one","The account is locked at once","The user is deleted","Nothing happens at all"],a:0,e:"-I days adds a deadline: that many days after expiry the account is locked."},
+{q:"What does 'chage -I 10 user1' do?",o:["Locks the account 10 days after the password expires","Makes the password valid for 10 days","Warns the user 10 days before expiry","Expires the account in 10 days"],a:0,e:"I = Inactive period after password expiry."},
+{q:"Which command forces user1 to set a new password at the next login?",o:["chage -d 0 user1","chage -E 0 user1","chage -m 0 user1","passwd -a user1"],a:0,e:"-d 0 sets the 'last changed' day to 0, so the password counts as changed long ago and must be replaced."},
+{q:"Which command lists failed login attempts?",o:["sudo lastb","last","whoami","id"],a:0,e:"lastb reads /var/log/btmp. last shows successful logins."},
+{q:"You edit PASS_MAX_DAYS in /etc/login.defs. Which users are affected?",o:["Only users created afterwards","All users immediately","Only root","Only users in wheel"],a:0,e:"Use chage to change existing users."},
+{q:"Which sudoers line is a correct way to block john from running useradd but allow other commands?",o:["john ALL=(ALL) ALL, !/usr/sbin/useradd","john ALL=(ALL) !/usr/sbin/useradd","john ALL=(ALL) NOT /usr/sbin/useradd","john BLOCK=(ALL) /usr/sbin/useradd"],a:0,e:"A rule needs a positive part (ALL) before the ! exceptions. A block list can still be bypassed with sudo -i, so it is only a safety net."},
+{q:"What is the difference between getent passwd john and grep john /etc/passwd?",o:["getent also finds network users (LDAP/SSSD); grep checks only the local file","getent shows password hashes","grep is faster and always better","They are completely different commands with different output formats"],a:0,e:"The output format is the same. getent asks every configured account source."},
+{q:"Roughly, how many groups can one user belong to in total (including the primary group), by the usual rule?",o:["16","4","256","Unlimited, no rule exists"],a:0,e:"The usual rule is 16. Some network file systems only understand 16 groups."}
+];
+var quiz={list:[],i:0,score:0,missed:[],locked:false};
+var box=document.getElementById('quizBox');
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t}return a}
+function startQuiz(pool){
+  quiz.list=shuffle(pool).map(function(q){
+    var opts=shuffle(q.o.map(function(t,idx){return {t:t,ok:idx===q.a}}));
+    return {q:q.q,opts:opts,e:q.e,src:q};
+  });
+  quiz.i=0;quiz.score=0;quiz.missed=[];quiz.locked=false;
+  renderQ();
+}
+function el(tag,cls,text){var n=document.createElement(tag);if(cls)n.className=cls;if(text!==undefined)n.textContent=text;return n}
+function renderQ(){
+  box.innerHTML='';
+  var total=quiz.list.length,q=quiz.list[quiz.i];
+  var top=el('div','quiz-top');
+  top.appendChild(el('span','', 'Question '+(quiz.i+1)+' of '+total));
+  top.appendChild(el('span','', 'Score: '+quiz.score));
+  box.appendChild(top);
+  var bar=el('div','quiz-bar');var fill=el('div');fill.style.width=(quiz.i/total*100)+'%';bar.appendChild(fill);box.appendChild(bar);
+  box.appendChild(el('div','quiz-q',q.q));
+  var fb=el('div','quiz-fb');
+  var next=el('button','quiz-btn',quiz.i===total-1?'See result':'Next question →');
+  next.style.display='none';
+  next.onclick=function(){quiz.i++;if(quiz.i>=total){renderResult()}else{renderQ()}};
+  quiz.locked=false;
+  q.opts.forEach(function(o,idx){
+    var b=el('button','quiz-opt',String.fromCharCode(65+idx)+'.  '+o.t);
+    b.onclick=function(){
+      if(quiz.locked)return;quiz.locked=true;
+      var all=box.querySelectorAll('.quiz-opt');
+      all.forEach(function(x,k){x.disabled=true;if(q.opts[k].ok)x.classList.add('right')});
+      if(o.ok){quiz.score++;fb.textContent='✅ Correct! '+q.e}
+      else{b.classList.add('wrong');quiz.missed.push(q);fb.textContent='❌ Not quite. '+q.e}
+      fb.classList.add('show');next.style.display='inline-block';
+      top.lastChild.textContent='Score: '+quiz.score;
+      fill.style.width=((quiz.i+1)/total*100)+'%';
+    };
+    box.appendChild(b);
+  });
+  box.appendChild(fb);box.appendChild(next);
+}
+function renderResult(){
+  box.innerHTML='';
+  var total=quiz.list.length,pct=Math.round(quiz.score/total*100);
+  box.appendChild(el('div','quiz-q','Quiz finished'));
+  box.appendChild(el('div','quiz-score',quiz.score+' / '+total+'  ('+pct+'%)'));
+  var msg=pct>=80?'🎉 Great work! You know this chapter well.':(pct>=50?'👍 Good start. Read the explanations below and try again.':'📖 Read the chapter again, then retry the quiz.');
+  box.appendChild(el('p','',msg));
+  if(quiz.missed.length){
+    box.appendChild(el('p','', 'Questions you missed:'));
+    quiz.missed.forEach(function(q){
+      var d=el('div','quiz-miss');
+      d.appendChild(el('div','',q.q));
+      var right=q.opts.filter(function(o){return o.ok})[0].t;
+      var ans=el('div','','');ans.appendChild(document.createTextNode('Correct answer: '));ans.appendChild(el('b','',right));d.appendChild(ans);
+      d.appendChild(el('div','',q.e));
+      box.appendChild(d);
+    });
+  }
+  var again=el('button','quiz-btn','🔁 Restart full quiz');
+  again.onclick=function(){startQuiz(QUESTIONS)};
+  box.appendChild(again);
+  if(quiz.missed.length){
+    var retry=el('button','quiz-btn alt','Retry only missed questions');
+    retry.onclick=function(){startQuiz(quiz.missed.map(function(m){return m.src}))};
+    box.appendChild(retry);
+  }
+}
+(function(){
+  var intro=el('div','');
+  intro.appendChild(el('p','',QUESTIONS.length+' questions covering the whole chapter.'));
+  var go=el('button','quiz-btn','▶ Start quiz');
+  go.onclick=function(){startQuiz(QUESTIONS)};
+  intro.appendChild(go);box.appendChild(intro);
+})();
+</script>
+</body>
+</html>
